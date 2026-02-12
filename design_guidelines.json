@@ -1,0 +1,165 @@
+{
+  "project_name": "CLOCKLN",
+  "version": "1.0.0",
+  "identity": {
+    "designer": "E1",
+    "theme_name": "Industrial Cyber-Noir",
+    "emotional_archetype": "The Performance Pro (Precision & Reliability)",
+    "core_values": [
+      "Reliability over Flash",
+      "Clarity in Darkness",
+      "Speed as a Feature",
+      "Global Accessibility (RTL)"
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "IBM Plex Sans, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "display": "text-5xl md:text-7xl font-bold tracking-tight",
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-tight",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed",
+      "caption": "text-sm text-muted-foreground",
+      "mono_lg": "font-mono text-xl tracking-wider",
+      "clock_digits": "font-mono text-6xl md:text-8xl font-black tracking-widest tabular-nums"
+    },
+    "installation": {
+      "google_fonts_url": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Manrope:wght@300;400;500;700;800&display=swap"
+    }
+  },
+  "colors": {
+    "mode": "dark",
+    "palette": {
+      "background": {
+        "default": "#09090b",
+        "card": "#18181b",
+        "subtle": "#27272a",
+        "totem_bg": "#000000"
+      },
+      "foreground": {
+        "default": "#fafafa",
+        "muted": "#a1a1aa",
+        "dim": "#52525b"
+      },
+      "primary": {
+        "default": "#3b82f6",
+        "hover": "#60a5fa",
+        "active": "#2563eb",
+        "foreground": "#ffffff"
+      },
+      "functional": {
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "error": "#ef4444",
+        "info": "#0ea5e9"
+      },
+      "cyber_accents": {
+        "neon_blue": "#00f0ff",
+        "neon_green": "#00ff9d",
+        "glass_border": "rgba(255, 255, 255, 0.08)"
+      }
+    },
+    "gradients": {
+      "primary_glow": "radial-gradient(circle at center, rgba(59, 130, 246, 0.15) 0%, rgba(9, 9, 11, 0) 70%)",
+      "totem_scan_line": "linear-gradient(to bottom, transparent, #3b82f6, transparent)"
+    }
+  },
+  "layout_strategies": {
+    "spacing_scale": "Tailwind (p-4, p-8, p-12, p-16)",
+    "border_radius": {
+      "default": "rounded-lg",
+      "card": "rounded-xl",
+      "button": "rounded-md",
+      "totem_display": "rounded-3xl"
+    },
+    "grid_systems": {
+      "dashboard_bento": "grid grid-cols-1 md:grid-cols-4 gap-6",
+      "totem_split": "grid grid-cols-1 lg:grid-cols-2 h-screen",
+      "mobile_stack": "flex flex-col gap-4 p-4 pb-24"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all active:scale-95",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      "ghost": "hover:bg-accent hover:text-accent-foreground",
+      "clock_in_giant": "w-full h-32 text-2xl font-bold bg-emerald-600 hover:bg-emerald-500 rounded-2xl shadow-[0_0_40px_rgba(16,185,129,0.4)] transition-all active:scale-[0.98]"
+    },
+    "cards": {
+      "dashboard": "bg-card border border-border/50 shadow-sm hover:border-primary/50 transition-colors",
+      "glass": "bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl"
+    },
+    "inputs": {
+      "default": "bg-background border-input ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "pin_code": "text-center text-4xl font-mono tracking-[1em] h-20"
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Use subtle noise overlay (opacity 0.03) on backgrounds to reduce banding.",
+    "glassmorphism": "Use sparingly on Totem overlays and Mobile bottom sheets.",
+    "shadows": "Colored shadows for primary actions (e.g., blue button casts blue shadow).",
+    "borders": "1px borders with 10% opacity for structure. Active elements get 100% opacity border."
+  },
+  "motion": {
+    "library": "framer-motion",
+    "transitions": {
+      "page_enter": {
+        "initial": { "opacity": 0, "y": 20 },
+        "animate": { "opacity": 1, "y": 0 },
+        "exit": { "opacity": 0, "y": -20 },
+        "transition": { "duration": 0.3, "ease": "easeOut" }
+      },
+      "hover_lift": {
+        "scale": 1.02,
+        "transition": { "duration": 0.2 }
+      },
+      "scan_line": {
+        "animate": { "top": ["0%", "100%"] },
+        "transition": { "duration": 2, "repeat": "Infinity", "ease": "linear" }
+      }
+    }
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Stroke width 1.5px (Thin/Elegant)",
+    "color": "CurrentColor"
+  },
+  "media": {
+    "logo_placeholder": "https://placehold.co/400x100/000000/FFF?text=CLOCKLN&font=montserrat",
+    "image_urls": {
+      "login_hero": "https://images.unsplash.com/photo-1758518731468-98e90ffd7430?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzA5MzkzNTd8MA&ixlib=rb-4.1.0&q=85",
+      "totem_bg_abstract": "https://images.unsplash.com/photo-1760630558230-04f946fe39ad?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwyfHxmdXR1cmlzdGljJTIwZGlnaXRhbCUyMHRpbWUlMjBhYnN0cmFjdHxlbnwwfHx8fDE3NzA5MzkzNTh8MA&ixlib=rb-4.1.0&q=85",
+      "team_avatars": [
+        "https://images.unsplash.com/photo-1758691736975-9f7f643d178e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzA5MzkzNTd8MA&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1758873271761-6cfe9b4f000c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHw0fHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzA5MzkzNTd8MA&ixlib=rb-4.1.0&q=85",
+        "https://images.unsplash.com/photo-1758873268631-fa944fc5cad2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjB0ZWFtJTIwZGl2ZXJzZXxlbnwwfHx8fDE3NzA5MzkzNTd8MA&ixlib=rb-4.1.0&q=85"
+      ]
+    }
+  },
+  "instructions_to_main_agent": [
+    "Install dependencies: `yarn add framer-motion lucide-react date-fns react-qr-code`",
+    "Configure Tailwind: Update `tailwind.config.js` with the provided color palette and font families.",
+    "Font Setup: Add the Google Fonts link to `public/index.html` head.",
+    "Theme: Force 'dark' class on the `<html>` or `<body>` tag. Do not implement light mode toggle for this MVP phase (per user request: 'Dark theme mandatory').",
+    "RTL Support: Use `dir='rtl'` on the body when an RTL language is selected. Ensure layouts use logical properties (start/end) instead of left/right where possible.",
+    "Totem Mode: This page must be immersive. Hide standard navigation. Use Fullscreen API if possible.",
+    "Charts: Use Recharts (via Shadcn/Charts) for the HR Dashboard analytics (Attendance Heatmap, Hours Worked).",
+    "Authentication: Implement a clean Split Layout for login (Image Left, Form Right).",
+    "PWA: Add manifest.json and service worker registration for 'Add to Home Screen' capability.",
+    "Language Selector: Needs to be prominent (Top Bar).",
+    "Testing: Add `data-testid` to all interactive elements."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop': Do not use generic gradients or centered layouts everywhere.",
+    "Depth: Use z-index and subtle shadows to create depth in the dark interface.",
+    "Interaction: Every button press must have a scale-down effect (`active:scale-95`).",
+    "Spacing: Use `p-6` or `p-8` for container padding. Don't crowd the UI.",
+    "Accessibility: Ensure text contrast ratios are met (especially grey text on black backgrounds)."
+  ]
+}
