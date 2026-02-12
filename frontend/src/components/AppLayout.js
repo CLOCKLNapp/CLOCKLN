@@ -24,7 +24,7 @@ export function AppLayout({ children }) {
 
   const hrNavItems = [
     { icon: LayoutDashboard, label: t('dashboard'), path: '/dashboard' },
-    { icon: Users, label: t('employees'), path: '/employees' },
+    { icon: QrCode, label: t('scanner'), path: '/scanner' },
     { icon: Tv, label: t('totem_mode'), path: '/totem' },
     { icon: Settings, label: t('settings'), path: '/settings' },
   ];
