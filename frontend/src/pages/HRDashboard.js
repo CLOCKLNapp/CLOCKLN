@@ -1,0 +1,358 @@
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  Users, Clock, TrendingUp, FileText, 
+  Plus, Search, MoreVertical, Tv,
+  ChevronRight, CheckCircle2, XCircle
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { AppLayout } from '../components/AppLayout';
+import { toast } from 'sonner';
+
+export default function HRDashboard() {
+  const [dashboardData, setDashboardData] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [newEmployee, setNewEmployee] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'employee',
+    pin: '',
+  });
+
+  const { api, company } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+
+  const fetchData = async () => {
+    try {
+      const [dashRes, empRes] = await Promise.all([
+        api.get('/dashboard/hr'),
+        api.get('/users'),
+      ]);
+      setDashboardData(dashRes.data);
+      setEmployees(empRes.data);
+    } catch (error) {
+      toast.error(t('error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleAddEmployee = async () => {
+    try {
+      await api.post('/users', {
+        ...newEmployee,
+        company_id: company.id,
+      });
+      toast.success(t('success'));
+      setShowAddEmployee(false);
+      setNewEmployee({ name: '', email: '', password: '', role: 'employee', pin: '' });
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || t('error'));
+    }
+  };
+
+  const handleToggleStatus = async (userId, isActive) => {
+    try {
+      await api.patch(`/users/${userId}`, { is_active: !isActive });
+      toast.success(t('success'));
+      fetchData();
+    } catch (error) {
+      toast.error(t('error'));
+    }
+  };
+
+  const filteredEmployees = employees.filter(emp =>
+    emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatHours = (hours) => {
+    const h = Math.floor(hours || 0);
+    const m = Math.round(((hours || 0) - h) * 60);
+    return `${h}h ${m}m`;
+  };
+
+  const statCards = [
+    {
+      title: t('total_employees'),
+      value: dashboardData?.total_employees || 0,
+      icon: Users,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+    },
+    {
+      title: t('clocked_in_today'),
+      value: dashboardData?.clocked_in_today || 0,
+      icon: CheckCircle2,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10',
+    },
+    {
+      title: t('monthly_overtime'),
+      value: dashboardData?.total_overtime_month || 0,
+      icon: TrendingUp,
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-400/10',
+      format: formatHours,
+    },
+  ];
+
+  return (
+    <AppLayout>
+      <div className="p-6 space-y-6 pb-24 md:pb-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold font-[Manrope]">
+              {t('hr_dashboard')}
+            </h1>
+            <p className="text-muted-foreground mt-1">{company?.name}</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/totem')}
+              data-testid="open-totem-btn"
+            >
+              <Tv className="w-4 h-4 mr-2" />
+              {t('totem_mode')}
+            </Button>
+            <Button
+              className="btn-glow-blue"
+              onClick={() => setShowAddEmployee(true)}
+              data-testid="add-employee-btn"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('add_employee')}
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {statCards.map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+            >
+              <Card className="card-hover border-border/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{stat.title}</p>
+                      <p className="text-3xl font-bold font-mono mt-2">
+                        {loading ? '--' : (stat.format ? stat.format(stat.value) : stat.value)}
+                      </p>
+                    </div>
+                    <div className={`p-4 rounded-xl ${stat.bgColor}`}>
+                      <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Employees list */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                {t('employees')}
+              </CardTitle>
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('search')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                  data-testid="search-employees-input"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-16 bg-muted/50 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : filteredEmployees.length > 0 ? (
+                <div className="space-y-3">
+                  {filteredEmployees.map((employee) => (
+                    <div
+                      key={employee.id}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                      data-testid={`employee-row-${employee.id}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="font-bold text-primary">
+                            {employee.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{employee.name}</p>
+                          <p className="text-sm text-muted-foreground">{employee.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Badge variant={employee.is_active ? 'default' : 'secondary'}>
+                          {employee.is_active ? t('active') : t('inactive')}
+                        </Badge>
+                        <Badge variant="outline">
+                          {employee.role === 'hr' ? t('hr') : employee.role === 'manager' ? t('manager') : t('employee')}
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" data-testid={`employee-menu-${employee.id}`}>
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleToggleStatus(employee.id, employee.is_active)}>
+                              {employee.is_active ? t('inactive') : t('active')}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">
+                  No employees found
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Add Employee Dialog */}
+        <Dialog open={showAddEmployee} onOpenChange={setShowAddEmployee}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t('add_employee')}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>{t('employee_name')}</Label>
+                <Input
+                  value={newEmployee.name}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                  placeholder="John Doe"
+                  data-testid="new-employee-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('email')}</Label>
+                <Input
+                  type="email"
+                  value={newEmployee.email}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                  placeholder="john@company.com"
+                  data-testid="new-employee-email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('password')}</Label>
+                <Input
+                  type="password"
+                  value={newEmployee.password}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                  placeholder="••••••••"
+                  data-testid="new-employee-password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('role')}</Label>
+                <Select
+                  value={newEmployee.role}
+                  onValueChange={(value) => setNewEmployee({ ...newEmployee, role: value })}
+                >
+                  <SelectTrigger data-testid="new-employee-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">{t('employee')}</SelectItem>
+                    <SelectItem value="manager">{t('manager')}</SelectItem>
+                    <SelectItem value="hr">{t('hr')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('pin')} (optional)</Label>
+                <Input
+                  value={newEmployee.pin}
+                  onChange={(e) => setNewEmployee({ ...newEmployee, pin: e.target.value })}
+                  placeholder="4-6 digits"
+                  maxLength={6}
+                  data-testid="new-employee-pin"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddEmployee(false)}>
+                {t('cancel')}
+              </Button>
+              <Button onClick={handleAddEmployee} data-testid="save-employee-btn">
+                {t('create')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AppLayout>
+  );
+}
