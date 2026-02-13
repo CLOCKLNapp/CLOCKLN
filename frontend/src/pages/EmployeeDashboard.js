@@ -81,11 +81,12 @@ export default function EmployeeDashboard() {
     },
     {
       title: t('time_bank'),
-      value: dashboardData?.time_bank || 0,
+      value: timeBankBalance?.balance_hours || 0,
       format: formatHours,
-      icon: Timer,
+      icon: Hourglass,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-400/10',
+      link: '/timebank',
     },
     {
       title: t('days_worked'),
