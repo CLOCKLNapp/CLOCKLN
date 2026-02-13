@@ -202,6 +202,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/send-notification"
+        element={
+          <ProtectedRoute requireHR>
+            <SendNotificationPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
