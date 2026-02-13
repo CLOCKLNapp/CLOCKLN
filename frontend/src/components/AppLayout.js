@@ -16,6 +16,19 @@ export function AppLayout({ children }) {
   const { t, direction } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkSuperAdmin = async () => {
+      try {
+        const response = await api.get('/api/admin/check');
+        setIsSuperAdmin(response.data.is_superadmin);
+      } catch {
+        setIsSuperAdmin(false);
+      }
+    };
+    checkSuperAdmin();
+  }, []);
 
   const isRemoteWorker = user?.work_mode === 'remote' || user?.work_mode === 'hybrid';
 
