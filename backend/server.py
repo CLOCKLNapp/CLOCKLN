@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Request, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
@@ -18,6 +18,8 @@ import hashlib
 import io
 import base64
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,6 +32,10 @@ db = client[os.environ['DB_NAME']]
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
 
+# SendGrid
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'noreply@clockln.app')
+
 # JWT Settings
 SECRET_KEY = os.environ.get('JWT_SECRET', secrets.token_urlsafe(32))
 ALGORITHM = "HS256"
@@ -40,6 +46,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Security
 security = HTTPBearer()
+
+# Logging
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="CLOCKLN API", version="2.0.0")
 api_router = APIRouter(prefix="/api")
