@@ -247,11 +247,19 @@ export default function HRDashboard() {
             </Button>
             <Button
               variant="outline"
+              onClick={() => navigate('/overtime-approvals')}
+              data-testid="overtime-approvals-btn"
+            >
+              <Hourglass className="w-4 h-4 mr-2" />
+              Extras
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate('/send-notification')}
               data-testid="send-notification-btn"
             >
               <Bell className="w-4 h-4 mr-2" />
-              Notificações
+              Avisos
             </Button>
             <Button
               variant="outline"
@@ -259,7 +267,7 @@ export default function HRDashboard() {
               data-testid="remote-map-btn"
             >
               <MapPin className="w-4 h-4 mr-2" />
-              Mapa Remotos
+              Mapa
             </Button>
             <Button
               variant="outline"
@@ -268,14 +276,6 @@ export default function HRDashboard() {
             >
               <Download className="w-4 h-4 mr-2" />
               CSV
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/totem-setup')}
-              data-testid="totem-setup-btn"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Totem
             </Button>
             <Button
               className="btn-glow-blue"
