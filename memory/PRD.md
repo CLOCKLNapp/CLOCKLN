@@ -96,6 +96,7 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 
 ## Credenciais de Teste
 - **HR Admin (ACME)**: hr@acme.com / password123
+- **Gerente (ACME)**: gerente@acme.com / password123
 - **Remoto (ACME)**: carlos.remoto@acme.com / password123 (SP: -23.5505, -46.6333, 150m)
 
 ---
@@ -111,17 +112,13 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] 17 idiomas + RTL
 - [x] Exportação CSV
 - [x] **Mapa de Ponto Remoto para HR** (react-leaflet)
+- [x] **Sistema de Notificações** (RH envia → Funcionários recebem)
+- [x] **Alertas Automáticos** (ponto fora do raio → notifica HR)
+- [x] **Papel "Gerente"** (dashboard próprio, visualiza apenas sua equipe)
 
 ### P1 - High Priority (Próximo)
-- [ ] Sistema de Notificações (RH envia → Funcionário recebe)
-- [ ] Papel "Gerente" com visualização da equipe
-
-### P2 - Medium Priority
 - [ ] Planos SaaS (Free/Pro/Business) com Stripe
 - [ ] Módulo de Relatórios PDF/Excel detalhados
-- [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
-- [ ] Dashboard gerente
-- [ ] Aprovação de horas extras
 
 ### P3 - Low Priority
 - [ ] Aplicativo Móvel (React Native ou Flutter)
