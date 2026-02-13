@@ -53,6 +53,25 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] Página de bloqueio para funcionários presenciais
 - [x] HR pode criar funcionários com modo de trabalho e localização
 
+### Phase 4.1 - Mapa de Ponto Remoto para HR ✅ (2026-02-13)
+
+#### Backend
+- [x] API `/reports/remote-workers` - Lista todos os funcionários remote/hybrid com localizações
+- [x] API `/reports/remote-clocks?days=N` - Retorna registros de ponto com geolocalização
+- [x] Cálculo de distância entre ponto e local cadastrado
+- [x] Enriquecimento com nome do funcionário e status do dia
+
+#### Frontend
+- [x] Página `/remote-map` com mapa Leaflet (tema escuro)
+- [x] Cards de estatísticas: Funcionários Remotos, Ponto Hoje, Registros no Período
+- [x] Filtro de período (Hoje, 7 dias, 30 dias)
+- [x] Marcadores no mapa:
+  - Azul: Local cadastrado (home_location) com círculo de raio
+  - Verde: Ponto dentro do raio permitido
+  - Vermelho: Ponto fora do raio permitido
+- [x] Lista de registros recentes com distância
+- [x] Botão "Mapa Remotos" no dashboard HR
+
 ---
 
 ## Modos de Trabalho
