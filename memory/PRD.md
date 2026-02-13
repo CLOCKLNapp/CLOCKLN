@@ -224,9 +224,44 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 
 ---
 
-## 🚀 STATUS: PRONTO PARA PRODUÇÃO
+## 🚀 STATUS: DEPLOY EM ANDAMENTO
 
-**Data de conclusão:** 13/02/2026
+**Data de conclusão do desenvolvimento:** 13/02/2026
+**Última atualização:** Dezembro/2025
+
+---
+
+## ⚠️ ONDE PARAMOS - DEPLOY NA VERCEL
+
+### Status Atual
+O código foi enviado com sucesso para o GitHub (repositório `CLOCKLNapp/CLOCKLN`).
+Estamos no processo de deploy na Vercel, mas encontramos um erro de permissão.
+
+### Erro Encontrado
+```
+"A solicitação de implantação não tinha um autor git com acesso de contribuição ao projeto no Vercel."
+```
+
+### Próximos Passos para Continuar
+1. **Deletar o projeto atual na Vercel** (`aplicativo relógio`)
+   - Ir em Configurações > Em geral > Excluir projeto
+   
+2. **Criar um novo projeto na Vercel**
+   - Clicar em "Add New..." > "Project"
+   - Importar o repositório `CLOCKLNapp/CLOCKLN`
+   - **IMPORTANTE**: Configurar "Root Directory" como `frontend`
+   - Clicar em Deploy
+
+3. **Após deploy do frontend, configurar o backend**
+   - O backend pode ser hospedado em Railway, Render ou Heroku
+   - Configurar variáveis de ambiente (MONGO_URL, etc.)
+
+### Configurações Já Feitas na Vercel
+- ✅ Root Directory configurado como `frontend`
+- ✅ Repositório GitHub conectado: `CLOCKLNapp/CLOCKLN`
+- ❌ Deploy ainda não realizado (erro de permissão)
+
+---
 
 **Arquivos importantes:**
 - `/app/memory/PRD.md` - Este documento
@@ -234,7 +269,7 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - `/app/backend/.env` - Configurações do backend
 - `/app/frontend/.env` - Configurações do frontend
 
-**Para ativar funcionalidades:**
+**Para ativar funcionalidades após deploy:**
 1. **Stripe (pagamentos)**: Adicionar `STRIPE_API_KEY` no backend/.env
 2. **SendGrid (emails)**: Adicionar `SENDGRID_API_KEY` e `SENDER_EMAIL` no backend/.env
 
