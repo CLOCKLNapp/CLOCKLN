@@ -21,6 +21,8 @@ import RemoteClockPage from './pages/RemoteClockPage';
 import RemoteMapPage from './pages/RemoteMapPage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import ReportsPage from './pages/ReportsPage';
+import OvertimeApprovalsPage from './pages/OvertimeApprovalsPage';
+import TimeBankPage from './pages/TimeBankPage';
 import './App.css';
 
 // Protected Route Component
