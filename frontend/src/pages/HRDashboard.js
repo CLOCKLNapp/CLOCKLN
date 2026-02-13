@@ -476,6 +476,75 @@ export default function HRDashboard() {
                   data-testid="new-employee-pin"
                 />
               </div>
+              
+              {/* Work Mode */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Modo de Trabalho
+                </Label>
+                <Select
+                  value={newEmployee.work_mode}
+                  onValueChange={(value) => setNewEmployee({ ...newEmployee, work_mode: value })}
+                >
+                  <SelectTrigger data-testid="new-employee-work-mode">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="onsite">Presencial (só totem)</SelectItem>
+                    <SelectItem value="hybrid">Híbrido (totem + remoto)</SelectItem>
+                    <SelectItem value="remote">Remoto (só geolocalização)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Remote Location Fields */}
+              {(newEmployee.work_mode === 'remote' || newEmployee.work_mode === 'hybrid') && (
+                <div className="space-y-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    Localização do Trabalho Remoto
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Latitude</Label>
+                      <Input
+                        type="number"
+                        step="0.000001"
+                        value={newEmployee.home_lat}
+                        onChange={(e) => setNewEmployee({ ...newEmployee, home_lat: e.target.value })}
+                        placeholder="-23.550520"
+                        data-testid="new-employee-lat"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Longitude</Label>
+                      <Input
+                        type="number"
+                        step="0.000001"
+                        value={newEmployee.home_lng}
+                        onChange={(e) => setNewEmployee({ ...newEmployee, home_lng: e.target.value })}
+                        placeholder="-46.633308"
+                        data-testid="new-employee-lng"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Raio permitido (metros)</Label>
+                    <Input
+                      type="number"
+                      value={newEmployee.location_radius}
+                      onChange={(e) => setNewEmployee({ ...newEmployee, location_radius: parseInt(e.target.value) || 100 })}
+                      min={50}
+                      max={1000}
+                      data-testid="new-employee-radius"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Dica: Use o Google Maps para obter as coordenadas do endereço
+                  </p>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddEmployee(false)}>
