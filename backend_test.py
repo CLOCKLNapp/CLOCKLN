@@ -321,7 +321,15 @@ def main():
     print("\n📱 Testing Totem Events...")
     tester.test_totem_recent_events()
     
-    # Test 11: CSV Export
+    # Test 11: Phase 3 Features - Documents & Notifications  
+    print("\n📄 Testing Phase 3 Features - Documents & Notifications...")
+    tester.test_get_my_notifications()
+    tester.test_create_notification()
+    tester.test_get_my_documents()
+    tester.test_get_pending_documents()
+    tester.test_upload_document()
+    
+    # Test 12: CSV Export
     print("\n📊 Testing CSV Export...")
     tester.test_export_csv()
     
