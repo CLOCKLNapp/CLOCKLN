@@ -231,6 +231,22 @@ export default function HRDashboard() {
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
+              onClick={() => navigate('/subscription')}
+              data-testid="subscription-btn"
+            >
+              <Crown className="w-4 h-4 mr-2 text-amber-400" />
+              Plano
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/reports')}
+              data-testid="reports-btn"
+            >
+              <Table className="w-4 h-4 mr-2" />
+              Relatórios
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate('/send-notification')}
               data-testid="send-notification-btn"
             >
@@ -251,7 +267,7 @@ export default function HRDashboard() {
               data-testid="export-csv-btn"
             >
               <Download className="w-4 h-4 mr-2" />
-              Exportar CSV
+              CSV
             </Button>
             <Button
               variant="outline"
@@ -259,15 +275,7 @@ export default function HRDashboard() {
               data-testid="totem-setup-btn"
             >
               <Settings className="w-4 h-4 mr-2" />
-              Config. Totem
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/totem')}
-              data-testid="open-totem-btn"
-            >
-              <Tv className="w-4 h-4 mr-2" />
-              {t('totem_mode')}
+              Totem
             </Button>
             <Button
               className="btn-glow-blue"
