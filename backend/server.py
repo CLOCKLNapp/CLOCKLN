@@ -144,6 +144,8 @@ class ClockRecord(BaseModel):
     status: str = "present"  # present, absent, vacation, sick
     clock_method: str = "qr"  # qr, geolocation
     location: Optional[dict] = None  # {"lat": x, "lng": y} for geolocation clock-ins
+    outside_radius: bool = False  # Flag for alerts
+    distance_from_home: Optional[int] = None  # Distance in meters
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class QRCode(BaseModel):
