@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { 
   Users, Clock, TrendingUp, FileText, 
   Plus, Search, MoreVertical, Tv,
-  ChevronRight, CheckCircle2, XCircle
+  ChevronRight, CheckCircle2, XCircle,
+  Palmtree, Bell, Settings, Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -48,6 +49,7 @@ export default function HRDashboard() {
     password: '',
     role: 'employee',
     pin: '',
+    vacation_days_total: 30,
   });
 
   const { api, company } = useAuth();
@@ -81,7 +83,7 @@ export default function HRDashboard() {
       });
       toast.success(t('success'));
       setShowAddEmployee(false);
-      setNewEmployee({ name: '', email: '', password: '', role: 'employee', pin: '' });
+      setNewEmployee({ name: '', email: '', password: '', role: 'employee', pin: '', vacation_days_total: 30 });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || t('error'));
@@ -95,6 +97,29 @@ export default function HRDashboard() {
       fetchData();
     } catch (error) {
       toast.error(t('error'));
+    }
+  };
+
+  const handleExportCSV = async () => {
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+    const monthEnd = today.toISOString().split('T')[0];
+    
+    try {
+      const response = await api.get(`/reports/export/csv?start_date=${monthStart}&end_date=${monthEnd}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_report_${monthStart}_${monthEnd}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Relatório exportado!');
+    } catch (error) {
+      toast.error('Erro ao exportar relatório');
     }
   };
 
@@ -134,6 +159,25 @@ export default function HRDashboard() {
     },
   ];
 
+  const pendingCards = [
+    {
+      title: 'Documentos Pendentes',
+      value: dashboardData?.pending_documents || 0,
+      icon: FileText,
+      color: 'text-violet-400',
+      bgColor: 'bg-violet-400/10',
+      path: '/documents',
+    },
+    {
+      title: 'Férias Pendentes',
+      value: dashboardData?.pending_vacation_requests || 0,
+      icon: Palmtree,
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-400/10',
+      path: '/vacation-requests',
+    },
+  ];
+
   return (
     <AppLayout>
       <div className="p-6 space-y-6 pb-24 md:pb-6">
@@ -150,7 +194,23 @@ export default function HRDashboard() {
             <p className="text-muted-foreground mt-1">{company?.name}</p>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={handleExportCSV}
+              data-testid="export-csv-btn"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/totem-setup')}
+              data-testid="totem-setup-btn"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Config. Totem
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/totem')}
@@ -198,11 +258,49 @@ export default function HRDashboard() {
           ))}
         </div>
 
+        {/* Pending items */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {pendingCards.map((card, index) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + index * 0.05 }}
+            >
+              <Card 
+                className="card-hover border-border/50 cursor-pointer"
+                onClick={() => navigate(card.path)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-xl ${card.bgColor}`}>
+                        <card.icon className={`w-6 h-6 ${card.color}`} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">{card.title}</p>
+                        <p className="text-2xl font-bold font-mono">
+                          {loading ? '--' : card.value}
+                        </p>
+                      </div>
+                    </div>
+                    {card.value > 0 && (
+                      <Badge variant="secondary" className="bg-amber-500/20 text-amber-400">
+                        Pendente
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
         {/* Employees list */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.25 }}
         >
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -262,7 +360,7 @@ export default function HRDashboard() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleToggleStatus(employee.id, employee.is_active)}>
-                              {employee.is_active ? t('inactive') : t('active')}
+                              {employee.is_active ? 'Desativar' : 'Ativar'}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -272,7 +370,7 @@ export default function HRDashboard() {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  No employees found
+                  Nenhum funcionário encontrado
                 </p>
               )}
             </CardContent>
@@ -291,7 +389,7 @@ export default function HRDashboard() {
                 <Input
                   value={newEmployee.name}
                   onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                  placeholder="John Doe"
+                  placeholder="João Silva"
                   data-testid="new-employee-name"
                 />
               </div>
@@ -301,7 +399,7 @@ export default function HRDashboard() {
                   type="email"
                   value={newEmployee.email}
                   onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-                  placeholder="john@company.com"
+                  placeholder="joao@empresa.com"
                   data-testid="new-employee-email"
                 />
               </div>
@@ -315,28 +413,41 @@ export default function HRDashboard() {
                   data-testid="new-employee-password"
                 />
               </div>
-              <div className="space-y-2">
-                <Label>{t('role')}</Label>
-                <Select
-                  value={newEmployee.role}
-                  onValueChange={(value) => setNewEmployee({ ...newEmployee, role: value })}
-                >
-                  <SelectTrigger data-testid="new-employee-role">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employee">{t('employee')}</SelectItem>
-                    <SelectItem value="manager">{t('manager')}</SelectItem>
-                    <SelectItem value="hr">{t('hr')}</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('role')}</Label>
+                  <Select
+                    value={newEmployee.role}
+                    onValueChange={(value) => setNewEmployee({ ...newEmployee, role: value })}
+                  >
+                    <SelectTrigger data-testid="new-employee-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">{t('employee')}</SelectItem>
+                      <SelectItem value="manager">{t('manager')}</SelectItem>
+                      <SelectItem value="hr">{t('hr')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Dias de Férias</Label>
+                  <Input
+                    type="number"
+                    value={newEmployee.vacation_days_total}
+                    onChange={(e) => setNewEmployee({ ...newEmployee, vacation_days_total: parseInt(e.target.value) || 30 })}
+                    min={0}
+                    max={60}
+                    data-testid="new-employee-vacation"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>{t('pin')} (optional)</Label>
+                <Label>{t('pin')} (opcional)</Label>
                 <Input
                   value={newEmployee.pin}
                   onChange={(e) => setNewEmployee({ ...newEmployee, pin: e.target.value })}
-                  placeholder="4-6 digits"
+                  placeholder="4-6 dígitos"
                   maxLength={6}
                   data-testid="new-employee-pin"
                 />
