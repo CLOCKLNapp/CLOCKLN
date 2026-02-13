@@ -85,6 +85,19 @@ export function AppLayout({ children }) {
               </Button>
             );
           })}
+          
+          {/* Super Admin Button */}
+          {isSuperAdmin && (
+            <Button
+              variant={location.pathname === '/admin' ? 'secondary' : 'ghost'}
+              className={`w-full justify-start gap-3 ${location.pathname === '/admin' ? 'bg-yellow-500/10 text-yellow-500' : 'text-yellow-500'}`}
+              onClick={() => navigate('/admin')}
+              data-testid="nav-superadmin"
+            >
+              <Shield className="w-5 h-5" />
+              Super Admin
+            </Button>
+          )}
         </nav>
 
         {/* User info & Language */}
