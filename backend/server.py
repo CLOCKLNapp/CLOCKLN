@@ -62,6 +62,7 @@ class UserRole:
     EMPLOYEE = "employee"
     HR = "hr"
     MANAGER = "manager"
+    SUPERADMIN = "superadmin"
 
 class Company(BaseModel):
     model_config = ConfigDict(extra="ignore")
