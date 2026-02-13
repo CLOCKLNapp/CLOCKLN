@@ -25,9 +25,12 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL', '')
+if not mongo_url:
+    raise RuntimeError("MONGO_URL environment variable is required. Please configure it in Railway Variables.")
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db_name = os.environ.get('DB_NAME', 'clockln')
+db = client[db_name]
 
 # Stripe
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
