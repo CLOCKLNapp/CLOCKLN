@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Clock, Timer, TrendingUp, Calendar, 
-  QrCode, History, LogOut, ChevronRight,
-  CheckCircle2, Circle, Briefcase
+  QrCode, History, ChevronRight,
+  CheckCircle2, Circle, Briefcase, 
+  Palmtree, AlertTriangle, Stethoscope, Bell
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Progress } from '../components/ui/progress';
+import { Badge } from '../components/ui/badge';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { AppLayout } from '../components/AppLayout';
@@ -37,8 +40,8 @@ export default function EmployeeDashboard() {
   }, [api, t]);
 
   const formatHours = (hours) => {
-    const h = Math.floor(hours);
-    const m = Math.round((hours - h) * 60);
+    const h = Math.floor(hours || 0);
+    const m = Math.round(((hours || 0) - h) * 60);
     return `${h}h ${m}m`;
   };
 
@@ -88,6 +91,9 @@ export default function EmployeeDashboard() {
     },
   ];
 
+  const vacationUsedPercent = dashboardData ? 
+    Math.round((dashboardData.vacation_days_used / dashboardData.vacation_days_total) * 100) : 0;
+
   return (
     <AppLayout>
       <div className="p-6 space-y-6 pb-24 md:pb-6">
@@ -104,17 +110,33 @@ export default function EmployeeDashboard() {
             <p className="text-muted-foreground mt-1">{t('dashboard')}</p>
           </div>
           
-          <Button
-            size="lg"
-            className={`btn-glow-${isClockedIn ? 'blue' : 'green'} ${
-              isClockedIn ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'
-            }`}
-            onClick={() => navigate('/scanner')}
-            data-testid="scan-qr-btn"
-          >
-            <QrCode className="w-5 h-5 mr-2" />
-            {isClockedIn ? t('clock_out') : t('clock_in')}
-          </Button>
+          <div className="flex items-center gap-3">
+            {dashboardData?.unread_notifications > 0 && (
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative"
+                onClick={() => navigate('/notifications')}
+                data-testid="notifications-btn"
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                  {dashboardData.unread_notifications}
+                </span>
+              </Button>
+            )}
+            <Button
+              size="lg"
+              className={`btn-glow-${isClockedIn ? 'blue' : 'green'} ${
+                isClockedIn ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'
+              }`}
+              onClick={() => navigate('/scanner')}
+              data-testid="scan-qr-btn"
+            >
+              <QrCode className="w-5 h-5 mr-2" />
+              {isClockedIn ? t('clock_out') : t('clock_in')}
+            </Button>
+          </div>
         </motion.div>
 
         {/* Current status */}
@@ -183,11 +205,103 @@ export default function EmployeeDashboard() {
           ))}
         </div>
 
+        {/* Vacation & Absences Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Vacation Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card className="border-border/50 h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Palmtree className="w-5 h-5 text-emerald-400" />
+                  Férias / Vacation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-3xl font-bold font-mono text-emerald-400">
+                      {loading ? '--' : dashboardData?.vacation_days_remaining || 0}
+                    </p>
+                    <p className="text-sm text-muted-foreground">dias restantes / remaining</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-mono">
+                      {loading ? '--' : dashboardData?.vacation_days_used || 0} / {dashboardData?.vacation_days_total || 30}
+                    </p>
+                    <p className="text-sm text-muted-foreground">dias usados / used</p>
+                  </div>
+                </div>
+                <Progress value={vacationUsedPercent} className="h-2" />
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/vacation')}
+                  data-testid="request-vacation-btn"
+                >
+                  Solicitar Férias / Request Vacation
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Absences Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="border-border/50 h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                  Faltas & Ausências / Absences
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      <span className="text-sm text-muted-foreground">Faltas</span>
+                    </div>
+                    <p className="text-2xl font-bold font-mono text-red-400">
+                      {loading ? '--' : dashboardData?.absent_days || 0}
+                    </p>
+                    <p className="text-xs text-muted-foreground">este ano</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Stethoscope className="w-4 h-4 text-amber-400" />
+                      <span className="text-sm text-muted-foreground">Atestados</span>
+                    </div>
+                    <p className="text-2xl font-bold font-mono text-amber-400">
+                      {loading ? '--' : dashboardData?.sick_days || 0}
+                    </p>
+                    <p className="text-xs text-muted-foreground">este ano</p>
+                  </div>
+                </div>
+                {dashboardData?.pending_vacation_requests > 0 && (
+                  <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Solicitações pendentes</span>
+                      <Badge variant="secondary">{dashboardData.pending_vacation_requests}</Badge>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
         {/* Recent activity */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
         >
           <Card className="border-border/50">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -209,7 +323,7 @@ export default function EmployeeDashboard() {
                 </div>
               ) : dashboardData?.recent_records?.length > 0 ? (
                 <div className="space-y-3">
-                  {dashboardData.recent_records.slice(0, 5).map((record, index) => (
+                  {dashboardData.recent_records.slice(0, 5).map((record) => (
                     <div
                       key={record.id}
                       className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
