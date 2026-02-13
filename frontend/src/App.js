@@ -24,6 +24,7 @@ import SubscriptionPage from './pages/SubscriptionPage';
 import ReportsPage from './pages/ReportsPage';
 import OvertimeApprovalsPage from './pages/OvertimeApprovalsPage';
 import TimeBankPage from './pages/TimeBankPage';
+import SuperAdminPage from './pages/SuperAdminPage';
 import './App.css';
 
 // Protected Route Component
