@@ -93,7 +93,7 @@ class UserCreate(BaseModel):
     name: str
     password: str
     role: str = UserRole.EMPLOYEE
-    company_id: str
+    company_id: Optional[str] = None  # Optional for initial registration
     pin: Optional[str] = None
     language: str = "en"
     timezone: str = "UTC"
