@@ -185,10 +185,12 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] **Módulo de Relatórios** PDF e Excel detalhados
 - [x] **Banco de Horas** (saldo, transações, compensação)
 - [x] **Aprovação de Horas Extras** (HR/Gerente aprova, adiciona ao banco)
+- [x] **PWA (Progressive Web App)** - Instalável em mobile e desktop
+- [x] **Sistema de Email** (SendGrid) - Templates prontos para notificações
 
-### P1 - High Priority (Próximo)
-- [ ] Aplicativo Móvel (React Native ou PWA)
-- [ ] Notificações por email/push
+### P1 - High Priority (Opcional)
+- [ ] Push Notifications (Web Push API)
+- [ ] Biometria facial
 
 ### P2 - Medium Priority
 - [ ] API pública REST
