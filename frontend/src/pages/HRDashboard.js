@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 export default function HRDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddEmployee, setShowAddEmployee] = useState(false);
@@ -54,6 +55,7 @@ export default function HRDashboard() {
     home_lat: '',
     home_lng: '',
     location_radius: 100,
+    manager_id: '',
   });
 
   const { api, company } = useAuth();
@@ -68,6 +70,8 @@ export default function HRDashboard() {
       ]);
       setDashboardData(dashRes.data);
       setEmployees(empRes.data);
+      // Filter managers for the dropdown
+      setManagers(empRes.data.filter(e => e.role === 'manager'));
     } catch (error) {
       toast.error(t('error'));
     } finally {
