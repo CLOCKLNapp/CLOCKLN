@@ -98,6 +98,23 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] APIs: `/dashboard/manager`, `/manager/team`, `/managers`
 - [x] Campo "Gerente Responsável" ao adicionar funcionário
 
+### Phase 6 - Planos SaaS e Relatórios ✅ (2026-02-13)
+
+#### Planos SaaS com Stripe
+- [x] 3 planos: Free ($0, 5 funcionários), Pro ($29, 50), Business ($99, 500)
+- [x] Integração Stripe Checkout para pagamentos
+- [x] Página `/subscription` com cards de planos e botões de upgrade
+- [x] Polling de status de pagamento após checkout
+- [x] Histórico de transações em `payment_transactions`
+- [x] Campos no Company: `subscription_plan`, `subscription_status`, `max_employees`
+
+#### Relatórios PDF e Excel
+- [x] `/reports/attendance/pdf` - Relatório de ponto em PDF (reportlab)
+- [x] `/reports/attendance/excel` - Relatório de ponto em Excel (xlsxwriter)
+- [x] `/reports/employees/pdf` - Lista de funcionários em PDF
+- [x] Página `/reports` com seleção de período e botões de download
+- [x] Relatórios incluem: nome, data, entrada/saída, horas, método, fora do raio
+
 ---
 
 ## Modos de Trabalho
