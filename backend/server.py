@@ -1676,55 +1676,57 @@ async def check_payment_status(
         }
     
     # Check with Stripe
-    host_url = str(request.base_url)
-    webhook_url = f"{host_url}api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe.api_key = STRIPE_API_KEY
     
-    status = await stripe_checkout.get_checkout_status(session_id)
-    
-    # Update transaction
-    await db.payment_transactions.update_one(
-        {"session_id": session_id},
-        {"$set": {"payment_status": status.payment_status}}
-    )
-    
-    # If paid, update company subscription
-    if status.payment_status == 'paid':
-        plan = transaction['plan']
-        plan_details = SUBSCRIPTION_PLANS[plan]
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        payment_status = session.payment_status  # 'paid', 'unpaid', 'no_payment_required'
         
-        # Calculate subscription end date (1 month from now)
-        end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
-        
-        await db.companies.update_one(
-            {"id": transaction['company_id']},
-            {"$set": {
-                "subscription_plan": plan,
-                "subscription_status": "active",
-                "subscription_end_date": end_date,
-                "max_employees": plan_details['max_employees']
-            }}
+        # Update transaction
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": {"payment_status": payment_status}}
         )
         
-        return {
-            "status": "completed",
-            "payment_status": "paid",
-            "plan": plan,
-            "plan_name": plan_details['name'],
-            "message": f"Successfully upgraded to {plan_details['name']} plan!"
-        }
-    elif status.status == 'expired':
-        return {
-            "status": "expired",
-            "payment_status": status.payment_status,
-            "message": "Payment session expired. Please try again."
-        }
-    else:
-        return {
-            "status": "pending",
-            "payment_status": status.payment_status,
-            "message": "Payment is being processed..."
-        }
+        # If paid, update company subscription
+        if payment_status == 'paid':
+            plan = transaction['plan']
+            plan_details = SUBSCRIPTION_PLANS[plan]
+            
+            # Calculate subscription end date (1 month from now)
+            end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+            
+            await db.companies.update_one(
+                {"id": transaction['company_id']},
+                {"$set": {
+                    "subscription_plan": plan,
+                    "subscription_status": "active",
+                    "subscription_end_date": end_date,
+                    "max_employees": plan_details['max_employees']
+                }}
+            )
+            
+            return {
+                "status": "completed",
+                "payment_status": "paid",
+                "plan": plan,
+                "plan_name": plan_details['name'],
+                "message": f"Successfully upgraded to {plan_details['name']} plan!"
+            }
+        elif session.status == 'expired':
+            return {
+                "status": "expired",
+                "payment_status": payment_status,
+                "message": "Payment session expired. Please try again."
+            }
+        else:
+            return {
+                "status": "pending",
+                "payment_status": payment_status,
+                "message": "Payment is being processed..."
+            }
+    except stripe.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.get("/subscription/history")
 async def get_payment_history(current_user: dict = Depends(require_hr)):
