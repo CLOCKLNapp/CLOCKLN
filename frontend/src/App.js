@@ -6,9 +6,12 @@ import LoginPage from './pages/LoginPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import HRDashboard from './pages/HRDashboard';
 import TotemPage from './pages/TotemPage';
+import TotemSetupPage from './pages/TotemSetupPage';
 import ScannerPage from './pages/ScannerPage';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
+import VacationPage from './pages/VacationPage';
+import VacationRequestsPage from './pages/VacationRequestsPage';
 import './App.css';
 
 // Protected Route Component
@@ -72,7 +75,7 @@ function AppRoutes() {
         }
       />
 
-      {/* Protected routes */}
+      {/* Protected routes - All users */}
       <Route
         path="/dashboard"
         element={
@@ -106,6 +109,16 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/vacation"
+        element={
+          <ProtectedRoute>
+            <VacationPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected routes - HR only */}
+      <Route
         path="/totem"
         element={
           <ProtectedRoute requireHR>
@@ -114,7 +127,31 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/totem-setup"
+        element={
+          <ProtectedRoute requireHR>
+            <TotemSetupPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/employees"
+        element={
+          <ProtectedRoute requireHR>
+            <HRDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vacation-requests"
+        element={
+          <ProtectedRoute requireHR>
+            <VacationRequestsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/documents"
         element={
           <ProtectedRoute requireHR>
             <HRDashboard />
