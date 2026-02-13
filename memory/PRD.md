@@ -109,12 +109,11 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] Modo Quiosque
 - [x] 17 idiomas + RTL
 - [x] Exportação CSV
+- [x] **Mapa de Ponto Remoto para HR** (react-leaflet)
 
 ### P1 - High Priority (Próximo)
-- [ ] Notificações por email (SendGrid)
-- [ ] PWA para funcionamento offline
-- [ ] Relatórios PDF detalhados
-- [ ] Histórico de localizações de ponto remoto
+- [ ] Sistema de Notificações (RH envia → Funcionário recebe)
+- [ ] Papel "Gerente" com visualização da equipe
 
 ### P2 - Medium Priority
 - [ ] Planos SaaS (Free/Pro/Business)
