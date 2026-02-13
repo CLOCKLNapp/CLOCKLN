@@ -1598,44 +1598,54 @@ async def create_checkout_session(
     cancel_url = f"{data.origin_url}/subscription"
     
     # Initialize Stripe
-    host_url = str(request.base_url)
-    webhook_url = f"{host_url}api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe.api_key = STRIPE_API_KEY
     
-    # Create checkout session
-    checkout_request = CheckoutSessionRequest(
-        amount=float(plan['price']),
-        currency="usd",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={
-            "company_id": company_id,
-            "user_id": user_id,
-            "plan": data.plan
+    try:
+        # Create checkout session using Stripe SDK
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': f"CLOCKLN {plan['name']} Plan",
+                        'description': f"Monthly subscription to {plan['name']} plan"
+                    },
+                    'unit_amount': int(plan['price'] * 100),  # Stripe uses cents
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "company_id": company_id,
+                "user_id": user_id,
+                "plan": data.plan
+            }
+        )
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            company_id=company_id,
+            user_id=user_id,
+            plan=data.plan,
+            amount=plan['price'],
+            currency="usd",
+            session_id=session.id,
+            payment_status="pending",
+            metadata={"plan_name": plan['name']}
+        )
+        tx_dict = transaction.model_dump()
+        tx_dict['created_at'] = tx_dict['created_at'].isoformat()
+        await db.payment_transactions.insert_one(tx_dict)
+        
+        return {
+            "checkout_url": session.url,
+            "session_id": session.id
         }
-    )
-    
-    session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Create payment transaction record
-    transaction = PaymentTransaction(
-        company_id=company_id,
-        user_id=user_id,
-        plan=data.plan,
-        amount=plan['price'],
-        currency="usd",
-        session_id=session.session_id,
-        payment_status="pending",
-        metadata={"plan_name": plan['name']}
-    )
-    tx_dict = transaction.model_dump()
-    tx_dict['created_at'] = tx_dict['created_at'].isoformat()
-    await db.payment_transactions.insert_one(tx_dict)
-    
-    return {
-        "checkout_url": session.url,
-        "session_id": session.session_id
-    }
+    except stripe.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.get("/subscription/status/{session_id}")
 async def check_payment_status(
