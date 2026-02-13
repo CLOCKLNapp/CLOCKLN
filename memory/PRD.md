@@ -233,33 +233,31 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 
 ## ⚠️ ONDE PARAMOS - DEPLOY NA VERCEL
 
-### Status Atual
-O código foi enviado com sucesso para o GitHub (repositório `CLOCKLNapp/CLOCKLN`).
-Estamos no processo de deploy na Vercel, mas encontramos um erro de permissão.
+### Status Atual (Atualizado)
+O código foi enviado com sucesso para o GitHub e o repositório foi tornado **PÚBLICO**.
+Todas as configurações da Vercel estão prontas. Só falta fazer o **REDEPLOY**.
 
-### Erro Encontrado
-```
-"A solicitação de implantação não tinha um autor git com acesso de contribuição ao projeto no Vercel."
-```
+### Problemas Resolvidos ✅
+1. ✅ Repositório GitHub tornado público (resolveu erro de permissão)
+2. ✅ Comando de instalação configurado: `npm install --legacy-peer-deps` (resolveu conflito de dependências)
 
-### Próximos Passos para Continuar
-1. **Deletar o projeto atual na Vercel** (`aplicativo relógio`)
-   - Ir em Configurações > Em geral > Excluir projeto
-   
-2. **Criar um novo projeto na Vercel**
-   - Clicar em "Add New..." > "Project"
-   - Importar o repositório `CLOCKLNapp/CLOCKLN`
-   - **IMPORTANTE**: Configurar "Root Directory" como `frontend`
-   - Clicar em Deploy
+### Configurações Atuais na Vercel (Projeto: "aplicativo relógio")
+- ✅ Root Directory: `frontend`
+- ✅ Comando de Instalação: `npm install --legacy-peer-deps`
+- ✅ Repositório GitHub conectado: `CLOCKLNapp/CLOCKLN` (PÚBLICO)
 
-3. **Após deploy do frontend, configurar o backend**
-   - O backend pode ser hospedado em Railway, Render ou Heroku
-   - Configurar variáveis de ambiente (MONGO_URL, etc.)
+### 🔴 PRÓXIMO PASSO IMEDIATO
+**Fazer o REDEPLOY na Vercel:**
+1. Ir em vercel.com
+2. Abrir o projeto "aplicativo relógio"
+3. Clicar em "Implantações"
+4. Clicar em "Reimplante" (ou criar nova implantação com branch `main`)
+5. Aguardar o build completar
 
-### Configurações Já Feitas na Vercel
-- ✅ Root Directory configurado como `frontend`
-- ✅ Repositório GitHub conectado: `CLOCKLNapp/CLOCKLN`
-- ❌ Deploy ainda não realizado (erro de permissão)
+### Após deploy do frontend bem-sucedido
+- O backend precisa ser hospedado separadamente (Railway, Render ou Heroku)
+- Configurar variáveis de ambiente (MONGO_URL, etc.)
+- Configurar REACT_APP_BACKEND_URL no frontend da Vercel apontando para o backend
 
 ---
 
