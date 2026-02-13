@@ -576,6 +576,29 @@ export default function HRDashboard() {
                   </p>
                 </div>
               )}
+
+              {/* Manager Assignment (only for employees) */}
+              {newEmployee.role === 'employee' && managers.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Gerente Responsável (opcional)</Label>
+                  <Select
+                    value={newEmployee.manager_id}
+                    onValueChange={(value) => setNewEmployee({ ...newEmployee, manager_id: value })}
+                  >
+                    <SelectTrigger data-testid="new-employee-manager">
+                      <SelectValue placeholder="Sem gerente atribuído" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Sem gerente</SelectItem>
+                      {managers.map(manager => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          {manager.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowAddEmployee(false)}>
