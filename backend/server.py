@@ -656,7 +656,8 @@ async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(g
             "overtime_hours": round(overtime, 2),
             "message": "Remote clock out successful",
             "method": "geolocation",
-            "distance_from_home": int(distance)
+            "distance_from_home": int(distance),
+            "outside_radius": is_outside_radius
         }
     else:
         # Clock in
@@ -666,19 +667,24 @@ async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(g
             clock_in=now,
             date=today,
             clock_method="geolocation",
-            location={"lat": data.latitude, "lng": data.longitude}
+            location={"lat": data.latitude, "lng": data.longitude},
+            outside_radius=is_outside_radius,
+            distance_from_home=int(distance)
         )
         record_dict = record.model_dump()
         record_dict['clock_in'] = record_dict['clock_in'].isoformat()
         record_dict['created_at'] = record_dict['created_at'].isoformat()
         await db.clock_records.insert_one(record_dict)
         
+        warning_msg = " ⚠️ Fora do raio permitido!" if is_outside_radius else ""
+        
         return {
             "action": "clock_in",
             "time": now.isoformat(),
-            "message": "Remote clock in successful",
+            "message": f"Remote clock in successful{warning_msg}",
             "method": "geolocation",
-            "distance_from_home": int(distance)
+            "distance_from_home": int(distance),
+            "outside_radius": is_outside_radius
         }
 
 @api_router.get("/clock/status", response_model=dict)
