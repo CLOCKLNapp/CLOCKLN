@@ -178,6 +178,7 @@ class UpdateUser(BaseModel):
     work_mode: Optional[str] = None
     home_location: Optional[dict] = None
     location_radius_meters: Optional[int] = None
+    manager_id: Optional[str] = None
 
 # Phase 2 Models
 class Absence(BaseModel):
