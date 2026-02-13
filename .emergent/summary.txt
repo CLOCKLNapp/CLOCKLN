@@ -2,87 +2,157 @@
 Crie um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo. O sistema deve suportar diferentes tipos de usuários (Funcionário, RH, Gerente) com permissões específicas. As funcionalidades principais incluem registro de ponto automático (via totem com QR code/NFC e geolocalização para remotos), cálculo de horas, gestão de banco de horas, organização de documentos trabalhistas (atestados), geração de relatórios, e um sistema de notificações. O sistema deve ser multilíngue, seguro (multi-tenant, LGPD/DSGVO), e ter um design moderno e minimalista. O modelo de negócio é SaaS por assinatura com diferentes planos (Free, Pro, Business).
 
 **PRODUCT REQUIREMENTS have evolved to include:**
-- Check-in via QR code scan no totem.
-- Tema escuro para a interface.
-- Funcionários podem visualizar dias de férias e faltas.
-- Modo quiosque para os totens em tablets.
-- Upload de documentos para funcionários.
-- Clock-in remoto restrito por geolocalização para funcionários remoto ou híbrido.
-- Um mapa visual para o RH visualizar a localização dos clock-ins remotos.
-- Sistema de notificações para o RH e alertas automáticos (ponto fora do raio).
-- Papel de Gerente com visualização de equipe restrita e aprovações.
-- Planos de assinatura (SaaS) com integração Stripe.
-- Geração de relatórios em PDF/Excel.
-- Lógica avançada de banco de horas e aprovação de horas extras.
-- Funcionalidade de PWA (Progressive Web App) para uso mobile.
-- Notificações por email (via SendGrid).
+-   Check-in via QR code scan no totem.
+-   Tema escuro para a interface.
+-   Funcionários podem visualizar dias de férias e faltas.
+-   Modo quiosque para os totens em tablets.
+-   Upload de documentos para funcionários.
+-   Clock-in remoto restrito por geolocalização para funcionários remoto ou híbrido.
+-   Um mapa visual para o RH visualizar a localização dos clock-ins remotos.
+-   Sistema de notificações para o RH e alertas automáticos (ponto fora do raio).
+-   Papel de Gerente com visualização de equipe restrita e aprovações.
+-   Planos de assinatura (SaaS) com integração Stripe.
+-   Geração de relatórios em PDF/Excel.
+-   Lógica avançada de banco de horas e aprovação de horas extras.
+-   Funcionalidade de PWA (Progressive Web App) para uso mobile.
+-   Notificações por email (via SendGrid).
+-   **[NEW]** Um painel de Super Admin para conceder acesso ilimitado (VIP) a empresas específicas.
 
 **User's preferred language**:
 Português (Brasil). The next agent MUST respond in Portuguese (Brasil) only.
 
 **what currently exists?**
-Uma aplicação full-stack (React/FastAPI/MongoDB) rica em funcionalidades e quase completa. Todos os principais recursos, como autenticação baseada em papéis, clock-in por QR code e geolocalização, dashboards, relatórios e preparação para pagamentos com Stripe, estão implementados. O código do projeto foi salvo com sucesso no repositório GitHub do usuário. No entanto, a aplicação não está online porque o processo de deploy na Vercel está falhando repetidamente devido a erros de compilação (build).
+Uma aplicação full-stack (React/FastAPI/MongoDB). O frontend está totalmente funcional e foi **implantado com sucesso na Vercel**. Uma nova funcionalidade de Super Admin foi implementada, permitindo que um administrador master conceda acesso ilimitado a empresas, conforme solicitado pelo usuário. O agente estava no processo de implantar o backend na plataforma Railway, mas o processo está falhando devido a um erro de dependência durante a instalação (). O usuário foi guiado passo a passo para criar e configurar a conta no Railway.
 
 **Last working item**:
--   **Last item agent was working**: O agente estava em uma sessão de suporte intensivo, tentando diagnosticar e resolver uma série de erros de build que impedem o deploy do frontend na Vercel. A última tentativa de solução, adicionando a variável de ambiente , também falhou. O agente concluiu que o problema era mais profundo e estava prestes a realizar uma correção no código para resolver um conflito de dependências.
+-   **Last item agent was working**: Diagnosticar e resolver o erro de dependência do Python que está causando a falha no deploy do backend na plataforma Railway. A última ação do usuário foi compartilhar um screenshot do log de erro do .
 -   **Status**: BLOCKED
--   **Agent Testing Done**: N/A
--   **Which testing method agent to use?**: N/A
--   **User Testing Done**: N/A
+-   **Agent Testing Done**: N
+-   **Which testing method agent to use?**: O agente deve testar usando  para verificar os endpoints da API assim que o deploy no Railway for bem-sucedido.
+-   **User Testing Done**: N
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Falha no Deploy na Vercel (P0 - Bloqueador Crítico)
-    -   **Description**: O deploy do frontend na Vercel está falhando com um erro de resolução de dependências (Unknown command: "ERR!"
-
-To see a list of supported npm commands, run:
-  npm help). O log de erro (visto na mensagem 107) indica um conflito claro:  requer , mas outra dependência está forçando a instalação do .
-    -   **Attempted fixes**:
-        1.  Enviar o código para o repositório GitHub (que estava vazio). (Bem-sucedido)
-        2.  Tornar o repositório público para resolver problemas de permissão. (Bem-sucedido)
-        3.  Configurar o Root Directory na Vercel para . (Corrigido)
-        4.  Mudar o comando de instalação para . (Não resolveu)
-        5.  Alterar a versão do Node.js na Vercel para . (Não resolveu)
-        6.  Modificar  para usar  em vez de . (Não resolveu)
-        7.  Adicionar a variável de ambiente . (Não resolveu)
+-   **Issue 1**: Falha no Deploy do Backend no Railway (P0 - Bloqueador Crítico)
+    -   **Attempted fixes**: O diretório raiz do projeto no Railway foi configurado para .
     -   **Next debug checklist**:
-        1.  O problema é um conflito de dependências clássico. A solução mais direta é forçar a versão correta do .
-        2.  Edite o arquivo .
-        3.  Adicione a seção  para forçar a versão do  que o  requer.
-            
-        4.  Salve o arquivo  atualizado.
-        5.  Instrua o usuário a usar o botão **Save to GitHub** novamente para enviar a correção. A Vercel deve iniciar um novo deploy automaticamente.
-    -   **Why fix this issue and what will be achieved with the fix?**: Este é o único bloqueador que impede a aplicação de ficar online. Resolvê-lo permitirá que o usuário acesse e teste a aplicação em uma URL pública, concluindo a principal tarefa de suporte.
+        1.  Analisar o log de erro do  fornecido pelo usuário na mensagem 308 para identificar o pacote conflitante.
+        2.  Visualizar o arquivo .
+        3.  Corrigir o , provavelmente fixando a versão de uma ou mais dependências para resolver o conflito.
+        4.  Instruir o usuário a salvar a alteração no GitHub (Save to GitHub), o que irá acionar um novo deploy no Railway.
+    -   **Why fix this issue and what will be achieved with the fix?**: Este é o último passo para colocar toda a aplicação online. A correção permitirá que o frontend (na Vercel) se comunique com o backend (no Railway), tornando o CLOCKLN totalmente operacional em um ambiente de produção.
     -   **Status**: IN PROGRESS
-    -   **Is recurring issue?**: Y
-    -   **Should Test frontend/backend/both after fix?**: N/A (Verificar o status do deploy na Vercel)
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: backend
     -   **Blocked on other issue**: None
 
--   **Issue 2**: Configuração do Envio de Emails (P1)
-    -   **Description**: A funcionalidade de envio de emails com SendGrid está implementada, mas não funciona por falta da chave de API.
-    -   **Next debug checklist**: Após o deploy bem-sucedido, guiar o usuário para adicionar a  como uma variável de ambiente na Vercel para o serviço de backend (que ainda não foi configurado para deploy).
+-   **Issue 2**: Configurar Variáveis de Ambiente de Produção (P1)
+    -   **Description**: Após o deploy bem-sucedido do backend, será necessário conectar o frontend e o backend e configurar chaves de API.
+    -   **Next debug checklist**:
+        1.  Obter a URL pública do backend no Railway.
+        2.  Adicionar essa URL como a variável  nas configurações do projeto na Vercel e fazer um redeploy do frontend.
+        3.  Guiar o usuário para adicionar as variáveis  e  nas configurações do projeto no Railway.
     -   **Status**: NOT STARTED
-    -   **Blocked on other issue**: Issue 1: Falha no Deploy na Vercel
+    -   **Blocked on other issue**: Issue 1: Falha no Deploy do Backend no Railway
 
 **In progress Task List**:
--   **Task 1**: Guiar o usuário para colocar a aplicação online (P0)
-    -   **Where to resume**: O agente deve implementar a correção do conflito de dependências editando  para incluir a seção . Após a edição, o agente deve instruir o usuário a salvar as alterações no GitHub, o que acionará um novo build na Vercel.
-    -   **What will be achieved with this?**: A aplicação CLOCKLN estará finalmente online em uma URL pública.
+-   **Task 1**: Colocar o Backend Online (P0)
+    -   **Where to resume**: Analisar o erro do 
+Usage:   
+  pip <command> [options]
+
+Commands:
+  install                     Install packages.
+  lock                        Generate a lock file.
+  download                    Download packages.
+  uninstall                   Uninstall packages.
+  freeze                      Output installed packages in requirements format.
+  inspect                     Inspect the python environment.
+  list                        List installed packages.
+  show                        Show information about installed packages.
+  check                       Verify installed packages have compatible 
+dependencies.
+  config                      Manage local and global configuration.
+  search                      Search PyPI for packages.
+  cache                       Inspect and manage pip's wheel cache.
+  index                       Inspect information available from package 
+indexes.
+  wheel                       Build wheels from your requirements.
+  hash                        Compute hashes of package archives.
+  completion                  A helper command used for command completion.
+  debug                       Show information useful for debugging.
+  help                        Show help for commands.
+
+General Options:
+  -h, --help                  Show help.
+  --debug                     Let unhandled exceptions propagate outside the
+                              main subroutine, instead of logging them to
+                              stderr.
+  --isolated                  Run pip in an isolated mode, ignoring
+                              environment variables and user configuration.
+  --require-virtualenv        Allow pip to only run in a virtual environment;
+                              exit with an error otherwise.
+  --python <python>           Run pip with the specified Python interpreter.
+  -v, --verbose               Give more output. Option is additive, and can be
+                              used up to 3 times.
+  -V, --version               Show version and exit.
+  -q, --quiet                 Give less output. Option is additive, and can be
+                              used up to 3 times (corresponding to WARNING,
+                              ERROR, and CRITICAL logging levels).
+  --log <path>                Path to a verbose appending log.
+  --no-input                  Disable prompting for input.
+  --keyring-provider <keyring_provider>
+                              Enable the credential lookup via the keyring
+                              library if user input is allowed. Specify which
+                              mechanism to use [auto, disabled, import,
+                              subprocess]. (default: auto)
+  --proxy <proxy>             Specify a proxy in the form
+                              scheme://[user:passwd@]proxy.server:port.
+  --retries <retries>         Maximum attempts to establish a new HTTP
+                              connection. (default: 5)
+  --timeout <sec>             Set the socket timeout (default 15 seconds).
+  --exists-action <action>    Default action when a path already exists:
+                              (s)witch, (i)gnore, (w)ipe, (b)ackup, (a)bort.
+  --trusted-host <hostname>   Mark this host or host:port pair as trusted,
+                              even though it does not have valid or any HTTPS.
+  --cert <path>               Path to PEM-encoded CA certificate bundle. If
+                              provided, overrides the default. See 'SSL
+                              Certificate Verification' in pip documentation
+                              for more information.
+  --client-cert <path>        Path to SSL client certificate, a single file
+                              containing the private key and the certificate
+                              in PEM format.
+  --cache-dir <dir>           Store the cache data in <dir>.
+  --no-cache-dir              Disable the cache.
+  --disable-pip-version-check
+                              Don't periodically check PyPI to determine
+                              whether a new version of pip is available for
+                              download. Implied with --no-
+                              index.
+  --no-color                  Suppress colored output.
+  --use-feature <feature>     Enable new functionality, that may be backward
+                              incompatible.
+  --use-deprecated <feature>  Enable deprecated functionality, that will be
+                              removed in the future.
+  --resume-retries <resume_retries>
+                              Maximum attempts to resume or restart an
+                              incomplete download. (default: 5) e corrigir o arquivo .
+    -   **What will be achieved with this?**: A aplicação CLOCKLN estará 100% online e funcional.
     -   **Status**: IN PROGRESS
-    -   **Blocked on something**: O erro de build na Vercel.
+    -   **Blocked on something**: O erro de dependência no Railway.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **P0: Deploy do Backend**: O foco até agora foi no frontend. O backend também precisa ser implantado na Vercel (ou outra plataforma) como uma Serverless Function.
     -   **P1: Configuração do Webhook do Stripe**: Após o deploy, guiar o usuário para configurar o webhook do Stripe para processar pagamentos e ativar assinaturas.
+    -   **P2: Investigar Teste Instável do Frontend**: Um teste () foi mencionado em um handoff anterior e ainda não foi investigado.
 -   **Future Tasks**:
-    -   **P2: Desenvolvimento de Aplicativo Móvel Nativo**: Como uma evolução do PWA atual.
+    -   **P3: Desenvolvimento de Aplicativo Móvel Nativo**: Como uma evolução do PWA atual.
 
 **Completed work in this session**
--   Guiou o usuário para popular o repositório GitHub, que estava vazio.
--   Guiou o usuário para tornar o repositório público para resolver problemas de permissão com a Vercel.
--   Realizou múltiplas tentativas de configuração na Vercel (Root Directory, Node.js version, install command).
--   Modificou  para alterar o comando de build.
--   Diagnosticou o erro de build atual como um conflito de dependência com .
+-   **Deploy do Frontend na Vercel (RESOLVIDO)**: Corrigidos múltiplos e complexos erros de build, incluindo conflitos de dependência (), problemas com  vs. , e a remoção de todos os aliases de caminho () por caminhos relativos. A aplicação frontend está **online**.
+-   **Funcionalidade de Super Admin (CONCLUÍDA)**:
+    -   **Backend**: Criado um sistema de role , um campo  para empresas e novos endpoints () para gerenciar o acesso VIP.
+    -   **Frontend**: Criada uma nova página de painel de controle () visível apenas para o email do super admin.
+-   **Setup do Railway (INICIADO)**: O usuário foi guiado com sucesso na criação de uma conta Railway, conexão com o GitHub e início do processo de deploy do backend.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Flaky Frontend Test
@@ -100,77 +170,72 @@ To see a list of supported npm commands, run:
 
 **Key Technical Concepts**
 -   **Backend**: FastAPI, MongoDB (Pymongo), Pydantic, JWT.
--   **Frontend**: React, Tailwind CSS, Shadcn/UI, React Router, Axios, React Leaflet.
--   **Deployment**: Vercel.
+-   **Frontend**: React, Tailwind CSS, Shadcn/UI, React Router, Axios.
+-   **Deployment**: Vercel (para Frontend), Railway (para Backend).
 -   **Integrações**: Stripe, SendGrid, PWA.
 
 **key DB schema**
--   **Users**: , , , , , , , .
--   **ClockRecords**: , , , , , .
--   **Notifications**: , , , .
--   **OvertimeRequests**: , , , .
--   **TimeBankTransactions**: , , , .
--   **Subscriptions**: , , , .
+-   **Users**: , , ,  (inclui 'superadmin'), , , , .
+-   **Companies**: , , ,  (boolean).
+-   **ClockRecords**, **Notifications**, **OvertimeRequests**, **TimeBankTransactions**, **Subscriptions**.
 
 **changes in tech stack**
--   N/A
+-   O deploy do backend foi movido da Vercel (que não é ideal para Python) para a **Railway**.
 
 **All files of reference**
--   : **Arquivo mais crítico.** A causa do erro de deploy está aqui, e a solução () também deve ser aplicada aqui.
--   : Monólito do backend.
--   : Documentação do produto.
+-   : **Arquivo crítico.** A causa da falha atual no deploy está aqui.
+-   : Onde a lógica do Super Admin foi adicionada.
+-   : Nova página do painel de admin.
+-   : Foi atualizado com a nova funcionalidade.
 
 **Areas that need refactoring**:
--    é um grande monólito e deveria ser dividido em rotas, modelos e serviços para melhor manutenibilidade.
+-   O arquivo  continua sendo um monólito grande. A divisão em rotas, modelos e serviços seria benéfica a longo prazo.
 
 **key api endpoints**
--   
--   
--   
--   
+-   : (NOVO) Lista todas as empresas (requer role ).
+-   : (NOVO) Ativa/desativa o acesso VIP para uma empresa (requer role ).
 
 **Critical Info for New Agent**
--   **Prioridade Máxima**: A sua função é de **suporte técnico**. O usuário é não-técnico, está usando um celular e precisa de instruções passo a passo, simples e claras, em **Português (Brasil)**.
--   **Problema Central**: O deploy na Vercel está falhando devido a um conflito de dependências (). A sua próxima ação deve ser editar  para adicionar a seção  e resolver este conflito.
--   **Fluxo de Trabalho**: Após qualquer modificação no código, você deve instruir o usuário a clicar no botão **Save to GitHub**. A Vercel está configurada para deploy automático e tentará construir o projeto novamente.
--   **Paciência**: O usuário está em um ciclo de frustração com os erros. Mantenha um tom calmo, encorajador e direto ao ponto.
+-   **Prioridade Máxima**: Sua tarefa imediata é consertar o deploy do backend no **Railway**. O usuário é não-técnico, está frustrado após uma longa sessão e precisa de instruções claras, simples e em **Português (Brasil)**.
+-   **Problema Central**: O deploy no Railway está falhando no . Você deve analisar o log de erro, corrigir o  e instruir o usuário a salvar no GitHub para tentar novamente.
+-   **Contexto do Usuário**: O usuário está usando a plataforma pelo celular e depende de orientação passo a passo com base nos screenshots que ele envia. Mantenha um tom calmo e encorajador.
+-   **Pós-Deploy**: Assim que o backend estiver online no Railway, a próxima etapa crucial é configurar as variáveis de ambiente na Vercel e no Railway para que o frontend e o backend possam se comunicar.
 
 **documents and test reports created in this job**
 -   
--   Relatórios de teste em 
 
 **Last 10 User Messages and any pending HUMAN messages**
--   **User**: Deu erro outra vez - Enviando screenshot do último erro na Vercel. (PENDING AGENT RESPONSE)
--   **Agent**: O erro persiste com o . Vou fazer uma correção mais profunda no código. - A última mensagem do agente, prometendo uma solução no código.
--   **User**: Adicionou a variável de ambiente  e salvou.
--   **Agent**: Guiou o usuário para adicionar a variável  na Vercel.
--   **User**: Achei esse erro - Enviou o log de erro do .
--   **Agent**: Pediu para ver os logs do último erro.
--   **User**: Também deu erro - Informou que a nova implantação também falhou.
--   **Agent**: Confirmou que a implantação estava em andamento.
--   **User**: A dele deu erro então construí uma nova - O usuário criou uma nova implantação manual após a automática falhar.
--   **Agent**: Explicou que a Vercel fez um deploy automático após o push no GitHub.
+-   **User**: Compartilhou um screenshot da tela do Railway após selecionar o diretório .
+-   **Agent**: Confirmou a configuração e pediu para o usuário clicar em Deploy.
+-   **User**: Pronto.
+-   **Agent**: Pediu para o usuário aguardar e enviar o resultado.
+-   **User**: Ele não disse nada voltou para essa tela (screenshot).
+-   **Agent**: Pediu para o usuário verificar a aba Implantações.
+-   **User**: Enviou um screenshot da aba Implantações mostrando o erro. (PENDING AGENT RESPONSE).
+-   **Agent**: O erro é no - há um problema com as dependências. Deixe-me verificar e corrigir o arquivo de requisitos do backend. (Último pensamento do agente).
 
 **Project Health Check:**
--   **Broken**: O processo de deploy para produção está quebrado devido a um erro de build no frontend. O deploy do backend ainda não foi tentado.
--   **Mocked**: As integrações com SendGrid e Stripe estão no código, mas desativadas por falta de chaves de API e configuração de webhook.
+-   **Working**: Frontend (implantado na Vercel).
+-   **Broken**: Backend (deploy falhando no Railway).
+-   **Mocked**: Integrações com SendGrid e Stripe (requerem chaves de API e configuração de webhook em produção).
 
 **3rd Party Integrations**
--    / : Para mapas.
--   : Para geração de QR Code.
--    (para Stripe): Para pagamentos.
--   : Para emails.
--   : Para relatórios em PDF.
--   : Para relatórios em Excel.
+-    / 
+-   
+-    (para Stripe)
+-   
+-   
+-   
 
 **Testing status**
--   **Testing agent used after significant changes**: YES (em sessões anteriores)
+-   **Testing agent used after significant changes**: NO (nesta sessão)
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: N/A
 -   **Known regressions**: Um teste de frontend intermitente () foi relatado em um fork anterior e nunca foi investigado.
 
 **Credentials to test flow:**
--   N/A. O deploy está sendo feito na conta Vercel do próprio usuário.
+-   **Super Admin Email**: 
+-   **Super Admin Password**: 
 
 **What agent forgot to execute**
--   O agente não investigou o teste de frontend instável () mencionado no handoff inicial. O foco mudou para suporte ao deploy.</analysis>
+-   O agente não investigou o teste de frontend instável () mencionado no handoff inicial. O foco mudou completamente para suporte ao deploy e, em seguida, para a nova feature de Super Admin.</analysis>
