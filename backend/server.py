@@ -24,8 +24,8 @@ from sendgrid.helpers.mail import Mail, Email, To, Content
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', '')
+# MongoDB connection - accepts both MONGO_URL and URL_MONGO for Railway compatibility
+mongo_url = os.environ.get('MONGO_URL', '') or os.environ.get('URL_MONGO', '') or os.environ.get('MONGODB_URL', '')
 if not mongo_url:
     raise RuntimeError("MONGO_URL environment variable is required. Please configure it in Railway Variables.")
 client = AsyncIOMotorClient(mongo_url)
