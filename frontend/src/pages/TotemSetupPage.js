@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import { 
   Tv, Smartphone, Tablet, Monitor, Download,
   ArrowLeft, CheckCircle2, Copy, ExternalLink,
-  Wifi, Globe, Shield, Zap
+  Wifi, Globe, Shield, Zap, Lock, Apple, 
+  Chrome, Settings, Play, AlertTriangle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Alert, AlertDescription } from '../components/ui/alert';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { AppLayout } from '../components/AppLayout';
@@ -72,9 +74,9 @@ export default function TotemSetupPage() {
     },
     {
       number: 6,
-      title: 'Pronto!',
-      description: 'O totem está configurado e pronto para uso.',
-      icon: Zap,
+      title: 'Ative o Modo Quiosque',
+      description: 'Trave o dispositivo para usar apenas o CLOCKLN.',
+      icon: Lock,
     },
   ];
 
@@ -146,8 +148,9 @@ export default function TotemSetupPage() {
         </motion.div>
 
         <Tabs defaultValue="setup" className="space-y-6">
-          <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <TabsList className="grid grid-cols-4 w-full max-w-lg">
             <TabsTrigger value="setup">Instalação</TabsTrigger>
+            <TabsTrigger value="kiosk">Modo Quiosque</TabsTrigger>
             <TabsTrigger value="devices">Dispositivos</TabsTrigger>
             <TabsTrigger value="tips">Dicas</TabsTrigger>
           </TabsList>
@@ -184,6 +187,159 @@ export default function TotemSetupPage() {
                   </Card>
                 </motion.div>
               ))}
+            </motion.div>
+          </TabsContent>
+
+          {/* Kiosk Mode Tab */}
+          <TabsContent value="kiosk" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <Alert className="border-amber-500/30 bg-amber-500/10">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <AlertDescription className="text-amber-200">
+                  O Modo Quiosque trava o tablet para usar APENAS o CLOCKLN. 
+                  Funcionários não conseguirão acessar outras apps ou configurações.
+                </AlertDescription>
+              </Alert>
+
+              {/* iPad Kiosk */}
+              <Card className="border-border/50 mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Apple className="w-5 h-5" />
+                    iPad / iPhone - Acesso Guiado
+                  </CardTitle>
+                  <CardDescription>
+                    O "Acesso Guiado" do iOS trava o dispositivo em um único app
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-emerald-400">Configuração Inicial (uma vez)</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Vá em <span className="text-white">Ajustes → Acessibilidade → Acesso Guiado</span></li>
+                      <li>Ative o <span className="text-white">Acesso Guiado</span></li>
+                      <li>Toque em <span className="text-white">Ajustes de Código</span></li>
+                      <li>Defina um código (só RH deve saber)</li>
+                      <li>Ative <span className="text-white">Face ID / Touch ID</span> para mais segurança</li>
+                    </ol>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-primary">Como Ativar o Modo Quiosque</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Abra o Safari e acesse a URL do CLOCKLN</li>
+                      <li>Clique 3x no botão lateral (ou Home)</li>
+                      <li>Toque em <span className="text-white">Iniciar</span> no canto superior</li>
+                      <li>O iPad está travado no CLOCKLN!</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-red-400">Como Desativar (só RH)</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Clique 3x no botão lateral</li>
+                      <li>Digite o código ou use Face ID</li>
+                      <li>Toque em <span className="text-white">Encerrar</span> no canto superior</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Android Kiosk */}
+              <Card className="border-border/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="w-5 h-5 text-emerald-400" />
+                    Android - Fixação de Tela
+                  </CardTitle>
+                  <CardDescription>
+                    O Android permite "fixar" uma tela para impedir navegação
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-emerald-400">Configuração Inicial</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Vá em <span className="text-white">Configurações → Segurança → Fixação de tela</span></li>
+                      <li>Ative a <span className="text-white">Fixação de tela</span></li>
+                      <li>Ative <span className="text-white">"Solicitar PIN antes de desafixar"</span></li>
+                      <li>Defina um PIN de segurança</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-primary">Como Fixar o CLOCKLN</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Abra o Chrome e acesse a URL do CLOCKLN</li>
+                      <li>Toque no botão de <span className="text-white">Apps recentes</span> (quadrado)</li>
+                      <li>Toque no ícone do Chrome na parte superior</li>
+                      <li>Selecione <span className="text-white">"Fixar"</span></li>
+                      <li>A tela está travada!</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-red-400">Como Desafixar (só RH)</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Mantenha pressionado <span className="text-white">Voltar + Apps recentes</span> por 3 segundos</li>
+                      <li>Digite o PIN configurado</li>
+                    </ol>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Chrome Kiosk */}
+              <Card className="border-border/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Chrome className="w-5 h-5 text-blue-400" />
+                    Windows / Chromebook - Modo Quiosque
+                  </CardTitle>
+                  <CardDescription>
+                    Configure o Chrome para abrir apenas o CLOCKLN
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-emerald-400">Chrome em Modo Quiosque (Windows)</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Crie um atalho do Chrome na área de trabalho</li>
+                      <li>Clique com botão direito → Propriedades</li>
+                      <li>No campo "Destino", adicione ao final:
+                        <code className="block mt-1 p-2 bg-black/50 rounded text-xs">
+                          --kiosk {totemUrl}
+                        </code>
+                      </li>
+                      <li>Configure o Windows para iniciar automaticamente este atalho</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-muted/30 space-y-3">
+                    <h4 className="font-semibold text-primary">Chromebook - Modo Quiosque</h4>
+                    <ol className="text-sm text-muted-foreground space-y-2 ml-4 list-decimal">
+                      <li>Acesse <span className="text-white">admin.google.com</span> (Chrome Enterprise)</li>
+                      <li>Vá em Dispositivos → Chrome → Configurações</li>
+                      <li>Ative "Modo quiosque de sessão única"</li>
+                      <li>Configure a URL do CLOCKLN como página inicial</li>
+                    </ol>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <h4 className="font-semibold text-amber-400 mb-2">⚡ Dica Pro - Totem Dedicado</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Para totens dedicados, recomendamos usar software de quiosque como:
+                    </p>
+                    <ul className="text-sm text-muted-foreground mt-2 ml-4 list-disc">
+                      <li><span className="text-white">Fully Kiosk Browser</span> (Android) - Gratuito</li>
+                      <li><span className="text-white">Kiosk Pro</span> (iPad) - Pago</li>
+                      <li><span className="text-white">Chrome Kiosk Mode</span> (Windows) - Gratuito</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           </TabsContent>
 
@@ -250,57 +406,54 @@ export default function TotemSetupPage() {
             >
               <Card className="border-border/50">
                 <CardHeader>
-                  <CardTitle>Dicas de Instalação</CardTitle>
+                  <CardTitle>Dicas de Configuração</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 rounded-lg bg-muted/30">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-primary" />
-                      iPad / iPhone
+                      <Settings className="w-4 h-4 text-primary" />
+                      Configurações Recomendadas
                     </h4>
-                    <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
-                      <li>Abra o Safari e acesse a URL do totem</li>
-                      <li>Toque no botão "Compartilhar" (quadrado com seta)</li>
-                      <li>Selecione "Adicionar à Tela de Início"</li>
-                      <li>O CLOCKLN aparecerá como um app na tela inicial</li>
-                      <li>Ative o "Acesso Guiado" nas configurações para travar o app</li>
-                    </ol>
+                    <ul className="text-sm text-muted-foreground space-y-2 ml-6 list-disc">
+                      <li>Desative notificações do sistema</li>
+                      <li>Ative o modo "Não Perturbe"</li>
+                      <li>Configure brilho automático ou fixo em 70%</li>
+                      <li>Desative atualizações automáticas</li>
+                      <li>Conecte a uma fonte de energia permanente</li>
+                    </ul>
                   </div>
 
                   <div className="p-4 rounded-lg bg-muted/30">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Tablet className="w-4 h-4 text-primary" />
-                      Android Tablet
+                      <Shield className="w-4 h-4 text-primary" />
+                      Segurança
                     </h4>
-                    <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
-                      <li>Abra o Chrome e acesse a URL do totem</li>
-                      <li>Toque nos 3 pontos (menu) no canto superior</li>
-                      <li>Selecione "Adicionar à tela inicial"</li>
-                      <li>Use o modo "Fixação de tela" para travar o app</li>
-                      <li>Configurações → Segurança → Fixação de tela</li>
-                    </ol>
+                    <ul className="text-sm text-muted-foreground space-y-2 ml-6 list-disc">
+                      <li>Use o modo quiosque para evitar acesso a outras apps</li>
+                      <li>O PIN do modo quiosque deve ser diferente do PIN do CLOCKLN</li>
+                      <li>Apenas RH deve conhecer o PIN para desbloquear</li>
+                      <li>O QR Code expira a cada 30 segundos (segurança contra fotos)</li>
+                    </ul>
                   </div>
 
                   <div className="p-4 rounded-lg bg-muted/30">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Monitor className="w-4 h-4 text-primary" />
-                      Totem Dedicado / Kiosk
+                      <Zap className="w-4 h-4 text-primary" />
+                      Performance
                     </h4>
-                    <ol className="text-sm text-muted-foreground space-y-2 ml-6 list-decimal">
-                      <li>Configure o dispositivo em modo kiosk</li>
-                      <li>Defina a URL do totem como página inicial</li>
-                      <li>Desative barras de navegação</li>
-                      <li>Configure inicialização automática</li>
-                      <li>Conecte fonte de energia permanente</li>
-                    </ol>
+                    <ul className="text-sm text-muted-foreground space-y-2 ml-6 list-disc">
+                      <li>Use Wi-Fi 5GHz para menor latência</li>
+                      <li>Reinicie o dispositivo semanalmente</li>
+                      <li>Limpe o cache do navegador mensalmente</li>
+                      <li>Tablet de pelo menos 10" para melhor visibilidade</li>
+                    </ul>
                   </div>
 
-                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <h4 className="font-semibold mb-2 text-amber-400">⚡ Dica Pro</h4>
+                  <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                    <h4 className="font-semibold mb-2 text-primary">💡 Posicionamento Ideal</h4>
                     <p className="text-sm text-muted-foreground">
-                      Para empresas com muitos funcionários, recomendamos usar um tablet de pelo menos 10" 
-                      e posicionar em local de fácil acesso. O QR Code é renovado automaticamente a cada 30 segundos 
-                      para máxima segurança.
+                      Posicione o totem na entrada principal, em local de fácil acesso para todos os funcionários.
+                      Altura recomendada: 1,20m a 1,50m do chão. Evite luz solar direta na tela.
                     </p>
                   </div>
                 </CardContent>
