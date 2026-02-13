@@ -1,12 +1,13 @@
 # CLOCKLN - PRD (Product Requirements Document)
 
 ## Original Problem Statement
-Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inteligente Web App + Mobile para registro via QR Code em totens/tablets de qualquer modelo.
+Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inteligente para registro via QR Code em totens/tablets e geolocalização para funcionários remotos.
 
 ## User Personas
-1. **Funcionário**: Bate ponto via QR, visualiza horas/férias/faltas, envia documentos
-2. **RH/Admin**: Gerencia funcionários, aprova férias/documentos, configura totem
-3. **Gerente**: Visualiza equipe (futuro)
+1. **Funcionário Presencial**: Bate ponto via QR Code no totem da empresa
+2. **Funcionário Remoto**: Bate ponto via geolocalização de casa
+3. **Funcionário Híbrido**: Pode usar ambos os métodos
+4. **RH/Admin**: Gerencia funcionários, define modo de trabalho, configura totem
 
 ---
 
@@ -20,101 +21,111 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - 17 idiomas + RTL
 
 ### Phase 2 - Férias & Melhorias ✅
-- Sistema de férias (solicitar/aprovar)
+- Sistema de férias completo
 - Visualização de faltas/atestados
 - Eventos do Totem em tempo real
 - Exportação CSV
 
 ### Phase 3 - Documentos & Quiosque ✅
+- Modo Quiosque (iPad, Android, Windows)
+- Upload de documentos/atestados
+- Notificações internas
 
-#### Modo Quiosque (NOVO)
-- Instruções detalhadas para iPad (Acesso Guiado)
-- Instruções para Android (Fixação de tela)
-- Instruções para Windows/Chromebook
-- Dicas de software de quiosque (Fully Kiosk, Kiosk Pro)
-- Configurações de segurança e performance
+### Phase 4 - Geolocalização para Remotos ✅
 
-#### Upload de Documentos (NOVO)
-- Upload de atestados médicos (PDF, PNG, JPG)
-- Upload de justificativas de falta
-- Limite de 10MB por arquivo
-- Status: pendente/aprovado/rejeitado
-- Revisão pelo RH
+#### Backend
+- [x] Campo `work_mode` no usuário (onsite/hybrid/remote)
+- [x] Campo `home_location` (lat/lng) para localização cadastrada
+- [x] Campo `location_radius_meters` para raio permitido
+- [x] API `/clock/geolocation` com validação:
+  - Verifica se usuário é remote/hybrid
+  - Verifica se home_location está configurado
+  - Calcula distância usando fórmula Haversine
+  - Bloqueia se distância > raio permitido
 
-#### Notificações Internas (NOVO)
-- Notificações do RH para funcionários
-- Tipos: info, warning, success, error
-- Marcar como lido
-- Contador de não lidas no dashboard
+#### Frontend
+- [x] Página "Ponto Remoto" com:
+  - Solicitação de permissão de GPS
+  - Exibição da localização atual
+  - Botão de clock-in/out
+  - Feedback de distância
+- [x] Menu "Remoto" aparece APENAS para funcionários remote/hybrid
+- [x] Página de bloqueio para funcionários presenciais
+- [x] HR pode criar funcionários com modo de trabalho e localização
 
 ---
 
-## Como Instalar o Totem (ATUALIZADO)
+## Modos de Trabalho
 
-### Passo a Passo Básico
-1. Conecte tablet à internet
-2. Abra navegador (Chrome/Safari)
-3. Acesse: `https://seu-dominio.com/totem`
-4. Login com credenciais RH
-5. Ative tela cheia
+| Modo | QR Code (Totem) | Geolocalização |
+|------|-----------------|----------------|
+| **Presencial** | ✅ Obrigatório | ❌ Bloqueado |
+| **Híbrido** | ✅ Permitido | ✅ Permitido |
+| **Remoto** | ❌ Bloqueado | ✅ Obrigatório |
 
-### Modo Quiosque - TRAVA O TABLET
-
-**iPad (Acesso Guiado):**
-1. Ajustes → Acessibilidade → Acesso Guiado → ATIVAR
-2. Defina código PIN (só RH sabe)
-3. Abra CLOCKLN no Safari
-4. Clique 3x no botão lateral
-5. Toque "Iniciar" - TABLET TRAVADO!
-
-**Android (Fixação de Tela):**
-1. Configurações → Segurança → Fixação de tela → ATIVAR
-2. Ative "Solicitar PIN antes de desafixar"
-3. Abra CLOCKLN no Chrome
-4. Botão Apps Recentes → ícone Chrome → "Fixar"
-5. TABLET TRAVADO!
-
-**Windows/Chromebook:**
-- Chrome: `--kiosk https://url-do-totem`
-- Chromebook: Chrome Enterprise modo quiosque
+### Como Funciona o Ponto Remoto
+1. RH cadastra funcionário como "Remoto" ou "Híbrido"
+2. RH define coordenadas (lat/lng) do local de trabalho remoto
+3. RH define raio permitido (default: 100m)
+4. Funcionário abre página "Ponto Remoto" no celular
+5. Clica em "Obter Localização" (GPS)
+6. Se estiver dentro do raio → ponto registrado
+7. Se estiver fora do raio → mensagem de erro com distância
 
 ---
 
 ## Credenciais de Teste
 - **HR Admin**: admin@techcorp.com / admin123
-- **Funcionário**: joao@techcorp.com / joao123
+- **Presencial**: joao@techcorp.com / joao123
+- **Remoto**: carlos@techcorp.com / carlos123 (SP: -23.5505, -46.6333, 200m)
 
 ---
 
 ## Prioritized Backlog
 
 ### Concluído ✅
-- [x] Sistema de férias completo
-- [x] Sistema de faltas/atestados
-- [x] Modo quiosque documentado
+- [x] Sistema completo de ponto (QR + Geolocalização)
+- [x] Modos de trabalho (onsite/hybrid/remote)
+- [x] Sistema de férias e faltas
 - [x] Upload de documentos
-- [x] Notificações internas
+- [x] Modo Quiosque
+- [x] 17 idiomas + RTL
 - [x] Exportação CSV
 
 ### P1 - High Priority (Próximo)
-- [ ] Notificações por email (SendGrid/Resend)
-- [ ] PWA (Service Worker para offline)
-- [ ] Relatórios PDF
+- [ ] Notificações por email (SendGrid)
+- [ ] PWA para funcionamento offline
+- [ ] Relatórios PDF detalhados
+- [ ] Histórico de localizações de ponto remoto
 
 ### P2 - Medium Priority
 - [ ] Planos SaaS (Free/Pro/Business)
-- [ ] Aprovação de horas extras
 - [ ] Dashboard gerente
+- [ ] Aprovação de horas extras
 
 ### P3 - Low Priority
-- [ ] API pública
+- [ ] API pública REST
 - [ ] White-label
-- [ ] Biometria
+- [ ] Integração com folha de pagamento
 
 ---
 
-## Tech Stack
-- **Backend**: FastAPI v2.0.0, MongoDB
-- **Frontend**: React 19, Tailwind, Shadcn/UI
-- **Auth**: JWT + bcrypt
-- **i18n**: 17 idiomas, RTL support
+## Technical Architecture
+
+### Backend v2.0
+- FastAPI + MongoDB
+- JWT + bcrypt
+- Haversine formula para distância
+- Multi-tenant por company_id
+
+### Frontend
+- React 19 + Tailwind + Shadcn/UI
+- Geolocation API (HTML5)
+- Framer Motion animations
+- 17 idiomas customizados
+
+### Collections MongoDB
+- companies, users, clock_records
+- qr_codes, totem_events
+- absences, vacation_requests
+- documents, notifications
