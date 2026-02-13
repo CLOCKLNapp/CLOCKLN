@@ -753,6 +753,20 @@ async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(g
             }}
         )
         
+        # Auto-create overtime request if there are extra hours
+        if overtime > 0:
+            overtime_req = OvertimeRequest(
+                user_id=user_id,
+                company_id=company_id,
+                clock_record_id=open_record['id'],
+                date=today,
+                regular_hours=min(total_hours, daily_hours),
+                overtime_hours=round(overtime, 2)
+            )
+            req_dict = overtime_req.model_dump()
+            req_dict['requested_at'] = req_dict['requested_at'].isoformat()
+            await db.overtime_requests.insert_one(req_dict)
+        
         return {
             "action": "clock_out",
             "time": now.isoformat(),
@@ -761,7 +775,8 @@ async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(g
             "message": "Remote clock out successful",
             "method": "geolocation",
             "distance_from_home": int(distance),
-            "outside_radius": is_outside_radius
+            "outside_radius": is_outside_radius,
+            "overtime_request_created": overtime > 0
         }
     else:
         # Clock in
