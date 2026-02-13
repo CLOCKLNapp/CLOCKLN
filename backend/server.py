@@ -127,6 +127,7 @@ class UserResponse(BaseModel):
     work_mode: str = "onsite"
     home_location: Optional[dict] = None
     location_radius_meters: int = 100
+    manager_id: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
