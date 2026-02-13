@@ -41,6 +41,9 @@ SECRET_KEY = os.environ.get('JWT_SECRET', secrets.token_urlsafe(32))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
+# Super Admin - tem acesso total ao sistema
+SUPER_ADMIN_EMAIL = "michaelcaceres71@gmail.com"
+
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
