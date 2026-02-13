@@ -142,6 +142,8 @@ class ClockRecord(BaseModel):
     overtime_hours: float = 0
     date: str  # YYYY-MM-DD
     status: str = "present"  # present, absent, vacation, sick
+    clock_method: str = "qr"  # qr, geolocation
+    location: Optional[dict] = None  # {"lat": x, "lng": y} for geolocation clock-ins
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class QRCode(BaseModel):
@@ -154,6 +156,10 @@ class QRCode(BaseModel):
 
 class QRClockIn(BaseModel):
     qr_code: str
+
+class GeoClockIn(BaseModel):
+    latitude: float
+    longitude: float
 
 class UpdateUser(BaseModel):
     name: Optional[str] = None
