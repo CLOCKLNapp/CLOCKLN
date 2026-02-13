@@ -1745,42 +1745,55 @@ async def stripe_webhook(request: Request):
         body = await request.body()
         signature = request.headers.get("Stripe-Signature")
         
-        host_url = str(request.base_url)
-        webhook_url = f"{host_url}api/webhook/stripe"
-        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        stripe.api_key = STRIPE_API_KEY
+        webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
         
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        if webhook_secret and signature:
+            try:
+                event = stripe.Webhook.construct_event(
+                    body, signature, webhook_secret
+                )
+            except stripe.SignatureVerificationError:
+                raise HTTPException(status_code=400, detail="Invalid signature")
+        else:
+            # For testing without webhook secret
+            import json
+            event = json.loads(body)
         
-        if webhook_response.payment_status == 'paid':
-            session_id = webhook_response.session_id
+        # Handle checkout.session.completed event
+        if event.get('type') == 'checkout.session.completed':
+            session = event['data']['object']
+            session_id = session['id']
+            payment_status = session.get('payment_status', 'unpaid')
             
-            # Find transaction
-            transaction = await db.payment_transactions.find_one(
-                {"session_id": session_id},
-                {"_id": 0}
-            )
-            
-            if transaction and transaction['payment_status'] != 'paid':
-                plan = transaction['plan']
-                plan_details = SUBSCRIPTION_PLANS[plan]
-                end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
-                
-                # Update transaction
-                await db.payment_transactions.update_one(
+            if payment_status == 'paid':
+                # Find transaction
+                transaction = await db.payment_transactions.find_one(
                     {"session_id": session_id},
-                    {"$set": {"payment_status": "paid"}}
+                    {"_id": 0}
                 )
                 
-                # Update company
-                await db.companies.update_one(
-                    {"id": transaction['company_id']},
-                    {"$set": {
-                        "subscription_plan": plan,
-                        "subscription_status": "active",
-                        "subscription_end_date": end_date,
-                        "max_employees": plan_details['max_employees']
-                    }}
-                )
+                if transaction and transaction['payment_status'] != 'paid':
+                    plan = transaction['plan']
+                    plan_details = SUBSCRIPTION_PLANS[plan]
+                    end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+                    
+                    # Update transaction
+                    await db.payment_transactions.update_one(
+                        {"session_id": session_id},
+                        {"$set": {"payment_status": "paid"}}
+                    )
+                    
+                    # Update company
+                    await db.companies.update_one(
+                        {"id": transaction['company_id']},
+                        {"$set": {
+                            "subscription_plan": plan,
+                            "subscription_status": "active",
+                            "subscription_end_date": end_date,
+                            "max_employees": plan_details['max_employees']
+                        }}
+                    )
         
         return {"status": "ok"}
     except Exception as e:
