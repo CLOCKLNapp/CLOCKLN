@@ -151,3 +151,29 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - qr_codes, totem_events
 - absences, vacation_requests
 - documents, notifications
+
+---
+
+## Key Files Reference
+
+### Backend
+- `/app/backend/server.py` - Monólito FastAPI com todas as rotas e modelos
+
+### Frontend Pages
+- `/app/frontend/src/pages/LoginPage.js` - Login/Registro
+- `/app/frontend/src/pages/HRDashboard.js` - Dashboard do RH
+- `/app/frontend/src/pages/EmployeeDashboard.js` - Dashboard do funcionário
+- `/app/frontend/src/pages/RemoteClockPage.js` - Ponto remoto via GPS
+- `/app/frontend/src/pages/RemoteMapPage.js` - Mapa de pontos remotos (HR)
+- `/app/frontend/src/pages/TotemPage.js` - Modo totem com QR Code
+- `/app/frontend/src/pages/TotemSetupPage.js` - Configuração do Quiosque
+
+### Frontend Components
+- `/app/frontend/src/components/RemoteWorkersMap.js` - Componente Leaflet do mapa
+- `/app/frontend/src/components/AppLayout.js` - Layout padrão
+- `/app/frontend/src/context/AuthContext.js` - Contexto de autenticação
+- `/app/frontend/src/context/LanguageContext.js` - i18n com 17 idiomas
+
+### Tests
+- `/app/backend/tests/test_remote_map.py` - Testes do mapa de ponto remoto
+- `/app/test_reports/` - Relatórios de teste
