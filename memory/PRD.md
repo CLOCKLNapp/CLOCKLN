@@ -140,10 +140,12 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] **Sistema de Notificações** (RH envia → Funcionários recebem)
 - [x] **Alertas Automáticos** (ponto fora do raio → notifica HR)
 - [x] **Papel "Gerente"** (dashboard próprio, visualiza apenas sua equipe)
+- [x] **Planos SaaS** (Free/Pro/Business) com Stripe checkout
+- [x] **Módulo de Relatórios** PDF e Excel detalhados
 
 ### P1 - High Priority (Próximo)
-- [ ] Planos SaaS (Free/Pro/Business) com Stripe
-- [ ] Módulo de Relatórios PDF/Excel detalhados
+- [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
+- [ ] Aprovação de horas extras pelo gerente
 
 ### P2 - Medium Priority
 - [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
