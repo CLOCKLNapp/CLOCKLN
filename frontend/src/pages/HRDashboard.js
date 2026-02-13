@@ -221,6 +221,14 @@ export default function HRDashboard() {
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
+              onClick={() => navigate('/remote-map')}
+              data-testid="remote-map-btn"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Mapa Remotos
+            </Button>
+            <Button
+              variant="outline"
               onClick={handleExportCSV}
               data-testid="export-csv-btn"
             >
