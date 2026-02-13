@@ -15,6 +15,7 @@ import VacationRequestsPage from './pages/VacationRequestsPage';
 import DocumentsPage from './pages/DocumentsPage';
 import DocumentsReviewPage from './pages/DocumentsReviewPage';
 import NotificationsPage from './pages/NotificationsPage';
+import RemoteClockPage from './pages/RemoteClockPage';
 import './App.css';
 
 // Protected Route Component
@@ -132,6 +133,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/remote-clock"
+        element={
+          <ProtectedRoute>
+            <RemoteClockPage />
           </ProtectedRoute>
         }
       />
