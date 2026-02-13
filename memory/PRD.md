@@ -123,6 +123,12 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 ### P2 - Medium Priority
 - [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
 - [ ] Aprovação de horas extras pelo gerente
+
+### P3 - Low Priority
+- [ ] Aplicativo Móvel (React Native ou Flutter)
+- [ ] Notificações por email (SendGrid)
+- [ ] PWA para funcionamento offline
+- [ ] API pública REST
 - [ ] White-label
 - [ ] Integração com folha de pagamento
 
