@@ -1175,7 +1175,10 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(requir
         language=user_data.language,
         timezone=user_data.timezone,
         vacation_days_total=user_data.vacation_days_total or vacation_days,
-        hire_date=user_data.hire_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        hire_date=user_data.hire_date or datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        work_mode=user_data.work_mode,
+        home_location=user_data.home_location,
+        location_radius_meters=user_data.location_radius_meters
     )
     
     user_dict = user_obj.model_dump()
