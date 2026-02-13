@@ -891,6 +891,66 @@ async def mark_notification_read(notif_id: str, current_user: dict = Depends(get
     )
     return {"message": "Marked as read"}
 
+@api_router.get("/notifications/all", response_model=List[dict])
+async def get_all_notifications(current_user: dict = Depends(require_hr)):
+    """Get all notifications for the company (HR only)"""
+    company_id = current_user['company_id']
+    
+    notifications = await db.notifications.find({
+        "company_id": company_id
+    }, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with user names
+    for notif in notifications:
+        if notif.get('user_id'):
+            user = await db.users.find_one({"id": notif['user_id']}, {"_id": 0, "name": 1})
+            if user:
+                notif['recipient_name'] = user.get('name', 'Unknown')
+        else:
+            notif['recipient_name'] = 'Todos'
+    
+    return notifications
+
+@api_router.get("/notifications/alerts", response_model=List[dict])
+async def get_location_alerts(current_user: dict = Depends(require_hr)):
+    """Get location-related alerts (HR only)"""
+    company_id = current_user['company_id']
+    
+    alerts = await db.notifications.find({
+        "company_id": company_id,
+        "type": "warning",
+        "created_by": "system"
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    return alerts
+
+@api_router.delete("/notifications/{notif_id}")
+async def delete_notification(notif_id: str, current_user: dict = Depends(require_hr)):
+    """Delete a notification (HR only)"""
+    result = await db.notifications.delete_one({
+        "id": notif_id,
+        "company_id": current_user['company_id']
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Notification not found")
+    return {"message": "Notification deleted"}
+
+@api_router.post("/notifications/mark-all-read")
+async def mark_all_notifications_read(current_user: dict = Depends(get_current_user)):
+    """Mark all notifications as read for current user"""
+    company_id = current_user['company_id']
+    user_id = current_user['id']
+    
+    await db.notifications.update_many(
+        {
+            "company_id": company_id,
+            "$or": [{"user_id": user_id}, {"user_id": None}],
+            "read": False
+        },
+        {"$set": {"read": True}}
+    )
+    return {"message": "All notifications marked as read"}
+
 # ============== DOCUMENTS ROUTES ==============
 
 @api_router.post("/documents/upload", response_model=dict)
