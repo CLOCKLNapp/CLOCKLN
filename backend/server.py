@@ -308,6 +308,20 @@ async def require_hr(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="HR or Manager access required")
     return current_user
 
+async def require_hr_only(current_user: dict = Depends(get_current_user)):
+    """Require HR role only (not manager)"""
+    if current_user.get("role") != UserRole.HR:
+        raise HTTPException(status_code=403, detail="HR access required")
+    return current_user
+
+async def get_managed_users(manager_id: str, company_id: str) -> List[str]:
+    """Get list of user IDs managed by a manager"""
+    users = await db.users.find({
+        "company_id": company_id,
+        "manager_id": manager_id
+    }, {"_id": 0, "id": 1}).to_list(500)
+    return [u['id'] for u in users]
+
 def calculate_work_days(start_date: str, end_date: str) -> int:
     """Calculate number of work days between two dates (excluding weekends)"""
     start = datetime.strptime(start_date, "%Y-%m-%d")
