@@ -2671,6 +2671,121 @@ async def update_pin(pin: str, current_user: dict = Depends(get_current_user)):
     await db.users.update_one({"id": current_user['id']}, {"$set": {"pin_hash": pin_hash}})
     return {"message": "PIN updated successfully"}
 
+# ============== SUPER ADMIN ROUTES ==============
+
+@api_router.get("/admin/check")
+async def check_admin_status(current_user: dict = Depends(get_current_user)):
+    """Check if current user is super admin"""
+    return {
+        "is_superadmin": is_superadmin(current_user),
+        "email": current_user.get("email")
+    }
+
+@api_router.get("/admin/companies")
+async def get_all_companies(current_user: dict = Depends(require_superadmin)):
+    """Get all companies (Super Admin only)"""
+    companies = await db.companies.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Add employee count for each company
+    for company in companies:
+        count = await db.users.count_documents({"company_id": company['id'], "is_active": True})
+        company['employee_count'] = count
+    
+    return companies
+
+@api_router.get("/admin/companies/{company_id}")
+async def get_company_details(company_id: str, current_user: dict = Depends(require_superadmin)):
+    """Get company details (Super Admin only)"""
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # Get employees
+    employees = await db.users.find(
+        {"company_id": company_id},
+        {"_id": 0, "password_hash": 0, "pin_hash": 0}
+    ).to_list(500)
+    
+    # Get stats
+    total_records = await db.clock_records.count_documents({"company_id": company_id})
+    
+    return {
+        "company": company,
+        "employees": employees,
+        "stats": {
+            "total_employees": len(employees),
+            "active_employees": len([e for e in employees if e.get('is_active', True)]),
+            "total_clock_records": total_records
+        }
+    }
+
+@api_router.patch("/admin/companies/{company_id}/exempt")
+async def toggle_company_exempt(company_id: str, is_exempt: bool, current_user: dict = Depends(require_superadmin)):
+    """Toggle company exempt status - gives unlimited access (Super Admin only)"""
+    result = await db.companies.update_one(
+        {"id": company_id},
+        {"$set": {
+            "is_exempt": is_exempt,
+            "subscription_plan": "business" if is_exempt else "free",
+            "max_employees": 9999 if is_exempt else 5
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    return {
+        "message": f"Company {'now has unlimited access' if is_exempt else 'returned to normal plan'}",
+        "company": company
+    }
+
+@api_router.delete("/admin/companies/{company_id}")
+async def delete_company(company_id: str, current_user: dict = Depends(require_superadmin)):
+    """Delete a company and all its data (Super Admin only)"""
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # Delete all related data
+    await db.users.delete_many({"company_id": company_id})
+    await db.clock_records.delete_many({"company_id": company_id})
+    await db.notifications.delete_many({"company_id": company_id})
+    await db.documents.delete_many({"company_id": company_id})
+    await db.vacation_requests.delete_many({"company_id": company_id})
+    await db.absences.delete_many({"company_id": company_id})
+    await db.overtime_requests.delete_many({"company_id": company_id})
+    await db.time_banks.delete_many({"company_id": company_id})
+    await db.time_bank_transactions.delete_many({"company_id": company_id})
+    await db.companies.delete_one({"id": company_id})
+    
+    return {"message": f"Company '{company.get('name')}' and all data deleted"}
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(current_user: dict = Depends(require_superadmin)):
+    """Get global system stats (Super Admin only)"""
+    total_companies = await db.companies.count_documents({})
+    total_users = await db.users.count_documents({})
+    total_records = await db.clock_records.count_documents({})
+    exempt_companies = await db.companies.count_documents({"is_exempt": True})
+    
+    # Companies by plan
+    free_count = await db.companies.count_documents({"subscription_plan": "free", "is_exempt": {"$ne": True}})
+    pro_count = await db.companies.count_documents({"subscription_plan": "pro", "is_exempt": {"$ne": True}})
+    business_count = await db.companies.count_documents({"subscription_plan": "business", "is_exempt": {"$ne": True}})
+    
+    return {
+        "total_companies": total_companies,
+        "total_users": total_users,
+        "total_clock_records": total_records,
+        "exempt_companies": exempt_companies,
+        "by_plan": {
+            "free": free_count,
+            "pro": pro_count,
+            "business": business_count
+        }
+    }
+
 # ============== HEALTH CHECK ==============
 
 @api_router.get("/health")
