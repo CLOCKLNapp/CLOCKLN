@@ -73,6 +73,31 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] Lista de registros recentes com distância
 - [x] Botão "Mapa Remotos" no dashboard HR
 
+### Phase 5 - Notificações e Gerentes ✅ (2026-02-13)
+
+#### Sistema de Notificações
+- [x] API `/notifications` - CRUD completo de notificações
+- [x] HR pode enviar para todos ou funcionário específico
+- [x] 4 tipos: info, success, warning, error
+- [x] Página `/send-notification` com formulário e histórico
+- [x] Botão "Notificações" no dashboard HR
+
+#### Alertas Automáticos de Localização
+- [x] Quando funcionário bate ponto FORA do raio permitido:
+  - Ponto é registrado normalmente
+  - Alerta tipo "warning" é criado automaticamente
+  - HR vê o alerta em `/notifications/alerts`
+- [x] Registro inclui `outside_radius: true` e `distance_from_home`
+
+#### Papel de Gerente
+- [x] Novo role: `manager`
+- [x] Campo `manager_id` nos usuários para atribuição
+- [x] Dashboard exclusivo do gerente (`/dashboard`)
+  - Mostra APENAS funcionários da sua equipe
+  - Stats: Minha Equipe, Ponto Hoje, Horas Extras
+- [x] APIs: `/dashboard/manager`, `/manager/team`, `/managers`
+- [x] Campo "Gerente Responsável" ao adicionar funcionário
+
 ---
 
 ## Modos de Trabalho
