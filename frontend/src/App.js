@@ -19,6 +19,8 @@ import NotificationsPage from './pages/NotificationsPage';
 import SendNotificationPage from './pages/SendNotificationPage';
 import RemoteClockPage from './pages/RemoteClockPage';
 import RemoteMapPage from './pages/RemoteMapPage';
+import SubscriptionPage from './pages/SubscriptionPage';
+import ReportsPage from './pages/ReportsPage';
 import './App.css';
 
 // Protected Route Component
