@@ -64,6 +64,11 @@ class CompanyCreate(BaseModel):
     weekly_hours: int = 40
     vacation_days_per_year: int = 30
 
+class WorkMode:
+    ONSITE = "onsite"  # Presencial - só pode bater ponto no totem
+    REMOTE = "remote"  # Remoto - pode bater ponto por geolocalização
+    HYBRID = "hybrid"  # Híbrido - pode usar ambos
+
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -78,6 +83,9 @@ class User(BaseModel):
     vacation_days_total: int = 30  # Total vacation days entitled
     vacation_days_used: int = 0    # Vacation days already used
     hire_date: Optional[str] = None  # YYYY-MM-DD
+    work_mode: str = WorkMode.ONSITE  # onsite, remote, hybrid
+    home_location: Optional[dict] = None  # {"lat": x, "lng": y} for remote workers
+    location_radius_meters: int = 100  # Allowed radius from home location
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserCreate(BaseModel):
@@ -91,6 +99,9 @@ class UserCreate(BaseModel):
     timezone: str = "UTC"
     vacation_days_total: int = 30
     hire_date: Optional[str] = None
+    work_mode: str = WorkMode.ONSITE
+    home_location: Optional[dict] = None
+    location_radius_meters: int = 100
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -111,6 +122,9 @@ class UserResponse(BaseModel):
     is_active: bool
     vacation_days_total: int = 30
     vacation_days_used: int = 0
+    work_mode: str = "onsite"
+    home_location: Optional[dict] = None
+    location_radius_meters: int = 100
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -150,6 +164,9 @@ class UpdateUser(BaseModel):
     is_active: Optional[bool] = None
     vacation_days_total: Optional[int] = None
     vacation_days_used: Optional[int] = None
+    work_mode: Optional[str] = None
+    home_location: Optional[dict] = None
+    location_radius_meters: Optional[int] = None
 
 # Phase 2 Models
 class Absence(BaseModel):
