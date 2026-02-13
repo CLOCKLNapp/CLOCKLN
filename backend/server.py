@@ -76,6 +76,7 @@ class Company(BaseModel):
     subscription_status: str = "active"  # active, cancelled, expired
     subscription_end_date: Optional[str] = None  # YYYY-MM-DD
     max_employees: int = 5  # Limit based on plan
+    is_exempt: bool = False  # Se True, acesso ilimitado sem pagamento
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CompanyCreate(BaseModel):
