@@ -159,22 +159,22 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] **Papel "Gerente"** (dashboard próprio, visualiza apenas sua equipe)
 - [x] **Planos SaaS** (Free/Pro/Business) com Stripe checkout
 - [x] **Módulo de Relatórios** PDF e Excel detalhados
+- [x] **Banco de Horas** (saldo, transações, compensação)
+- [x] **Aprovação de Horas Extras** (HR/Gerente aprova, adiciona ao banco)
 
 ### P1 - High Priority (Próximo)
-- [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
-- [ ] Aprovação de horas extras pelo gerente
+- [ ] Aplicativo Móvel (React Native ou PWA)
+- [ ] Notificações por email/push
 
 ### P2 - Medium Priority
-- [ ] Lógica avançada de cálculo de horas (extras, banco de horas)
-- [ ] Aprovação de horas extras pelo gerente
-
-### P3 - Low Priority
-- [ ] Aplicativo Móvel (React Native ou Flutter)
-- [ ] Notificações por email (SendGrid)
-- [ ] PWA para funcionamento offline
 - [ ] API pública REST
 - [ ] White-label
 - [ ] Integração com folha de pagamento
+
+### P3 - Low Priority
+- [ ] Biometria facial
+- [ ] Integração com calendário (Google Calendar)
+- [ ] Chatbot para dúvidas
 
 ---
 
