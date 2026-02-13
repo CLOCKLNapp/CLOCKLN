@@ -230,6 +230,22 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/overtime-approvals"
+        element={
+          <ProtectedRoute requireHR>
+            <OvertimeApprovalsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/timebank"
+        element={
+          <ProtectedRoute>
+            <TimeBankPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
