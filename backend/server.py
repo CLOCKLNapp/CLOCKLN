@@ -2339,6 +2339,198 @@ async def use_timebank_hours(
         "new_balance": new_balance
     }
 
+# ============== EMAIL SERVICE ==============
+
+async def send_email_async(to_email: str, subject: str, html_content: str):
+    """Send email via SendGrid"""
+    if not SENDGRID_API_KEY:
+        logger.warning("SendGrid API key not configured, skipping email")
+        return False
+    
+    try:
+        message = Mail(
+            from_email=Email(SENDER_EMAIL, "CLOCKLN"),
+            to_emails=To(to_email),
+            subject=subject,
+            html_content=Content("text/html", html_content)
+        )
+        
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        logger.info(f"Email sent to {to_email}, status: {response.status_code}")
+        return response.status_code == 202
+    except Exception as e:
+        logger.error(f"Failed to send email to {to_email}: {str(e)}")
+        return False
+
+def get_email_template(template_type: str, data: dict) -> tuple:
+    """Get email subject and HTML content based on template type"""
+    
+    templates = {
+        "overtime_approved": {
+            "subject": "✅ Horas Extras Aprovadas - CLOCKLN",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #333;">
+                    <h1 style="color: #3b82f6; margin: 0;">CLOCKLN</h1>
+                </div>
+                <div style="padding: 30px 0;">
+                    <h2 style="color: #10b981;">Horas Extras Aprovadas!</h2>
+                    <p>Olá <strong>{data.get('user_name', 'Funcionário')}</strong>,</p>
+                    <p>Suas horas extras foram aprovadas e adicionadas ao seu banco de horas.</p>
+                    <div style="background: #2d2d44; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Data:</strong> {data.get('date', 'N/A')}</p>
+                        <p><strong>Horas extras:</strong> {data.get('overtime_hours', 0):.1f}h</p>
+                        <p><strong>Aprovado por:</strong> {data.get('approver_name', 'RH')}</p>
+                    </div>
+                    <p>Acesse o app para ver seu saldo atualizado no banco de horas.</p>
+                </div>
+                <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; color: #666;">
+                    <p>© 2026 CLOCKLN - Controle de Ponto Inteligente</p>
+                </div>
+            </div>
+            """
+        },
+        "overtime_rejected": {
+            "subject": "❌ Horas Extras Rejeitadas - CLOCKLN",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #333;">
+                    <h1 style="color: #3b82f6; margin: 0;">CLOCKLN</h1>
+                </div>
+                <div style="padding: 30px 0;">
+                    <h2 style="color: #ef4444;">Horas Extras Rejeitadas</h2>
+                    <p>Olá <strong>{data.get('user_name', 'Funcionário')}</strong>,</p>
+                    <p>Infelizmente, sua solicitação de horas extras foi rejeitada.</p>
+                    <div style="background: #2d2d44; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Data:</strong> {data.get('date', 'N/A')}</p>
+                        <p><strong>Horas solicitadas:</strong> {data.get('overtime_hours', 0):.1f}h</p>
+                        <p><strong>Motivo:</strong> {data.get('notes', 'Não especificado')}</p>
+                    </div>
+                    <p>Em caso de dúvidas, entre em contato com o RH.</p>
+                </div>
+                <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; color: #666;">
+                    <p>© 2026 CLOCKLN - Controle de Ponto Inteligente</p>
+                </div>
+            </div>
+            """
+        },
+        "location_alert": {
+            "subject": "⚠️ Alerta de Localização - CLOCKLN",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #333;">
+                    <h1 style="color: #3b82f6; margin: 0;">CLOCKLN</h1>
+                </div>
+                <div style="padding: 30px 0;">
+                    <h2 style="color: #f59e0b;">⚠️ Alerta de Localização</h2>
+                    <p>Um funcionário registrou ponto fora do raio permitido.</p>
+                    <div style="background: #2d2d44; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Funcionário:</strong> {data.get('user_name', 'N/A')}</p>
+                        <p><strong>Data/Hora:</strong> {data.get('datetime', 'N/A')}</p>
+                        <p><strong>Distância:</strong> {data.get('distance', 0)}m do local cadastrado</p>
+                        <p><strong>Limite permitido:</strong> {data.get('limit', 100)}m</p>
+                    </div>
+                    <p>Acesse o mapa de pontos remotos para mais detalhes.</p>
+                </div>
+                <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; color: #666;">
+                    <p>© 2026 CLOCKLN - Controle de Ponto Inteligente</p>
+                </div>
+            </div>
+            """
+        },
+        "notification": {
+            "subject": f"📢 {data.get('title', 'Notificação')} - CLOCKLN",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #333;">
+                    <h1 style="color: #3b82f6; margin: 0;">CLOCKLN</h1>
+                </div>
+                <div style="padding: 30px 0;">
+                    <h2 style="color: #3b82f6;">{data.get('title', 'Notificação')}</h2>
+                    <p>Olá <strong>{data.get('user_name', 'Funcionário')}</strong>,</p>
+                    <div style="background: #2d2d44; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p>{data.get('message', '')}</p>
+                    </div>
+                    <p>Acesse o app para mais detalhes.</p>
+                </div>
+                <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; color: #666;">
+                    <p>© 2026 CLOCKLN - Controle de Ponto Inteligente</p>
+                </div>
+            </div>
+            """
+        },
+        "welcome": {
+            "subject": "🎉 Bem-vindo ao CLOCKLN!",
+            "html": f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #fff;">
+                <div style="text-align: center; padding: 20px 0; border-bottom: 1px solid #333;">
+                    <h1 style="color: #3b82f6; margin: 0;">CLOCKLN</h1>
+                </div>
+                <div style="padding: 30px 0;">
+                    <h2 style="color: #10b981;">Bem-vindo ao CLOCKLN!</h2>
+                    <p>Olá <strong>{data.get('user_name', 'Funcionário')}</strong>,</p>
+                    <p>Sua conta foi criada com sucesso na empresa <strong>{data.get('company_name', '')}</strong>.</p>
+                    <div style="background: #2d2d44; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p><strong>Email:</strong> {data.get('email', '')}</p>
+                        <p><strong>Modo de trabalho:</strong> {data.get('work_mode', 'Presencial')}</p>
+                    </div>
+                    <p>Acesse o app para começar a registrar seu ponto.</p>
+                </div>
+                <div style="text-align: center; padding: 20px 0; border-top: 1px solid #333; color: #666;">
+                    <p>© 2026 CLOCKLN - Controle de Ponto Inteligente</p>
+                </div>
+            </div>
+            """
+        }
+    }
+    
+    template = templates.get(template_type, templates['notification'])
+    return template['subject'], template['html']
+
+class EmailRequest(BaseModel):
+    to_email: EmailStr
+    template_type: str
+    data: dict = {}
+
+@api_router.post("/email/send")
+async def send_email_endpoint(
+    request: EmailRequest,
+    background_tasks: BackgroundTasks,
+    current_user: dict = Depends(require_hr)
+):
+    """Send email using template (HR only)"""
+    subject, html = get_email_template(request.template_type, request.data)
+    background_tasks.add_task(send_email_async, request.to_email, subject, html)
+    return {"message": "Email queued for delivery"}
+
+@api_router.get("/email/test")
+async def test_email(
+    to_email: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Test email delivery (HR only)"""
+    subject, html = get_email_template("notification", {
+        "title": "Teste de Email",
+        "user_name": current_user['name'],
+        "message": "Este é um email de teste do sistema CLOCKLN. Se você recebeu este email, a configuração está funcionando corretamente!"
+    })
+    
+    success = await send_email_async(to_email, subject, html)
+    
+    if success:
+        return {"message": "Test email sent successfully"}
+    else:
+        return {"message": "Email sending failed or not configured", "configured": bool(SENDGRID_API_KEY)}
+
+@api_router.get("/email/config")
+async def get_email_config(current_user: dict = Depends(require_hr)):
+    """Check email configuration status (HR only)"""
+    return {
+        "configured": bool(SENDGRID_API_KEY),
+        "sender_email": SENDER_EMAIL if SENDGRID_API_KEY else None
+    }
+
 # ============== USER MANAGEMENT ROUTES ==============
 
 @api_router.post("/users", response_model=UserResponse)
