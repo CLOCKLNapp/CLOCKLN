@@ -46,7 +46,12 @@ function ProtectedRoute({ children, requireHR = false }) {
 
 // Dashboard Router - redirects based on role
 function DashboardRouter() {
-  const { isHR } = useAuth();
+  const { user, isHR } = useAuth();
+  
+  if (user?.role === 'manager') {
+    return <ManagerDashboard />;
+  }
+  
   return isHR ? <HRDashboard /> : <EmployeeDashboard />;
 }
 
