@@ -71,6 +71,44 @@ class CompanyCreate(BaseModel):
     default_language: str = "en"
     weekly_hours: int = 40
     vacation_days_per_year: int = 30
+    daily_work_hours: float = 8.0  # Hours per day
+
+class OvertimeRequest(BaseModel):
+    """Request for overtime approval"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    clock_record_id: str
+    date: str  # YYYY-MM-DD
+    regular_hours: float
+    overtime_hours: float
+    status: str = "pending"  # pending, approved, rejected
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class TimeBank(BaseModel):
+    """Time bank balance for employee"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    balance_hours: float = 0.0  # Can be negative (debt) or positive (credit)
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TimeBankTransaction(BaseModel):
+    """Time bank transaction history"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    hours: float  # Positive = credit, Negative = debit
+    type: str  # overtime, compensation, adjustment, expired
+    description: str
+    reference_id: Optional[str] = None  # clock_record_id or overtime_request_id
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SubscriptionPlan:
     FREE = "free"
