@@ -139,6 +139,26 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] Página `/overtime-approvals` com tabs Pendentes/Histórico
 - [x] Botão "Extras" no dashboard HR
 
+### Phase 8 - PWA e Email ✅ (2026-02-13)
+
+#### Progressive Web App (PWA)
+- [x] manifest.json com ícones e shortcuts
+- [x] Service Worker com cache e offline support
+- [x] Ícones em todos os tamanhos (72-512px)
+- [x] Meta tags para iOS (apple-mobile-web-app)
+- [x] Componente PWAInstallPrompt (Android/iOS)
+- [x] Layout responsivo otimizado para mobile
+- [x] Background sync para clock-ins offline
+
+#### Sistema de Email (SendGrid)
+- [x] Integração SendGrid com templates HTML
+- [x] Templates: welcome, notification, overtime_approved/rejected, location_alert
+- [x] API `/email/send` para envio via template
+- [x] API `/email/test` para teste de configuração
+- [x] API `/email/config` para verificar status
+- [x] Envio em background (BackgroundTasks)
+- [x] **NOTA**: Requer SENDGRID_API_KEY no .env para funcionar
+
 ---
 
 ## Modos de Trabalho
