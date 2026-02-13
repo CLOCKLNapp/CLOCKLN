@@ -12,6 +12,9 @@ import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
 import VacationPage from './pages/VacationPage';
 import VacationRequestsPage from './pages/VacationRequestsPage';
+import DocumentsPage from './pages/DocumentsPage';
+import DocumentsReviewPage from './pages/DocumentsReviewPage';
+import NotificationsPage from './pages/NotificationsPage';
 import './App.css';
 
 // Protected Route Component
@@ -116,6 +119,22 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/documents"
+        element={
+          <ProtectedRoute>
+            <DocumentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Protected routes - HR only */}
       <Route
@@ -151,10 +170,10 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/documents"
+        path="/documents-review"
         element={
           <ProtectedRoute requireHR>
-            <HRDashboard />
+            <DocumentsReviewPage />
           </ProtectedRoute>
         }
       />
