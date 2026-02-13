@@ -1,79 +1,95 @@
 <analysis>**original_problem_statement:**
-Crie um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo. O sistema deve suportar diferentes tipos de usuários (Funcionário, RH, Gerente) com permissões específicas. As funcionalidades principais incluem registro de ponto automático (via totem com QR code/NFC e geolocalização para remotos), cálculo de horas, gestão de banco de horas, organização de documentos trabalhistas (atestados), geração de relatórios, e um sistema de notificações. O sistema deve ser multilíngue (com 17 idiomas de lançamento, incluindo suporte RTL), seguro (multi-tenant, LGPD/DSGVO), e ter um design moderno e minimalista. O modelo de negócio é SaaS por assinatura com diferentes planos (Free, Pro, Business).
+Crie um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo. O sistema deve suportar diferentes tipos de usuários (Funcionário, RH, Gerente) com permissões específicas. As funcionalidades principais incluem registro de ponto automático (via totem com QR code/NFC e geolocalização para remotos), cálculo de horas, gestão de banco de horas, organização de documentos trabalhistas (atestados), geração de relatórios, e um sistema de notificações. O sistema deve ser multilíngue, seguro (multi-tenant, LGPD/DSGVO), e ter um design moderno e minimalista. O modelo de negócio é SaaS por assinatura com diferentes planos (Free, Pro, Business).
 
 **PRODUCT REQUIREMENTS have evolved to include:**
-- Check-in via QR code scan no totem.
-- Tema escuro para a interface.
-- Funcionários podem visualizar dias de férias e faltas.
-- Modo quiosque para os totens em tablets.
-- Upload de documentos para funcionários.
-- Clock-in remoto restrito por geolocalização para funcionários designados como remoto ou híbrido.
-- Um mapa visual para o RH visualizar a localização dos clock-ins remotos.
+-   Check-in via QR code scan no totem.
+-   Tema escuro para a interface.
+-   Funcionários podem visualizar dias de férias e faltas.
+-   Modo quiosque para os totens em tablets.
+-   Upload de documentos para funcionários.
+-   Clock-in remoto restrito por geolocalização para funcionários remoto ou híbrido.
+-   Um mapa visual para o RH visualizar a localização dos clock-ins remotos.
+-   Sistema de notificações para o RH e alertas automáticos (ponto fora do raio).
+-   Papel de Gerente com visualização de equipe restrita e aprovações.
+-   Planos de assinatura (SaaS) com integração Stripe.
+-   Geração de relatórios em PDF/Excel.
+-   Lógica avançada de banco de horas e aprovação de horas extras.
+-   Funcionalidade de PWA (Progressive Web App) para uso mobile.
+-   Notificações por email (via SendGrid).
 
 **User's preferred language**:
 Português (Brasil). The next agent MUST respond in Portuguese (Brasil) only.
 
 **what currently exists?**
-Foi desenvolvida uma aplicação full-stack (React/FastAPI/MongoDB) com as funcionalidades da Fase 1 e da Fase 2. A aplicação inclui autenticação de usuários (JWT/PIN), múltiplos papéis (Funcionário e RH), um modo Totem que gera QR codes dinâmicos, e dashboards para funcionários e RH. Foram implementadas funcionalidades para visualização de férias/faltas, upload de documentos, e um sistema de clock-in por geolocalização para trabalhadores remotos com restrições de acesso. A estrutura para múltiplos idiomas e um tema escuro estão implementados.
+Uma aplicação full-stack (React/FastAPI/MongoDB) funcional e rica em funcionalidades. Quase todos os requisitos do produto foram implementados, incluindo:
+-   **Usuários e Papéis**: Autenticação para Funcionário, RH e Gerente, cada um com seu dashboard e permissões específicas.
+-   **Controle de Ponto**: Clock-in via QR Code (modo Totem) e Geocalização (para remotos), com restrições de raio.
+-   **Dashboards**: Dashboards customizados para cada papel, exibindo estatísticas, listas de funcionários/equipe e ações rápidas.
+-   **Funcionalidades de RH**: Mapa para visualizar pontos remotos, envio de notificações, gestão de usuários, geração de relatórios (PDF/Excel), aprovação de horas extras.
+-   **Funcionalidades de Funcionário**: Visualização de férias/faltas, upload de documentos, acesso ao saldo e histórico do banco de horas.
+-   **Monetização**: Página de planos de assinatura (Free, Pro, Business) com backend preparado para integração com Stripe (checkout e webhook).
+-   **Mobile**: A aplicação está configurada como um PWA (Progressive Web App), permitindo a instalação em dispositivos móveis.
 
 **Last working item**:
--   **Last item agent was working**: Implementação de um mapa visual no dashboard do RH para exibir a localização dos clock-ins de funcionários remotos. O agente criou o endpoint no backend (), a página no frontend () com o componente de mapa ( usando ), e adicionou o botão de navegação no dashboard do RH. O trabalho foi interrompido pelo usuário antes do reinício dos serviços e dos testes.
--   **Status**: IN PROGRESS
--   **Agent Testing Done**: N
--   **Which testing method agent to use?**: both. O backend testing agent deve ser usado para validar o novo endpoint . O frontend testing agent deve ser usado para verificar se a página do mapa () renderiza corretamente, busca os dados e exibe os marcadores. Um screenshot da página do mapa também seria útil.
--   **User Testing Done**: N
+-   **Last item agent was working**: O agente mudou do modo de desenvolvimento para o modo de suporte, guiando o usuário passo a passo no processo de colocar a aplicação online (deploy) e prepará-la para monetização. O agente estava ajudando o usuário a conectar o código-fonte ao Vercel através do GitHub.
+-   **Status**: BLOCKED
+-   **Agent Testing Done**: N/A (Não é uma tarefa de codificação)
+-   **Which testing method agent to use?**: N/A
+-   **User Testing Done**: N/A
 
 **All Pending/In progress Issue list**:
--   **Issue 1**: Teste e finalização do mapa de geolocalização do RH (P0)
-    -   **Description**: A implementação da funcionalidade Mapa de Clock-in Remoto para o RH foi interrompida. O código do backend e do frontend foi criado, mas os serviços não foram reiniciados e a funcionalidade não foi testada.
-    -   **Attempted fixes**: N/A
+-   **Issue 1**: Falha no Deploy na Vercel (P0)
+    -   **Description**: O deploy da aplicação na Vercel está falhando com o erro . A causa provável é que o repositório do GitHub do usuário (nomeado ) está vazio, indicando que a ação Save to GitHub da plataforma Emergent não funcionou como esperado.
+    -   **Attempted fixes**: O agente guiou o usuário a tentar o deploy, mudar o nome do projeto e estava no processo de diagnosticar o repositório vazio.
     -   **Next debug checklist**:
-        1.  Reiniciar o serviço do backend para carregar o novo endpoint.
-        2.  Testar manualmente o login como um funcionário remoto e registrar um ponto para gerar dados de localização.
-        3.  Testar manualmente o login como RH, navegar para o dashboard e clicar no botão Ver Mapa.
-        4.  Verificar se a página do mapa carrega sem erros e exibe a localização do ponto registrado.
-        5.  Executar o testing agent para uma verificação completa do fluxo.
-    -   **Why fix this issue and what will be achieved with the fix?**: Para completar a funcionalidade solicitada pelo usuário, fornecendo ao RH uma ferramenta visual para monitorar os locais de trabalho remoto.
+        1.  Confirmar com o usuário, guiando-o para a página do seu repositório  no GitHub, que o repositório está de fato vazio (não contém as pastas , , etc.).
+        2.  Instruir o usuário a tentar novamente a ação **Save to GitHub** a partir da interface do Emergent, garantindo que ele autorize a conexão e espere a conclusão.
+        3.  Após confirmar que o código está no GitHub, instruir o usuário a refazer o processo de deploy na Vercel, prestando atenção especial em configurar o **Root Directory** para .
+    -   **Why fix this issue and what will be achieved with the fix?**: Este é o principal bloqueador para o usuário. Resolvê-lo colocará a aplicação online, permitindo o acesso público e a continuação da configuração de monetização.
     -   **Status**: IN PROGRESS
     -   **Is recurring issue?**: N
-    -   **Should Test frontend/backend/both after fix?**: both
+    -   **Should Test frontend/backend/both after fix?**: N/A
     -   **Blocked on other issue**: None
 
+-   **Issue 2**: Configuração do Envio de Emails (P1)
+    -   **Description**: A funcionalidade de envio de emails (notificações) está implementada no backend usando SendGrid, mas não funciona porque a chave de API não foi fornecida.
+    -   **Next debug checklist**:
+        1.  Após o deploy bem-sucedido, instruir o usuário a obter sua  na conta do SendGrid.
+        2.  Guiar o usuário sobre como adicionar essa chave como uma variável de ambiente no serviço de backend (seja na Vercel ou onde for hospedado).
+    -   **Why fix this issue and what will be achieved with the fix?**: Habilitará as notificações por email, uma funcionalidade importante para a comunicação com os usuários.
+    -   **Status**: NOT STARTED
+    -   **Is recurring issue?**: N
+    -   **Should Test frontend/backend/both after fix?**: backend
+    -   **Blocked on other issue**: Issue 1: Falha no Deploy na Vercel
+
 **In progress Task List**:
--   **Task 1**: Concluir e testar a funcionalidade do mapa de geolocalização para o RH (P0)
-    -   **Where to resume**: O agente parou logo após adicionar o botão Ver Mapa ao dashboard do RH. O próximo passo é reiniciar o backend (backend: stopped
-backend: started), seguido de um teste completo do fluxo de ponta a ponta.
-    -   **What will be achieved with this?**: Os usuários de RH poderão visualizar em um mapa os locais onde os funcionários remotos registraram seus pontos.
+-   **Task 1**: Guiar o usuário para colocar a aplicação online (P0)
+    -   **Where to resume**: O agente e o usuário acabaram de descobrir que o repositório  no GitHub provavelmente está vazio. A última ação do usuário foi clicar no repositório para ver seu conteúdo. O próximo passo é confirmar essa suspeita e instruir o usuário a salvar o código novamente.
+    -   **What will be achieved with this?**: O usuário terá sua aplicação CLOCKLN rodando em uma URL pública, pronta para ser usada e configurada para pagamentos.
     -   **Status**: IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?**: both
-    -   **Blocked on something**: None
+    -   **Should Test frontend/backend/both after fix?**: N/A
+    -   **Blocked on something**: Ação do usuário para confirmar o estado do repositório e tentar salvar o código novamente.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks**:
-    -   **P1: Sistema de Notificações**: Implementar o sistema onde o RH pode enviar notificações e os funcionários as recebem (backend e frontend).
-    -   **P1: Implementação do Papel Gerente**: Criar o tipo de usuário Gerente com permissões para visualizar apenas sua equipe específica.
+    -   **P1: Configuração do Backend e Webhook do Stripe**: Após o deploy, guiar o usuário para configurar o backend e o webhook do Stripe para processar pagamentos reais.
 -   **Future Tasks**:
-    -   **P2: Modelo SaaS Completo**: Implementar os planos de assinatura (Free, Pro, Business) e a lógica de cobrança (provavelmente exigirá integração com Stripe).
-    -   **P2: Módulo de Relatórios**: Implementar a geração de relatórios em PDF e Excel para o RH.
-    -   **P2: Lógica Avançada de Cálculo de Horas**: Refinar o cálculo de horas extras, banco de horas, atrasos e faltas com base nas regras definidas nos .
-    -   **P3: Aplicativo Móvel**: Desenvolver o aplicativo móvel mencionado no escopo inicial.
+    -   **P2: Desenvolvimento de Aplicativo Móvel Nativo**: O escopo original mencionava um aplicativo móvel, que poderia ser desenvolvido no futuro como uma evolução do PWA atual.
 
 **Completed work in this session**
--   **MVP Básico**: Autenticação de usuários (Funcionário, RH), modo Totem com QR code, dashboards básicos.
--   **Rastreamento de Férias/Faltas**: O dashboard do funcionário agora exibe os dias de férias restantes e faltas.
--   **Upload de Documentos**: Funcionários podem enviar documentos (ex: atestados) através de seu dashboard.
--   **Ponto Remoto com Geolocalização**: Implementado um sistema que permite que apenas funcionários remotos ou híbridos registrem o ponto de locais aprovados, usando a geolocalização do navegador. Funcionários presenciais são bloqueados.
--   **Configuração de Modo de Trabalho**: O RH pode definir o modo de trabalho (presencial, remoto, híbrido) e a localização de trabalho para cada funcionário.
--   **Modo Quiosque**: Criada uma página de instruções para configurar os totens em modo quiosque.
+-   **Funcionalidade do Mapa de Geolocalização**: Finalizada, testada e confirmada como funcional.
+-   **Sistema de Notificações e Alertas**: Implementado sistema para RH enviar avisos e alertas automáticos para pontos fora do raio.
+-   **Papel de Gerente (Manager)**: Criado o papel de Gerente com dashboard próprio, visualização de equipe restrita e fluxo de aprovação de horas extras.
+-   **Planos SaaS e Relatórios**: Implementada a página de planos de assinatura com lógica de backend para Stripe e a funcionalidade de geração de relatórios (PDF/Excel).
+-   **Lógica Avançada de Horas**: Implementado o sistema de banco de horas para funcionários e a lógica de aprovação de horas extras por gerentes/RH.
+-   **Progressive Web App (PWA)**: A aplicação foi configurada para funcionar como um PWA, permitindo a instalação em dispositivos móveis.
+-   **Base para Notificações por Email**: A integração com SendGrid foi adicionada ao backend (aguardando chave de API).
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1**: Flaky Frontend Test
-    -   **Description**: Durante uma execução de teste anterior (mensagem 183), o testing agent reportou um  em um teste de frontend. O agente ignorou o erro, assumindo que era um problema apenas do teste automatizado.
-    -   **Debug checklist**:
-        1.  Re-executar o .
-        2.  Se o erro persistir, analisar o log de teste para identificar qual componente ou página está falhando.
-        3.  Investigar o código do componente de frontend correspondente e o arquivo de teste para encontrar a causa raiz (ex: race condition, elemento não encontrado).
-    -   **Why to solve this issue and what will be achieved with this?**: Para garantir a confiabilidade da suíte de testes e evitar que problemas reais no frontend passem despercebidos.
+    -   **Description**: A handoff inicial mencionava um erro  em um teste de frontend que foi ignorado. Embora as execuções de teste subsequentes nesta sessão tenham passado, a causa raiz nunca foi investigada.
+    -   **Debug checklist**: Re-executar o  várias vezes para verificar a recorrência. Se ocorrer, analisar os logs de teste para isolar o componente problemático.
+    -   **Why to solve this issue and what will be achieved with this?**: Garante a estabilidade e confiabilidade da suíte de testes automáticos.
     -   **Should Test frontend/backend/both after fix?**: frontend
     -   **Is recurring issue?**: Y (Potentially)
 
@@ -86,28 +102,33 @@ backend: started), seguido de um teste completo do fluxo de ponta a ponta.
 **Key Technical Concepts**
 -   **Backend**: FastAPI, MongoDB (Pymongo), Pydantic, JWT.
 -   **Frontend**: React, Tailwind CSS, Shadcn/UI, React Router, Axios, React Leaflet.
--   **Funcionalidades**: API de Geolocalização do navegador, Geração de QR Code.
+-   **Integrações**: Stripe (via ), SendGrid, PWA.
 
 **key DB schema**
--   **Users**: , , , , , , , , , .
--   **Companies**: .
--   **ClockRecords**: , , ,  ('qr', 'geo'), .
--   **Documents**: , , .
--   **LeaveRequests**: , , , .
+-   **Users**: , , , , , , , .
+-   **ClockRecords**: , , , , , .
+-   **Notifications**: , , , .
+-   **OvertimeRequests**: , , , .
+-   **TimeBankTransactions**: , , , .
+-   **Subscriptions**: , , , .
 
 **changes in tech stack**
--   Nenhum.
+-   N/A
 
 **All files of reference**
--   **/app/backend/server.py**: Contém toda a lógica do backend.
--   **/app/frontend/src/App.js**: Define todas as rotas da aplicação.
--   **/app/frontend/src/pages/RemoteMap.js**: Nova página para exibir o mapa de localizações para o RH.
--   **/app/frontend/src/components/RemoteMap.js**: Novo componente que renderiza o mapa Leaflet.
--   **/app/frontend/src/pages/HRDashboard.js**: Dashboard do RH, modificado para incluir o botão que leva ao mapa.
--   **/app/frontend/src/pages/RemoteClockIn.js**: Página para o funcionário remoto registrar o ponto.
+-   **/app/backend/server.py**: Arquivo principal do backend, significativamente expandido.
+-   **/app/frontend/src/pages/RemoteMapPage.js**: Página do mapa para RH.
+-   **/app/frontend/src/pages/SendNotificationPage.js**: Página para RH enviar notificações.
+-   **/app/frontend/src/pages/ManagerDashboard.js**: Dashboard do Gerente.
+-   **/app/frontend/src/pages/SubscriptionPage.js**: Página de planos e assinatura.
+-   **/app/frontend/src/pages/ReportsPage.js**: Página de geração de relatórios.
+-   **/app/frontend/src/pages/OvertimeApprovalPage.js**: Página para aprovar horas extras.
+-   **/app/frontend/src/pages/TimeBankPage.js**: Página para o funcionário ver o banco de horas.
+-   **/app/frontend/public/manifest.json**: Manifesto do PWA.
+-   **/app/frontend/public/service-worker.js**: Service Worker do PWA.
 
 **Areas that need refactoring**:
--   O arquivo  está se tornando um monólito. Seria benéfico refatorá-lo, separando modelos, rotas e serviços em diretórios distintos (, , ) para melhorar a manutenibilidade.
+-   O arquivo  é agora um grande monólito e o principal candidato à refatoração. A separação de rotas, modelos e serviços em arquivos/diretórios distintos melhoraria drasticamente a manutenção.
 
 **key api endpoints**
 -   
@@ -117,50 +138,51 @@ backend: started), seguido de um teste completo do fluxo de ponta a ponta.
 -   
 -   
 -   
--    (Novo, para o mapa)
+-   
 
 **Critical Info for New Agent**
--   O usuário interrompeu a sessão anterior enquanto você estava no meio da implementação do mapa de geolocalização. Sua primeira tarefa é reiniciar os serviços e testar essa funcionalidade para concluí-la.
--   A comunicação com o usuário deve ser exclusivamente em **Português (Brasil)**.
--   O projeto está sendo construído de forma iterativa e em fases, com o usuário aprovando as sugestões antes de prosseguir.
--   O arquivo  está ficando muito grande e deve ser considerado para refatoração em breve.
+-   Sua prioridade máxima é **suporte ao usuário**, não desenvolvimento. O usuário é não-técnico e precisa de instruções simples e diretas para resolver o problema de deploy.
+-   O problema central é o repositório do GitHub () que parece estar vazio. Você precisa guiar o usuário para verificar e corrigir isso.
+-   Continue a comunicação exclusivamente em **Português (Brasil)**, de forma paciente e encorajadora.
+-   Use as imagens que o usuário envia para diagnosticar o problema e fornecer a próxima instrução correta.
 
 **documents and test reports created in this job**
--   
+-    (extensivamente atualizado)
 -   Múltiplos relatórios de teste em 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Onde paramos**: O usuário reconectou e está pedindo o status atual. (PENDING)
-2.  **Eu saí sem querer da outra página que vc estava trabalhando**: Esclarecimento do usuário. (RESOLVED)
-3.  **Eu saí sem querer da outra página que vc estava trabalhando**: Mensagem repetida. (RESOLVED)
-4.  **Ótima sugestão siga em frente e continue com ás actions**: O usuário aprovou a sugestão do mapa de geolocalização para o RH. (IN PROGRESS)
-5.  **Continue com as actions e sugestões mas somente funcionários cadastrado como remotos devem poder bater o ponto de casa**: O usuário aprovou as sugestões e adicionou o requisito do ponto remoto restrito por geolocalização. (COMPLETED)
-6.  **SIM! Ótima sugestão faça e continue com as actions**: O usuário aprovou as sugestões para Modo Quiosque e Upload de Documentos. (COMPLETED)
-7.  **Continue**: O usuário solicitou a continuação do trabalho. (COMPLETED)
-8.  **Quero que o funcionário também possa ver suas faltas , dias de férias...**: O usuário solicitou novas funcionalidades e iniciou a Fase 2. (COMPLETED)
-9.  **Começa fase 1**: O usuário iniciou a Fase 1. (COMPLETED)
-10. **1 = sem e-mail agora 2 = sim ambos 3 = escuro 4 = o que vc indica ?**: O usuário forneceu as escolhas iniciais do projeto. (COMPLETED)
+O usuário está no meio do processo de deploy na Vercel e encontrou um erro. O agente está guiando-o para diagnosticar por que o repositório do GitHub parece vazio.
+1.  **Carmélio? Ou azul cliquei e relógio e abriu isso**: Usuário clicou no repositório RELÓGIO no GitHub. (PENDING AGENT RESPONSE)
+2.  **Aqui?**: Usuário mostrando a página de perfil do GitHub.
+3.  **Não deu certo**: Usuário mostrando o erro de deploy da Vercel ().
+4.  **Cliquei e apareceu essa mensagem**: Usuário mostrando que o nome clockln já está em uso na Vercel.
+5.  **Eu tento clicar em clockln e não deixa**: Usuário com dificuldade em editar o diretório raiz na Vercel.
+6.  **Quando cliquei em editar abriu isso**: Usuário mostrando a tela de seleção de diretório raiz.
+7.  **Apareceu assim**: Usuário mostrando a tela de importação de projeto na Vercel.
+8.  **Cliquei a abriu assim**: Usuário mostrando a tela após instalar o app da Vercel no GitHub.
+9.  **Assim**: Usuário mostrando a tela de instalação do app da Vercel no GitHub.
+10. **Abriu assim**: Usuário mostrando a tela Vamos implantar algo novo na Vercel.
 
 **Project Health Check:**
--   **Broken**: A funcionalidade do Mapa de Clock-in Remoto está no meio da implementação e não está funcional.
--   **Mocked**: Nenhum.
+-   **Broken**: O processo de deploy para produção está quebrado devido a um provável problema na sincronização com o GitHub.
+-   **Mocked**: A funcionalidade de envio de emails está implementada mas desativada por falta da . A integração com Stripe está no lugar, mas requer configuração de chaves de produção e webhook para funcionar de fato.
 
 **3rd Party Integrations**
 -    / : Para visualização de mapas.
 -   : Para geração de QR Code.
+-    (para Stripe): Para processamento de pagamentos.
+-   : Para envio de emails transacionais.
+-   : Para geração de relatórios em PDF.
+-   : Para geração de relatórios em Excel.
 
 **Testing status**
 -   **Testing agent used after significant changes**: YES
 -   **Troubleshoot agent used after agent stuck in loop**: NO
 -   **Test files created**: N/A
--   **Known regressions**: Um teste de frontend falhou com  em uma execução anterior e foi ignorado. Precisa de investigação.
+-   **Known regressions**: Um teste de frontend intermitente () foi relatado em um fork anterior e nunca foi investigado.
 
 **Credentials to test flow:**
--   Crie uma nova empresa/usuário de RH através da página de registro.
--   **Exemplo de login de RH**:  / 
--   **Exemplo de login de funcionário remoto**:  / 
--   **Exemplo de login de funcionário presencial**:  / 
+-   O fluxo de teste atual é o deploy manual pelo usuário. O agente deve continuar guiando o usuário usando sua conta do GitHub e Vercel.
 
 **What agent forgot to execute**
--   O agente não resolveu o erro de teste de frontend () de uma execução anterior, descartando-o como um problema isolado do teste.
--   O agente estava prestes a reiniciar os serviços e testar a funcionalidade do mapa quando o usuário interrompeu. Esta é a ação pendente mais imediata.</analysis>
+-   O agente não investigou o teste de frontend instável () mencionado no handoff inicial. O foco mudou para a implementação de novas funcionalidades e depois para o suporte ao usuário, então essa dívida técnica permanece.</analysis>
