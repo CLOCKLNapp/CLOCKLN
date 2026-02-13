@@ -418,6 +418,16 @@ async def require_hr_only(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="HR access required")
     return current_user
 
+async def require_superadmin(current_user: dict = Depends(get_current_user)):
+    """Require Super Admin role"""
+    if current_user.get("email") != SUPER_ADMIN_EMAIL and current_user.get("role") != UserRole.SUPERADMIN:
+        raise HTTPException(status_code=403, detail="Super Admin access required")
+    return current_user
+
+def is_superadmin(user: dict) -> bool:
+    """Check if user is super admin"""
+    return user.get("email") == SUPER_ADMIN_EMAIL or user.get("role") == UserRole.SUPERADMIN
+
 async def get_managed_users(manager_id: str, company_id: str) -> List[str]:
     """Get list of user IDs managed by a manager"""
     users = await db.users.find({
