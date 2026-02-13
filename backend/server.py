@@ -1435,6 +1435,254 @@ async def get_remote_workers_locations(current_user: dict = Depends(require_hr))
     
     return workers
 
+# ============== SUBSCRIPTION & PAYMENT ROUTES ==============
+
+class SubscriptionUpgradeRequest(BaseModel):
+    plan: str
+    origin_url: str
+
+class CheckoutStatusRequest(BaseModel):
+    session_id: str
+
+@api_router.get("/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    return {
+        "plans": [
+            {"id": plan_id, **details}
+            for plan_id, details in SUBSCRIPTION_PLANS.items()
+        ]
+    }
+
+@api_router.get("/subscription/current")
+async def get_current_subscription(current_user: dict = Depends(require_hr)):
+    """Get current company subscription details"""
+    company = await db.companies.find_one(
+        {"id": current_user['company_id']},
+        {"_id": 0}
+    )
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    plan_id = company.get('subscription_plan', 'free')
+    plan_details = SUBSCRIPTION_PLANS.get(plan_id, SUBSCRIPTION_PLANS['free'])
+    
+    # Get employee count
+    employee_count = await db.users.count_documents({
+        "company_id": current_user['company_id'],
+        "is_active": True
+    })
+    
+    return {
+        "plan": plan_id,
+        "plan_name": plan_details['name'],
+        "price": plan_details['price'],
+        "features": plan_details['features'],
+        "max_employees": plan_details['max_employees'],
+        "current_employees": employee_count,
+        "status": company.get('subscription_status', 'active'),
+        "end_date": company.get('subscription_end_date')
+    }
+
+@api_router.post("/subscription/checkout")
+async def create_checkout_session(
+    request: Request,
+    data: SubscriptionUpgradeRequest,
+    current_user: dict = Depends(require_hr)
+):
+    """Create Stripe checkout session for plan upgrade"""
+    if data.plan not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid plan")
+    
+    plan = SUBSCRIPTION_PLANS[data.plan]
+    if plan['price'] == 0:
+        raise HTTPException(status_code=400, detail="Cannot checkout free plan")
+    
+    company_id = current_user['company_id']
+    user_id = current_user['id']
+    
+    # Build URLs from origin
+    success_url = f"{data.origin_url}/subscription?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{data.origin_url}/subscription"
+    
+    # Initialize Stripe
+    host_url = str(request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        amount=float(plan['price']),
+        currency="usd",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata={
+            "company_id": company_id,
+            "user_id": user_id,
+            "plan": data.plan
+        }
+    )
+    
+    session = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # Create payment transaction record
+    transaction = PaymentTransaction(
+        company_id=company_id,
+        user_id=user_id,
+        plan=data.plan,
+        amount=plan['price'],
+        currency="usd",
+        session_id=session.session_id,
+        payment_status="pending",
+        metadata={"plan_name": plan['name']}
+    )
+    tx_dict = transaction.model_dump()
+    tx_dict['created_at'] = tx_dict['created_at'].isoformat()
+    await db.payment_transactions.insert_one(tx_dict)
+    
+    return {
+        "checkout_url": session.url,
+        "session_id": session.session_id
+    }
+
+@api_router.get("/subscription/status/{session_id}")
+async def check_payment_status(
+    request: Request,
+    session_id: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Check payment status and update subscription if paid"""
+    # Find transaction
+    transaction = await db.payment_transactions.find_one(
+        {"session_id": session_id},
+        {"_id": 0}
+    )
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    if transaction['company_id'] != current_user['company_id']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Already processed?
+    if transaction['payment_status'] == 'paid':
+        return {
+            "status": "completed",
+            "payment_status": "paid",
+            "plan": transaction['plan'],
+            "message": "Subscription already active"
+        }
+    
+    # Check with Stripe
+    host_url = str(request.base_url)
+    webhook_url = f"{host_url}api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    status = await stripe_checkout.get_checkout_status(session_id)
+    
+    # Update transaction
+    await db.payment_transactions.update_one(
+        {"session_id": session_id},
+        {"$set": {"payment_status": status.payment_status}}
+    )
+    
+    # If paid, update company subscription
+    if status.payment_status == 'paid':
+        plan = transaction['plan']
+        plan_details = SUBSCRIPTION_PLANS[plan]
+        
+        # Calculate subscription end date (1 month from now)
+        end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+        
+        await db.companies.update_one(
+            {"id": transaction['company_id']},
+            {"$set": {
+                "subscription_plan": plan,
+                "subscription_status": "active",
+                "subscription_end_date": end_date,
+                "max_employees": plan_details['max_employees']
+            }}
+        )
+        
+        return {
+            "status": "completed",
+            "payment_status": "paid",
+            "plan": plan,
+            "plan_name": plan_details['name'],
+            "message": f"Successfully upgraded to {plan_details['name']} plan!"
+        }
+    elif status.status == 'expired':
+        return {
+            "status": "expired",
+            "payment_status": status.payment_status,
+            "message": "Payment session expired. Please try again."
+        }
+    else:
+        return {
+            "status": "pending",
+            "payment_status": status.payment_status,
+            "message": "Payment is being processed..."
+        }
+
+@api_router.get("/subscription/history")
+async def get_payment_history(current_user: dict = Depends(require_hr)):
+    """Get payment transaction history"""
+    transactions = await db.payment_transactions.find(
+        {"company_id": current_user['company_id']},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return transactions
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        host_url = str(request.base_url)
+        webhook_url = f"{host_url}api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response.payment_status == 'paid':
+            session_id = webhook_response.session_id
+            
+            # Find transaction
+            transaction = await db.payment_transactions.find_one(
+                {"session_id": session_id},
+                {"_id": 0}
+            )
+            
+            if transaction and transaction['payment_status'] != 'paid':
+                plan = transaction['plan']
+                plan_details = SUBSCRIPTION_PLANS[plan]
+                end_date = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%d")
+                
+                # Update transaction
+                await db.payment_transactions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"payment_status": "paid"}}
+                )
+                
+                # Update company
+                await db.companies.update_one(
+                    {"id": transaction['company_id']},
+                    {"$set": {
+                        "subscription_plan": plan,
+                        "subscription_status": "active",
+                        "subscription_end_date": end_date,
+                        "max_employees": plan_details['max_employees']
+                    }}
+                )
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 # ============== USER MANAGEMENT ROUTES ==============
 
 @api_router.post("/users", response_model=UserResponse)
