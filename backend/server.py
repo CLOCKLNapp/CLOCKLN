@@ -1152,6 +1152,64 @@ async def hr_dashboard(current_user: dict = Depends(require_hr)):
         "pending_vacation_requests": pending_vacations
     }
 
+@api_router.get("/reports/remote-clocks", response_model=List[dict])
+async def get_remote_clock_records(
+    days: int = 7,
+    current_user: dict = Depends(require_hr)
+):
+    """Get remote clock records with location data for map visualization (HR only)"""
+    company_id = current_user['company_id']
+    start_date = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+    
+    # Get records with geolocation method
+    records = await db.clock_records.find({
+        "company_id": company_id,
+        "clock_method": "geolocation",
+        "date": {"$gte": start_date},
+        "location": {"$exists": True, "$ne": None}
+    }, {"_id": 0}).sort("clock_in", -1).to_list(200)
+    
+    # Enrich with user info
+    for record in records:
+        user = await db.users.find_one({"id": record['user_id']}, {"_id": 0, "name": 1, "home_location": 1})
+        if user:
+            record['user_name'] = user.get('name', 'Unknown')
+            record['home_location'] = user.get('home_location')
+            # Calculate distance from home
+            if record.get('location') and user.get('home_location'):
+                distance = calculate_distance(
+                    record['location']['lat'], record['location']['lng'],
+                    user['home_location']['lat'], user['home_location']['lng']
+                )
+                record['distance_from_home'] = int(distance)
+    
+    return records
+
+@api_router.get("/reports/remote-workers", response_model=List[dict])
+async def get_remote_workers_locations(current_user: dict = Depends(require_hr)):
+    """Get all remote/hybrid workers with their home locations for map"""
+    company_id = current_user['company_id']
+    
+    workers = await db.users.find({
+        "company_id": company_id,
+        "is_active": True,
+        "work_mode": {"$in": ["remote", "hybrid"]},
+        "home_location": {"$exists": True, "$ne": None}
+    }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(100)
+    
+    # Get today's clock status for each worker
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    for worker in workers:
+        clock_record = await db.clock_records.find_one({
+            "user_id": worker['id'],
+            "date": today,
+            "clock_method": "geolocation"
+        }, {"_id": 0})
+        worker['clocked_today'] = clock_record is not None
+        worker['today_location'] = clock_record.get('location') if clock_record else None
+    
+    return workers
+
 # ============== USER MANAGEMENT ROUTES ==============
 
 @api_router.post("/users", response_model=UserResponse)
