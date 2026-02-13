@@ -100,6 +100,11 @@ export default function HRDashboard() {
         employeeData.location_radius_meters = newEmployee.location_radius;
       }
       
+      // Handle manager_id
+      if (!newEmployee.manager_id) {
+        delete employeeData.manager_id;
+      }
+      
       // Clean up temp fields
       delete employeeData.home_lat;
       delete employeeData.home_lng;
@@ -110,7 +115,7 @@ export default function HRDashboard() {
       setShowAddEmployee(false);
       setNewEmployee({ 
         name: '', email: '', password: '', role: 'employee', pin: '', 
-        vacation_days_total: 30, work_mode: 'onsite', home_lat: '', home_lng: '', location_radius: 100 
+        vacation_days_total: 30, work_mode: 'onsite', home_lat: '', home_lng: '', location_radius: 100, manager_id: ''
       });
       fetchData();
     } catch (error) {
