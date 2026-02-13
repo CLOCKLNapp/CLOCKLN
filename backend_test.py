@@ -412,6 +412,90 @@ def main():
     print("\n📊 Testing CSV Export...")
     tester.test_export_csv()
     
+    # Test 13: GEOLOCATION FEATURES
+    print("\n🗺️ Testing Geolocation Features...")
+    print("   Testing with different user types and scenarios...")
+    
+    # Store original token
+    hr_token = tester.token
+    
+    # Test 13a: Login as onsite worker and test geolocation block
+    print("\n   👤 Testing onsite worker geolocation restrictions...")
+    onsite_login = tester.login_as_user("joao@techcorp.com", "joao123")
+    if onsite_login[0]:
+        tester.test_geolocation_clock_onsite_worker()
+    else:
+        print("   ⚠️ Could not login as onsite worker, skipping onsite tests")
+    
+    # Test 13b: Login as remote worker and test geolocation functionality
+    print("\n   🏠 Testing remote worker geolocation functionality...")
+    remote_login = tester.login_as_user("carlos@techcorp.com", "carlos123") 
+    if remote_login[0]:
+        # Test valid location (should work)
+        tester.test_geolocation_clock_remote_worker_valid_location()
+        
+        # Test invalid location (should fail - using Rio coordinates)
+        tester.test_geolocation_clock_remote_worker_invalid_location()
+        
+        # Clock out if needed for next test
+        print("   ⏰ Getting clock status to determine if clock-out is needed...")
+        clock_status = tester.test_clock_status()
+    else:
+        print("   ⚠️ Could not login as remote worker, skipping remote tests")
+    
+    # Restore HR token for remaining tests
+    tester.token = hr_token
+    
+    # Test 13c: Test HR functionality - creating remote/hybrid employees
+    print("\n   👥 Testing HR employee creation with work modes...")
+    if hr_token:
+        # Get company info for employee creation
+        company_success, company_data = tester.test_get_company()
+        if company_success and 'id' in company_data:
+            # Test creating remote employee
+            remote_emp_data = {
+                "name": f"Test Remote Worker {int(time.time())}",
+                "email": f"remote{int(time.time())}@techcorp.com", 
+                "password": "test123",
+                "role": "employee",
+                "work_mode": "remote",
+                "home_location": {"lat": -23.5505, "lng": -46.6333},
+                "location_radius_meters": 200,
+                "company_id": company_data['id']
+            }
+            
+            tester.run_test(
+                "Create Remote Employee with Home Location",
+                "POST",
+                "/api/users",
+                200,
+                data=remote_emp_data
+            )
+            
+            # Test creating hybrid employee
+            hybrid_emp_data = {
+                "name": f"Test Hybrid Worker {int(time.time())}",
+                "email": f"hybrid{int(time.time())}@techcorp.com", 
+                "password": "test123",
+                "role": "employee",
+                "work_mode": "hybrid",
+                "home_location": {"lat": -23.5505, "lng": -46.6333},
+                "location_radius_meters": 300,
+                "company_id": company_data['id']
+            }
+            
+            tester.run_test(
+                "Create Hybrid Employee with Home Location",
+                "POST",
+                "/api/users",
+                200,
+                data=hybrid_emp_data
+            )
+        else:
+            print("   ⚠️ Could not get company info, skipping employee creation tests")
+    
+    print("\n🗺️ Geolocation feature testing completed")
+    
     # Results
     print("\n" + "=" * 60)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
