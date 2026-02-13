@@ -4,7 +4,8 @@ import {
   Clock, Timer, TrendingUp, Calendar, 
   QrCode, History, ChevronRight,
   CheckCircle2, Circle, Briefcase, 
-  Palmtree, AlertTriangle, Stethoscope, Bell, FileText
+  Palmtree, AlertTriangle, Stethoscope, Bell, FileText,
+  Hourglass
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -18,6 +19,7 @@ import { toast } from 'sonner';
 
 export default function EmployeeDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
+  const [timeBankBalance, setTimeBankBalance] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const { api, user } = useAuth();
@@ -27,8 +29,12 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const response = await api.get('/dashboard/employee');
-        setDashboardData(response.data);
+        const [dashRes, bankRes] = await Promise.all([
+          api.get('/dashboard/employee'),
+          api.get('/timebank/balance')
+        ]);
+        setDashboardData(dashRes.data);
+        setTimeBankBalance(bankRes.data);
       } catch (error) {
         toast.error(t('error'));
       } finally {
