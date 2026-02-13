@@ -8,6 +8,7 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 2. **Funcionário Remoto**: Bate ponto via geolocalização de casa
 3. **Funcionário Híbrido**: Pode usar ambos os métodos
 4. **RH/Admin**: Gerencia funcionários, define modo de trabalho, configura totem
+5. **Gerente**: Visualiza e gerencia apenas sua equipe atribuída
 
 ---
 
