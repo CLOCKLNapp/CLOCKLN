@@ -4,7 +4,7 @@ import {
   Users, Clock, TrendingUp, FileText, 
   Plus, Search, MoreVertical, Tv,
   ChevronRight, CheckCircle2, XCircle,
-  Palmtree, Bell, Settings, Download
+  Palmtree, Bell, Settings, Download, MapPin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -50,6 +50,10 @@ export default function HRDashboard() {
     role: 'employee',
     pin: '',
     vacation_days_total: 30,
+    work_mode: 'onsite',
+    home_lat: '',
+    home_lng: '',
+    location_radius: 100,
   });
 
   const { api, company } = useAuth();
@@ -77,13 +81,33 @@ export default function HRDashboard() {
 
   const handleAddEmployee = async () => {
     try {
-      await api.post('/users', {
+      const employeeData = {
         ...newEmployee,
         company_id: company.id,
-      });
+      };
+      
+      // Add home_location if remote/hybrid and coordinates provided
+      if ((newEmployee.work_mode === 'remote' || newEmployee.work_mode === 'hybrid') && 
+          newEmployee.home_lat && newEmployee.home_lng) {
+        employeeData.home_location = {
+          lat: parseFloat(newEmployee.home_lat),
+          lng: parseFloat(newEmployee.home_lng)
+        };
+        employeeData.location_radius_meters = newEmployee.location_radius;
+      }
+      
+      // Clean up temp fields
+      delete employeeData.home_lat;
+      delete employeeData.home_lng;
+      delete employeeData.location_radius;
+      
+      await api.post('/users', employeeData);
       toast.success(t('success'));
       setShowAddEmployee(false);
-      setNewEmployee({ name: '', email: '', password: '', role: 'employee', pin: '', vacation_days_total: 30 });
+      setNewEmployee({ 
+        name: '', email: '', password: '', role: 'employee', pin: '', 
+        vacation_days_total: 30, work_mode: 'onsite', home_lat: '', home_lng: '', location_radius: 100 
+      });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || t('error'));
