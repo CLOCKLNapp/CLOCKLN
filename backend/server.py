@@ -86,6 +86,7 @@ class User(BaseModel):
     work_mode: str = WorkMode.ONSITE  # onsite, remote, hybrid
     home_location: Optional[dict] = None  # {"lat": x, "lng": y} for remote workers
     location_radius_meters: int = 100  # Allowed radius from home location
+    manager_id: Optional[str] = None  # ID of the manager for this employee
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserCreate(BaseModel):
