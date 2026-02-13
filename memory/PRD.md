@@ -235,6 +235,8 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] **Aprovação de Horas Extras** (HR/Gerente aprova, adiciona ao banco)
 - [x] **PWA (Progressive Web App)** - Instalável em mobile e desktop
 - [x] **Sistema de Email** (SendGrid) - Templates prontos para notificações
+- [x] **Super Admin** - Painel master para gerenciar todas as empresas
+- [x] **Acesso VIP** - Empresas com acesso ilimitado sem pagamento
 
 ### P1 - High Priority (Opcional)
 - [ ] Push Notifications (Web Push API)
