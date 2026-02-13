@@ -262,6 +262,7 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
+            <PWAInstallPrompt />
             <Toaster 
               position="top-center" 
               richColors 
