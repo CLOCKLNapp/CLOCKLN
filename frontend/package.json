@@ -62,7 +62,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "build": "craco build",
     "test": "craco test"
   },
   "browserslist": {
