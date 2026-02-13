@@ -369,13 +369,19 @@ export default function HRDashboard() {
                           <p className="text-sm text-muted-foreground">{employee.email}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant={employee.is_active ? 'default' : 'secondary'}>
                           {employee.is_active ? t('active') : t('inactive')}
                         </Badge>
                         <Badge variant="outline">
                           {employee.role === 'hr' ? t('hr') : employee.role === 'manager' ? t('manager') : t('employee')}
                         </Badge>
+                        {employee.work_mode && employee.work_mode !== 'onsite' && (
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            {employee.work_mode === 'remote' ? 'Remoto' : 'Híbrido'}
+                          </Badge>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" data-testid={`employee-menu-${employee.id}`}>
