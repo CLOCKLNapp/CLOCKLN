@@ -4,7 +4,7 @@ import {
   Clock, Timer, TrendingUp, Calendar, 
   QrCode, History, ChevronRight,
   CheckCircle2, Circle, Briefcase, 
-  Palmtree, AlertTriangle, Stethoscope, Bell
+  Palmtree, AlertTriangle, Stethoscope, Bell, FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';

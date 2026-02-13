@@ -166,7 +166,7 @@ export default function HRDashboard() {
       icon: FileText,
       color: 'text-violet-400',
       bgColor: 'bg-violet-400/10',
-      path: '/documents',
+      path: '/documents-review',
     },
     {
       title: 'Férias Pendentes',
