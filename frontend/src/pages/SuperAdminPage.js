@@ -239,7 +239,7 @@ export default function SuperAdminPage() {
                           <span>{company.employee_count} funcionários</span>
                           <span>•</span>
                           <Badge variant={company.is_exempt ? 'default' : 'secondary'} className={company.is_exempt ? 'bg-yellow-600' : ''}>
-                            {company.is_exempt ? 'VIP' : company.subscription_plan.toUpperCase()}
+                            {company.is_exempt ? 'VIP' : (company.subscription_plan || 'free').toUpperCase()}
                           </Badge>
                         </div>
                       </div>
