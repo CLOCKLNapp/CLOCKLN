@@ -59,6 +59,10 @@ class Company(BaseModel):
     default_language: str = "en"
     weekly_hours: int = 40
     vacation_days_per_year: int = 30  # Default vacation days
+    subscription_plan: str = "free"  # free, pro, business
+    subscription_status: str = "active"  # active, cancelled, expired
+    subscription_end_date: Optional[str] = None  # YYYY-MM-DD
+    max_employees: int = 5  # Limit based on plan
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CompanyCreate(BaseModel):
@@ -67,6 +71,46 @@ class CompanyCreate(BaseModel):
     default_language: str = "en"
     weekly_hours: int = 40
     vacation_days_per_year: int = 30
+
+class SubscriptionPlan:
+    FREE = "free"
+    PRO = "pro"
+    BUSINESS = "business"
+
+# Plan details - defined on server only (security)
+SUBSCRIPTION_PLANS = {
+    "free": {
+        "name": "Free",
+        "price": 0.0,
+        "max_employees": 5,
+        "features": ["QR Code clock-in", "Basic reports", "5 employees max"]
+    },
+    "pro": {
+        "name": "Pro",
+        "price": 29.0,
+        "max_employees": 50,
+        "features": ["All Free features", "Geolocation clock-in", "Remote map", "50 employees max", "Priority support"]
+    },
+    "business": {
+        "name": "Business",
+        "price": 99.0,
+        "max_employees": 500,
+        "features": ["All Pro features", "Manager roles", "Advanced reports", "500 employees max", "Dedicated support", "Custom branding"]
+    }
+}
+
+class PaymentTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    user_id: str
+    plan: str
+    amount: float
+    currency: str = "usd"
+    session_id: str
+    payment_status: str = "pending"  # pending, paid, failed, expired
+    metadata: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class WorkMode:
     ONSITE = "onsite"  # Presencial - só pode bater ponto no totem
