@@ -9,7 +9,7 @@ import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
-import api from '../lib/api';
+import api from '@/lib/api';
 
 export function AppLayout({ children }) {
   const { user, logout, isHR } = useAuth();
