@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, QrCode, History, Settings, 
-  Clock, Users, LogOut, Tv
+  Clock, Users, LogOut, Tv, MapPin
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
@@ -15,9 +15,12 @@ export function AppLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isRemoteWorker = user?.work_mode === 'remote' || user?.work_mode === 'hybrid';
+
   const employeeNavItems = [
     { icon: LayoutDashboard, label: t('home'), path: '/dashboard' },
     { icon: QrCode, label: t('scanner'), path: '/scanner' },
+    ...(isRemoteWorker ? [{ icon: MapPin, label: 'Remoto', path: '/remote-clock' }] : []),
     { icon: History, label: t('history'), path: '/history' },
     { icon: Settings, label: t('settings'), path: '/settings' },
   ];
