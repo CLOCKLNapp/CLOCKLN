@@ -115,6 +115,30 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 - [x] Página `/reports` com seleção de período e botões de download
 - [x] Relatórios incluem: nome, data, entrada/saída, horas, método, fora do raio
 
+### Phase 7 - Banco de Horas e Aprovação de Extras ✅ (2026-02-13)
+
+#### Banco de Horas (Time Bank)
+- [x] Modelo `TimeBank` com saldo por funcionário
+- [x] Modelo `TimeBankTransaction` com histórico de movimentações
+- [x] API `/timebank/balance` - Saldo do funcionário
+- [x] API `/timebank/transactions` - Histórico de transações
+- [x] API `/timebank/use` - Usar horas para compensação
+- [x] API `/timebank/all` - Todos os saldos (HR only)
+- [x] API `/timebank/{user_id}/adjust` - Ajuste manual (HR only)
+- [x] Página `/timebank` com saldo, botão compensar e histórico
+- [x] Card "Time Bank" no dashboard do funcionário com link
+
+#### Aprovação de Horas Extras
+- [x] Modelo `OvertimeRequest` com status pending/approved/rejected
+- [x] Clock-out cria automaticamente solicitação quando overtime > 0
+- [x] API `/overtime/pending` - Solicitações pendentes (HR/Gerente)
+- [x] API `/overtime/history` - Histórico de solicitações
+- [x] API `/overtime/{id}` PATCH - Aprovar/rejeitar
+- [x] Aprovação adiciona horas ao banco do funcionário
+- [x] Rejeição notifica funcionário com motivo
+- [x] Página `/overtime-approvals` com tabs Pendentes/Histórico
+- [x] Botão "Extras" no dashboard HR
+
 ---
 
 ## Modos de Trabalho
