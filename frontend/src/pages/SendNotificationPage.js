@@ -164,14 +164,14 @@ export default function SendNotificationPage() {
                   <div className="space-y-2">
                     <Label>Destinatário</Label>
                     <Select
-                      value={formData.user_id}
-                      onValueChange={(value) => setFormData({ ...formData, user_id: value })}
+                      value={formData.user_id || 'all'}
+                      onValueChange={(value) => setFormData({ ...formData, user_id: value === 'all' ? '' : value })}
                     >
                       <SelectTrigger data-testid="recipient-select">
                         <SelectValue placeholder="Selecione (ou todos)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">
+                        <SelectItem value="all">
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
                             Todos os funcionários
