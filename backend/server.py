@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
 from jose import JWTError, jwt
@@ -17,6 +17,7 @@ import secrets
 import hashlib
 import io
 import base64
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,6 +26,9 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Stripe
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
 
 # JWT Settings
 SECRET_KEY = os.environ.get('JWT_SECRET', secrets.token_urlsafe(32))
