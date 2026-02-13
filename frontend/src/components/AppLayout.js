@@ -1,13 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, QrCode, History, Settings, 
-  Clock, Users, LogOut, Tv, MapPin
+  Clock, Users, LogOut, Tv, MapPin, Shield
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { LanguageSelector } from './LanguageSelector';
+import api from '../lib/api';
 
 export function AppLayout({ children }) {
   const { user, logout, isHR } = useAuth();
