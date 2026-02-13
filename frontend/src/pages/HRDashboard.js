@@ -582,14 +582,14 @@ export default function HRDashboard() {
                 <div className="space-y-2">
                   <Label>Gerente Responsável (opcional)</Label>
                   <Select
-                    value={newEmployee.manager_id}
-                    onValueChange={(value) => setNewEmployee({ ...newEmployee, manager_id: value })}
+                    value={newEmployee.manager_id || 'none'}
+                    onValueChange={(value) => setNewEmployee({ ...newEmployee, manager_id: value === 'none' ? '' : value })}
                   >
                     <SelectTrigger data-testid="new-employee-manager">
                       <SelectValue placeholder="Sem gerente atribuído" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sem gerente</SelectItem>
+                      <SelectItem value="none">Sem gerente</SelectItem>
                       {managers.map(manager => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.name}
