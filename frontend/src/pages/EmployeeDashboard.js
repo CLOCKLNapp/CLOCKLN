@@ -206,7 +206,7 @@ export default function EmployeeDashboard() {
         </div>
 
         {/* Vacation & Absences Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Vacation Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -226,13 +226,13 @@ export default function EmployeeDashboard() {
                     <p className="text-3xl font-bold font-mono text-emerald-400">
                       {loading ? '--' : dashboardData?.vacation_days_remaining || 0}
                     </p>
-                    <p className="text-sm text-muted-foreground">dias restantes / remaining</p>
+                    <p className="text-sm text-muted-foreground">dias restantes</p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-mono">
                       {loading ? '--' : dashboardData?.vacation_days_used || 0} / {dashboardData?.vacation_days_total || 30}
                     </p>
-                    <p className="text-sm text-muted-foreground">dias usados / used</p>
+                    <p className="text-sm text-muted-foreground">dias usados</p>
                   </div>
                 </div>
                 <Progress value={vacationUsedPercent} className="h-2" />
@@ -242,7 +242,7 @@ export default function EmployeeDashboard() {
                   onClick={() => navigate('/vacation')}
                   data-testid="request-vacation-btn"
                 >
-                  Solicitar Férias / Request Vacation
+                  Solicitar Férias
                 </Button>
               </CardContent>
             </Card>
@@ -258,40 +258,60 @@ export default function EmployeeDashboard() {
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <AlertTriangle className="w-5 h-5 text-amber-400" />
-                  Faltas & Ausências / Absences
+                  Faltas & Ausências
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                    <div className="flex items-center gap-2 mb-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center gap-2 mb-1">
                       <AlertTriangle className="w-4 h-4 text-red-400" />
-                      <span className="text-sm text-muted-foreground">Faltas</span>
+                      <span className="text-xs text-muted-foreground">Faltas</span>
                     </div>
                     <p className="text-2xl font-bold font-mono text-red-400">
                       {loading ? '--' : dashboardData?.absent_days || 0}
                     </p>
-                    <p className="text-xs text-muted-foreground">este ano</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="flex items-center gap-2 mb-1">
                       <Stethoscope className="w-4 h-4 text-amber-400" />
-                      <span className="text-sm text-muted-foreground">Atestados</span>
+                      <span className="text-xs text-muted-foreground">Atestados</span>
                     </div>
                     <p className="text-2xl font-bold font-mono text-amber-400">
                       {loading ? '--' : dashboardData?.sick_days || 0}
                     </p>
-                    <p className="text-xs text-muted-foreground">este ano</p>
                   </div>
                 </div>
-                {dashboardData?.pending_vacation_requests > 0 && (
-                  <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Solicitações pendentes</span>
-                      <Badge variant="secondary">{dashboardData.pending_vacation_requests}</Badge>
-                    </div>
-                  </div>
-                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Documents Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            <Card className="border-border/50 h-full">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FileText className="w-5 h-5 text-violet-400" />
+                  Documentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Envie atestados médicos ou justificativas para o RH
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/documents')}
+                  data-testid="upload-document-btn"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Enviar Documento
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
