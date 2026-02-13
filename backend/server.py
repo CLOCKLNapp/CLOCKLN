@@ -573,6 +573,102 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
             "user_name": current_user['name']
         }
 
+@api_router.post("/clock/geolocation", response_model=dict)
+async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(get_current_user)):
+    """Clock in/out by geolocation (remote/hybrid workers only)"""
+    work_mode = current_user.get('work_mode', 'onsite')
+    
+    # Check if user is allowed to use geolocation
+    if work_mode not in [WorkMode.REMOTE, WorkMode.HYBRID]:
+        raise HTTPException(
+            status_code=403, 
+            detail="Geolocation clock-in is only available for remote or hybrid workers. Please use the QR code totem."
+        )
+    
+    # Check if user has home location configured
+    home_location = current_user.get('home_location')
+    if not home_location or 'lat' not in home_location or 'lng' not in home_location:
+        raise HTTPException(
+            status_code=400, 
+            detail="Home location not configured. Please contact HR to set up your remote work location."
+        )
+    
+    # Calculate distance from home location
+    distance = calculate_distance(
+        data.latitude, data.longitude,
+        home_location['lat'], home_location['lng']
+    )
+    
+    allowed_radius = current_user.get('location_radius_meters', 100)
+    
+    if distance > allowed_radius:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"You are {int(distance)}m away from your registered location. Maximum allowed: {allowed_radius}m"
+        )
+    
+    user_id = current_user['id']
+    company_id = current_user['company_id']
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    
+    # Check for existing open record today
+    open_record = await db.clock_records.find_one({
+        "user_id": user_id,
+        "date": today,
+        "clock_out": None
+    }, {"_id": 0})
+    
+    if open_record:
+        # Clock out
+        clock_in_time = datetime.fromisoformat(open_record['clock_in'].replace('Z', '+00:00')) if isinstance(open_record['clock_in'], str) else open_record['clock_in']
+        total_hours = (now - clock_in_time).total_seconds() / 3600
+        
+        company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+        daily_hours = (company.get("weekly_hours", 40) / 5) if company else 8
+        overtime = max(0, total_hours - daily_hours)
+        
+        await db.clock_records.update_one(
+            {"id": open_record['id']},
+            {"$set": {
+                "clock_out": now.isoformat(),
+                "total_hours": round(total_hours, 2),
+                "overtime_hours": round(overtime, 2)
+            }}
+        )
+        
+        return {
+            "action": "clock_out",
+            "time": now.isoformat(),
+            "total_hours": round(total_hours, 2),
+            "overtime_hours": round(overtime, 2),
+            "message": "Remote clock out successful",
+            "method": "geolocation",
+            "distance_from_home": int(distance)
+        }
+    else:
+        # Clock in
+        record = ClockRecord(
+            user_id=user_id,
+            company_id=company_id,
+            clock_in=now,
+            date=today,
+            clock_method="geolocation",
+            location={"lat": data.latitude, "lng": data.longitude}
+        )
+        record_dict = record.model_dump()
+        record_dict['clock_in'] = record_dict['clock_in'].isoformat()
+        record_dict['created_at'] = record_dict['created_at'].isoformat()
+        await db.clock_records.insert_one(record_dict)
+        
+        return {
+            "action": "clock_in",
+            "time": now.isoformat(),
+            "message": "Remote clock in successful",
+            "method": "geolocation",
+            "distance_from_home": int(distance)
+        }
+
 @api_router.get("/clock/status", response_model=dict)
 async def get_clock_status(current_user: dict = Depends(get_current_user)):
     """Get current clock status for user"""
