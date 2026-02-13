@@ -221,6 +221,14 @@ export default function HRDashboard() {
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
+              onClick={() => navigate('/send-notification')}
+              data-testid="send-notification-btn"
+            >
+              <Bell className="w-4 h-4 mr-2" />
+              Notificações
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate('/remote-map')}
               data-testid="remote-map-btn"
             >
