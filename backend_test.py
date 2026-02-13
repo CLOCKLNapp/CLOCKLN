@@ -258,6 +258,20 @@ def main():
     print("\n⚙️ Testing Settings...")
     tester.test_update_language()
     
+    # Test 9: Phase 2 Features - Vacation & Absences
+    print("\n🏖️ Testing Phase 2 Features - Vacation & Absences...")
+    tester.test_my_absences()
+    tester.test_vacation_requests_list()
+    tester.test_request_vacation()
+    
+    # Test 10: Totem Events
+    print("\n📱 Testing Totem Events...")
+    tester.test_totem_recent_events()
+    
+    # Test 11: CSV Export
+    print("\n📊 Testing CSV Export...")
+    tester.test_export_csv()
+    
     # Results
     print("\n" + "=" * 60)
     print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
