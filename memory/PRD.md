@@ -208,6 +208,7 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 ---
 
 ## Credenciais de Teste
+- **Super Admin**: michaelcaceres71@gmail.com / 123456 (Acesso total + Empresa VIP)
 - **HR Admin (ACME)**: hr@acme.com / password123
 - **Gerente (ACME)**: gerente@acme.com / password123
 - **Remoto (ACME)**: carlos.remoto@acme.com / password123 (SP: -23.5505, -46.6333, 150m)
