@@ -257,6 +257,85 @@ class CLOCKLNAPITester:
         
         return success, response
 
+    # ========== GEOLOCATION FEATURE TESTS ==========
+
+    def test_geolocation_clock_onsite_worker(self, lat=-23.5505, lng=-46.6333):
+        """Test geolocation clock-in for onsite worker (should fail)"""
+        print("   🚫 Testing onsite worker geolocation block...")
+        return self.run_test(
+            "Geolocation Clock - Onsite Worker Block", 
+            "POST", 
+            "/api/clock/geolocation", 
+            403,  # Should be forbidden for onsite workers
+            data={"latitude": lat, "longitude": lng}
+        )
+
+    def test_geolocation_clock_remote_worker_valid_location(self, lat=-23.5505, lng=-46.6333):
+        """Test geolocation clock-in for remote worker within radius"""
+        print("   ✅ Testing remote worker valid location...")
+        return self.run_test(
+            "Geolocation Clock - Remote Worker Valid", 
+            "POST", 
+            "/api/clock/geolocation", 
+            200,  # Should work for remote workers within radius
+            data={"latitude": lat, "longitude": lng}
+        )
+
+    def test_geolocation_clock_remote_worker_invalid_location(self, lat=-22.9068, lng=-43.1729):
+        """Test geolocation clock-in for remote worker outside radius (Rio coordinates vs São Paulo)"""
+        print("   🚫 Testing remote worker invalid location...")
+        return self.run_test(
+            "Geolocation Clock - Remote Worker Invalid", 
+            "POST", 
+            "/api/clock/geolocation", 
+            400,  # Should fail - outside allowed radius
+            data={"latitude": lat, "longitude": lng}
+        )
+
+    def test_geolocation_clock_no_home_location(self):
+        """Test geolocation clock-in for worker without home location configured"""
+        print("   🚫 Testing worker without home location...")
+        return self.run_test(
+            "Geolocation Clock - No Home Location", 
+            "POST", 
+            "/api/clock/geolocation", 
+            400,  # Should fail - no home location configured
+            data={"latitude": -23.5505, "longitude": -46.6333}
+        )
+
+    def test_create_remote_employee(self, work_mode="remote"):
+        """Test creating employee with remote/hybrid work mode"""
+        employee_data = {
+            "name": f"Test Remote Worker {int(time.time())}",
+            "email": f"remote{int(time.time())}@techcorp.com", 
+            "password": "test123",
+            "role": "employee",
+            "work_mode": work_mode,
+            "home_location": {"lat": -23.5505, "lng": -46.6333},
+            "location_radius_meters": 200,
+            "company_id": "test-company-id"  # This will be updated with actual company_id
+        }
+        
+        return self.run_test(
+            f"Create {work_mode.title()} Employee",
+            "POST",
+            "/api/users",
+            200,
+            data=employee_data
+        )
+
+    def test_create_hybrid_employee(self):
+        """Test creating hybrid employee"""
+        return self.test_create_remote_employee("hybrid")
+
+    def login_as_user(self, email, password):
+        """Helper to login as a specific user"""
+        current_token = self.token  # Save current token
+        success, response = self.test_login(email, password)
+        if not success:
+            self.token = current_token  # Restore if failed
+        return success, response
+
 def main():
     print("=" * 60)
     print("🕐 CLOCKLN Backend API Test Suite")
