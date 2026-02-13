@@ -600,12 +600,22 @@ async def clock_via_geolocation(data: GeoClockIn, current_user: dict = Depends(g
     )
     
     allowed_radius = current_user.get('location_radius_meters', 100)
+    is_outside_radius = distance > allowed_radius
     
-    if distance > allowed_radius:
-        raise HTTPException(
-            status_code=400, 
-            detail=f"You are {int(distance)}m away from your registered location. Maximum allowed: {allowed_radius}m"
+    # Allow clock-in but create alert if outside radius
+    if is_outside_radius:
+        # Create alert notification for HR
+        alert = Notification(
+            company_id=current_user['company_id'],
+            user_id=None,  # Send to all HR
+            title="⚠️ Alerta: Ponto fora do raio",
+            message=f"{current_user['name']} registrou ponto a {int(distance)}m do local cadastrado (limite: {allowed_radius}m)",
+            type="warning",
+            created_by="system"
         )
+        alert_dict = alert.model_dump()
+        alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+        await db.notifications.insert_one(alert_dict)
     
     user_id = current_user['id']
     company_id = current_user['company_id']
