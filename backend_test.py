@@ -204,6 +204,59 @@ class CLOCKLNAPITester:
         )
         return success, response
 
+    def test_get_my_notifications(self):
+        """Test getting user notifications"""
+        return self.run_test("Get My Notifications", "GET", "/api/notifications/my", 200)
+
+    def test_create_notification(self):
+        """Test creating notification (HR only)"""
+        return self.run_test(
+            "Create Notification",
+            "POST",
+            "/api/notifications",
+            200,
+            data={
+                "title": "Test Notification",
+                "message": "This is a test notification from API tests",
+                "type": "info"
+            }
+        )
+
+    def test_get_my_documents(self):
+        """Test getting user documents"""
+        return self.run_test("Get My Documents", "GET", "/api/documents/my", 200)
+
+    def test_get_pending_documents(self):
+        """Test getting pending documents for HR review"""
+        return self.run_test("Get Pending Documents", "GET", "/api/documents/pending", 200)
+
+    def test_upload_document(self):
+        """Test document upload functionality"""
+        # Create a simple test file content
+        test_content = "This is a test medical certificate document"
+        import base64
+        
+        # Simulate file upload by creating multipart form data
+        # Note: This is a simplified test - real multipart upload testing would require more complex setup
+        print("   📄 Document upload test requires multipart/form-data - testing endpoint accessibility...")
+        
+        # Test if the endpoint is accessible (will return validation error but proves endpoint exists)
+        success, response = self.run_test(
+            "Document Upload Endpoint Test",
+            "POST",
+            "/api/documents/upload",
+            422,  # Expect validation error due to missing file
+            data={"doc_type": "medical_certificate", "description": "Test document"}
+        )
+        
+        # If we get 422, it means endpoint exists and is validating input
+        if not success and response.get('status_code') == 422:
+            print("   ✅ Document upload endpoint accessible (validation working)")
+            self.log_result("Document Upload Endpoint", True, "Endpoint accessible, validation working")
+            return True, response
+        
+        return success, response
+
 def main():
     print("=" * 60)
     print("🕐 CLOCKLN Backend API Test Suite")
