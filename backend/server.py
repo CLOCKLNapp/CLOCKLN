@@ -1248,6 +1248,87 @@ async def hr_dashboard(current_user: dict = Depends(require_hr)):
         "pending_vacation_requests": pending_vacations
     }
 
+@api_router.get("/dashboard/manager", response_model=dict)
+async def manager_dashboard(current_user: dict = Depends(get_current_user)):
+    """Get manager dashboard data - shows only managed team"""
+    if current_user.get("role") != UserRole.MANAGER:
+        raise HTTPException(status_code=403, detail="Manager access required")
+    
+    manager_id = current_user['id']
+    company_id = current_user['company_id']
+    now = datetime.now(timezone.utc)
+    today = now.strftime("%Y-%m-%d")
+    month_start = now.replace(day=1).strftime("%Y-%m-%d")
+    
+    # Get team members
+    team = await db.users.find({
+        "company_id": company_id,
+        "manager_id": manager_id,
+        "is_active": True
+    }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(100)
+    
+    team_ids = [u['id'] for u in team]
+    
+    # Stats for team only
+    clocked_in_today = await db.clock_records.count_documents({
+        "user_id": {"$in": team_ids},
+        "date": today,
+        "clock_out": None
+    })
+    
+    records = await db.clock_records.find({
+        "user_id": {"$in": team_ids},
+        "date": {"$gte": month_start}
+    }, {"_id": 0}).to_list(1000)
+    
+    total_overtime = sum(r.get("overtime_hours", 0) or 0 for r in records)
+    
+    # Pending vacation requests from team
+    pending_vacations = await db.vacation_requests.count_documents({
+        "user_id": {"$in": team_ids},
+        "status": "pending"
+    })
+    
+    return {
+        "total_team_members": len(team),
+        "clocked_in_today": clocked_in_today,
+        "total_overtime_month": round(total_overtime, 2),
+        "team": team,
+        "pending_vacation_requests": pending_vacations
+    }
+
+@api_router.get("/manager/team", response_model=List[dict])
+async def get_manager_team(current_user: dict = Depends(get_current_user)):
+    """Get list of employees managed by current user"""
+    if current_user.get("role") != UserRole.MANAGER:
+        raise HTTPException(status_code=403, detail="Manager access required")
+    
+    team = await db.users.find({
+        "company_id": current_user['company_id'],
+        "manager_id": current_user['id']
+    }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(100)
+    
+    return team
+
+@api_router.get("/managers", response_model=List[dict])
+async def list_managers(current_user: dict = Depends(require_hr)):
+    """List all managers in company (HR only)"""
+    managers = await db.users.find({
+        "company_id": current_user['company_id'],
+        "role": UserRole.MANAGER,
+        "is_active": True
+    }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(100)
+    
+    # Count team members for each manager
+    for manager in managers:
+        team_count = await db.users.count_documents({
+            "manager_id": manager['id'],
+            "is_active": True
+        })
+        manager['team_count'] = team_count
+    
+    return managers
+
 @api_router.get("/reports/remote-clocks", response_model=List[dict])
 async def get_remote_clock_records(
     days: int = 7,
