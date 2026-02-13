@@ -16,6 +16,7 @@ import DocumentsPage from './pages/DocumentsPage';
 import DocumentsReviewPage from './pages/DocumentsReviewPage';
 import NotificationsPage from './pages/NotificationsPage';
 import RemoteClockPage from './pages/RemoteClockPage';
+import RemoteMapPage from './pages/RemoteMapPage';
 import './App.css';
 
 // Protected Route Component
@@ -183,6 +184,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute requireHR>
             <DocumentsReviewPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/remote-map"
+        element={
+          <ProtectedRoute requireHR>
+            <RemoteMapPage />
           </ProtectedRoute>
         }
       />
