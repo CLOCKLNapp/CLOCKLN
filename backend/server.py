@@ -1683,6 +1683,246 @@ async def stripe_webhook(request: Request):
         logger.error(f"Webhook error: {str(e)}")
         return {"status": "error", "message": str(e)}
 
+# ============== REPORTS (PDF/EXCEL) ==============
+
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.units import inch
+import xlsxwriter
+
+@api_router.get("/reports/attendance/pdf")
+async def generate_attendance_pdf(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Generate PDF attendance report"""
+    company_id = current_user['company_id']
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    
+    # Get records
+    records = await db.clock_records.find({
+        "company_id": company_id,
+        "date": {"$gte": start_date, "$lte": end_date}
+    }, {"_id": 0}).sort("date", 1).to_list(1000)
+    
+    # Get user names
+    users = await db.users.find({"company_id": company_id}, {"_id": 0, "id": 1, "name": 1}).to_list(500)
+    user_map = {u['id']: u['name'] for u in users}
+    
+    # Create PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, spaceAfter=20)
+    elements.append(Paragraph(f"Relatório de Ponto - {company.get('name', 'CLOCKLN')}", title_style))
+    elements.append(Paragraph(f"Período: {start_date} a {end_date}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Table data
+    data = [['Funcionário', 'Data', 'Entrada', 'Saída', 'Total', 'Método']]
+    for record in records:
+        user_name = user_map.get(record['user_id'], 'Desconhecido')
+        clock_in = record.get('clock_in', '')[:16].replace('T', ' ') if record.get('clock_in') else '-'
+        clock_out = record.get('clock_out', '')[:16].replace('T', ' ') if record.get('clock_out') else '-'
+        total = f"{record.get('total_hours', 0):.1f}h" if record.get('total_hours') else '-'
+        method = 'QR' if record.get('clock_method') == 'qr' else 'GPS'
+        data.append([user_name[:20], record.get('date', ''), clock_in[-8:], clock_out[-8:], total, method])
+    
+    if len(data) > 1:
+        table = Table(data, colWidths=[120, 80, 70, 70, 50, 50])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f1f5f9')),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#f8fafc'), colors.HexColor('#f1f5f9')]),
+        ]))
+        elements.append(table)
+    else:
+        elements.append(Paragraph("Nenhum registro encontrado no período.", styles['Normal']))
+    
+    # Summary
+    elements.append(Spacer(1, 20))
+    total_records = len(records)
+    total_hours = sum(r.get('total_hours', 0) or 0 for r in records)
+    elements.append(Paragraph(f"Total de Registros: {total_records}", styles['Normal']))
+    elements.append(Paragraph(f"Total de Horas: {total_hours:.1f}h", styles['Normal']))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    filename = f"relatorio_ponto_{start_date}_{end_date}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@api_router.get("/reports/attendance/excel")
+async def generate_attendance_excel(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Generate Excel attendance report"""
+    company_id = current_user['company_id']
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    
+    # Get records
+    records = await db.clock_records.find({
+        "company_id": company_id,
+        "date": {"$gte": start_date, "$lte": end_date}
+    }, {"_id": 0}).sort("date", 1).to_list(1000)
+    
+    # Get user info
+    users = await db.users.find({"company_id": company_id}, {"_id": 0}).to_list(500)
+    user_map = {u['id']: u for u in users}
+    
+    # Create Excel
+    buffer = io.BytesIO()
+    workbook = xlsxwriter.Workbook(buffer, {'in_memory': True})
+    
+    # Styles
+    header_fmt = workbook.add_format({'bold': True, 'bg_color': '#2563eb', 'font_color': 'white', 'border': 1})
+    cell_fmt = workbook.add_format({'border': 1})
+    number_fmt = workbook.add_format({'border': 1, 'num_format': '0.00'})
+    
+    # Sheet 1: Attendance Details
+    ws1 = workbook.add_worksheet('Registros de Ponto')
+    headers = ['Funcionário', 'Email', 'Data', 'Entrada', 'Saída', 'Total Horas', 'Horas Extra', 'Método', 'Fora do Raio']
+    for col, header in enumerate(headers):
+        ws1.write(0, col, header, header_fmt)
+    
+    row = 1
+    for record in records:
+        user = user_map.get(record['user_id'], {})
+        ws1.write(row, 0, user.get('name', 'Desconhecido'), cell_fmt)
+        ws1.write(row, 1, user.get('email', ''), cell_fmt)
+        ws1.write(row, 2, record.get('date', ''), cell_fmt)
+        ws1.write(row, 3, record.get('clock_in', '')[:19] if record.get('clock_in') else '', cell_fmt)
+        ws1.write(row, 4, record.get('clock_out', '')[:19] if record.get('clock_out') else '', cell_fmt)
+        ws1.write(row, 5, record.get('total_hours', 0) or 0, number_fmt)
+        ws1.write(row, 6, record.get('overtime_hours', 0) or 0, number_fmt)
+        ws1.write(row, 7, 'QR Code' if record.get('clock_method') == 'qr' else 'Geolocalização', cell_fmt)
+        ws1.write(row, 8, 'Sim' if record.get('outside_radius') else 'Não', cell_fmt)
+        row += 1
+    
+    ws1.set_column('A:A', 25)
+    ws1.set_column('B:B', 30)
+    ws1.set_column('C:C', 12)
+    ws1.set_column('D:E', 20)
+    ws1.set_column('F:G', 12)
+    
+    # Sheet 2: Summary by Employee
+    ws2 = workbook.add_worksheet('Resumo por Funcionário')
+    headers2 = ['Funcionário', 'Total Dias', 'Total Horas', 'Horas Extras', 'Modo de Trabalho']
+    for col, header in enumerate(headers2):
+        ws2.write(0, col, header, header_fmt)
+    
+    # Aggregate by user
+    user_summary = {}
+    for record in records:
+        uid = record['user_id']
+        if uid not in user_summary:
+            user_summary[uid] = {'days': 0, 'hours': 0, 'overtime': 0}
+        user_summary[uid]['days'] += 1
+        user_summary[uid]['hours'] += record.get('total_hours', 0) or 0
+        user_summary[uid]['overtime'] += record.get('overtime_hours', 0) or 0
+    
+    row = 1
+    for uid, summary in user_summary.items():
+        user = user_map.get(uid, {})
+        ws2.write(row, 0, user.get('name', 'Desconhecido'), cell_fmt)
+        ws2.write(row, 1, summary['days'], cell_fmt)
+        ws2.write(row, 2, summary['hours'], number_fmt)
+        ws2.write(row, 3, summary['overtime'], number_fmt)
+        ws2.write(row, 4, user.get('work_mode', 'onsite'), cell_fmt)
+        row += 1
+    
+    ws2.set_column('A:A', 25)
+    ws2.set_column('B:E', 15)
+    
+    workbook.close()
+    buffer.seek(0)
+    
+    filename = f"relatorio_ponto_{start_date}_{end_date}.xlsx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@api_router.get("/reports/employees/pdf")
+async def generate_employees_pdf(current_user: dict = Depends(require_hr)):
+    """Generate PDF employee roster report"""
+    company_id = current_user['company_id']
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    
+    # Get employees
+    employees = await db.users.find(
+        {"company_id": company_id, "is_active": True},
+        {"_id": 0, "password_hash": 0, "pin_hash": 0}
+    ).sort("name", 1).to_list(500)
+    
+    # Create PDF
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+    
+    # Title
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, spaceAfter=20)
+    elements.append(Paragraph(f"Lista de Funcionários - {company.get('name', 'CLOCKLN')}", title_style))
+    elements.append(Paragraph(f"Gerado em: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+    elements.append(Spacer(1, 20))
+    
+    # Table
+    data = [['Nome', 'Email', 'Cargo', 'Modo Trabalho', 'Férias Restantes']]
+    for emp in employees:
+        role = 'RH' if emp.get('role') == 'hr' else ('Gerente' if emp.get('role') == 'manager' else 'Funcionário')
+        work_mode = {'onsite': 'Presencial', 'remote': 'Remoto', 'hybrid': 'Híbrido'}.get(emp.get('work_mode'), 'Presencial')
+        vacation_left = emp.get('vacation_days_total', 30) - emp.get('vacation_days_used', 0)
+        data.append([emp.get('name', '')[:25], emp.get('email', '')[:30], role, work_mode, str(vacation_left)])
+    
+    table = Table(data, colWidths=[100, 130, 70, 80, 70])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f1f5f9')]),
+    ]))
+    elements.append(table)
+    
+    # Summary
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph(f"Total de Funcionários Ativos: {len(employees)}", styles['Normal']))
+    
+    doc.build(elements)
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=funcionarios_{datetime.now(timezone.utc).strftime('%Y%m%d')}.pdf"}
+    )
+
 # ============== USER MANAGEMENT ROUTES ==============
 
 @api_router.post("/users", response_model=UserResponse)
