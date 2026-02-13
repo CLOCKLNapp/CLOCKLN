@@ -1961,6 +1961,345 @@ async def generate_employees_pdf(current_user: dict = Depends(require_hr)):
         headers={"Content-Disposition": f"attachment; filename=funcionarios_{datetime.now(timezone.utc).strftime('%Y%m%d')}.pdf"}
     )
 
+# ============== OVERTIME & TIME BANK ROUTES ==============
+
+class OvertimeApprovalRequest(BaseModel):
+    status: str  # approved, rejected
+    notes: Optional[str] = None
+
+class TimeBankAdjustment(BaseModel):
+    hours: float
+    description: str
+
+@api_router.get("/overtime/pending")
+async def get_pending_overtime(current_user: dict = Depends(get_current_user)):
+    """Get pending overtime requests - HR sees all, Manager sees team"""
+    company_id = current_user['company_id']
+    role = current_user.get('role')
+    
+    if role == UserRole.HR:
+        # HR sees all pending
+        requests = await db.overtime_requests.find({
+            "company_id": company_id,
+            "status": "pending"
+        }, {"_id": 0}).sort("requested_at", -1).to_list(100)
+    elif role == UserRole.MANAGER:
+        # Manager sees only team
+        team_ids = await get_managed_users(current_user['id'], company_id)
+        requests = await db.overtime_requests.find({
+            "company_id": company_id,
+            "user_id": {"$in": team_ids},
+            "status": "pending"
+        }, {"_id": 0}).sort("requested_at", -1).to_list(100)
+    else:
+        raise HTTPException(status_code=403, detail="HR or Manager access required")
+    
+    # Enrich with user names
+    for req in requests:
+        user = await db.users.find_one({"id": req['user_id']}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            req['user_name'] = user.get('name', 'Unknown')
+            req['user_email'] = user.get('email', '')
+    
+    return requests
+
+@api_router.get("/overtime/history")
+async def get_overtime_history(
+    days: int = 30,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get overtime request history"""
+    company_id = current_user['company_id']
+    role = current_user.get('role')
+    user_id = current_user['id']
+    
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    
+    query = {"company_id": company_id}
+    
+    if role == UserRole.EMPLOYEE:
+        query["user_id"] = user_id
+    elif role == UserRole.MANAGER:
+        team_ids = await get_managed_users(user_id, company_id)
+        team_ids.append(user_id)  # Include manager's own
+        query["user_id"] = {"$in": team_ids}
+    # HR sees all
+    
+    requests = await db.overtime_requests.find(
+        query, {"_id": 0}
+    ).sort("requested_at", -1).to_list(200)
+    
+    # Enrich
+    for req in requests:
+        user = await db.users.find_one({"id": req['user_id']}, {"_id": 0, "name": 1})
+        if user:
+            req['user_name'] = user.get('name', 'Unknown')
+        if req.get('reviewed_by'):
+            reviewer = await db.users.find_one({"id": req['reviewed_by']}, {"_id": 0, "name": 1})
+            if reviewer:
+                req['reviewer_name'] = reviewer.get('name', 'Unknown')
+    
+    return requests
+
+@api_router.patch("/overtime/{request_id}")
+async def review_overtime(
+    request_id: str,
+    data: OvertimeApprovalRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Approve or reject overtime request"""
+    role = current_user.get('role')
+    if role not in [UserRole.HR, UserRole.MANAGER]:
+        raise HTTPException(status_code=403, detail="HR or Manager access required")
+    
+    request = await db.overtime_requests.find_one({"id": request_id}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    if request['company_id'] != current_user['company_id']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Manager can only approve their team
+    if role == UserRole.MANAGER:
+        team_ids = await get_managed_users(current_user['id'], current_user['company_id'])
+        if request['user_id'] not in team_ids:
+            raise HTTPException(status_code=403, detail="Can only approve your team's overtime")
+    
+    if data.status not in ['approved', 'rejected']:
+        raise HTTPException(status_code=400, detail="Status must be 'approved' or 'rejected'")
+    
+    # Update request
+    now = datetime.now(timezone.utc)
+    await db.overtime_requests.update_one(
+        {"id": request_id},
+        {"$set": {
+            "status": data.status,
+            "reviewed_by": current_user['id'],
+            "reviewed_at": now.isoformat(),
+            "notes": data.notes
+        }}
+    )
+    
+    # If approved, add to time bank
+    if data.status == 'approved':
+        overtime_hours = request['overtime_hours']
+        
+        # Create or update time bank
+        time_bank = await db.time_banks.find_one(
+            {"user_id": request['user_id']},
+            {"_id": 0}
+        )
+        
+        if time_bank:
+            new_balance = time_bank['balance_hours'] + overtime_hours
+            await db.time_banks.update_one(
+                {"user_id": request['user_id']},
+                {"$set": {"balance_hours": new_balance, "last_updated": now.isoformat()}}
+            )
+        else:
+            new_bank = TimeBank(
+                user_id=request['user_id'],
+                company_id=request['company_id'],
+                balance_hours=overtime_hours
+            )
+            bank_dict = new_bank.model_dump()
+            bank_dict['last_updated'] = bank_dict['last_updated'].isoformat()
+            await db.time_banks.insert_one(bank_dict)
+        
+        # Create transaction
+        transaction = TimeBankTransaction(
+            user_id=request['user_id'],
+            company_id=request['company_id'],
+            hours=overtime_hours,
+            type="overtime",
+            description=f"Horas extras aprovadas ({request['date']})",
+            reference_id=request_id
+        )
+        tx_dict = transaction.model_dump()
+        tx_dict['created_at'] = tx_dict['created_at'].isoformat()
+        await db.time_bank_transactions.insert_one(tx_dict)
+        
+        # Create notification for user
+        notif = Notification(
+            company_id=request['company_id'],
+            user_id=request['user_id'],
+            title="Horas extras aprovadas!",
+            message=f"Suas {overtime_hours:.1f}h extras de {request['date']} foram aprovadas e adicionadas ao banco de horas.",
+            type="success",
+            created_by=current_user['id']
+        )
+        notif_dict = notif.model_dump()
+        notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+        await db.notifications.insert_one(notif_dict)
+    else:
+        # Rejected - notify user
+        notif = Notification(
+            company_id=request['company_id'],
+            user_id=request['user_id'],
+            title="Horas extras rejeitadas",
+            message=f"Suas horas extras de {request['date']} foram rejeitadas. {data.notes or ''}",
+            type="warning",
+            created_by=current_user['id']
+        )
+        notif_dict = notif.model_dump()
+        notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+        await db.notifications.insert_one(notif_dict)
+    
+    return {"message": f"Overtime request {data.status}"}
+
+@api_router.get("/timebank/balance")
+async def get_timebank_balance(current_user: dict = Depends(get_current_user)):
+    """Get current user's time bank balance"""
+    time_bank = await db.time_banks.find_one(
+        {"user_id": current_user['id']},
+        {"_id": 0}
+    )
+    
+    if not time_bank:
+        return {"balance_hours": 0.0, "last_updated": None}
+    
+    return {
+        "balance_hours": time_bank.get('balance_hours', 0),
+        "last_updated": time_bank.get('last_updated')
+    }
+
+@api_router.get("/timebank/transactions")
+async def get_timebank_transactions(
+    limit: int = 50,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get time bank transaction history for current user"""
+    transactions = await db.time_bank_transactions.find(
+        {"user_id": current_user['id']},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(limit)
+    
+    return transactions
+
+@api_router.get("/timebank/all")
+async def get_all_timebanks(current_user: dict = Depends(require_hr)):
+    """Get all time bank balances for company (HR only)"""
+    company_id = current_user['company_id']
+    
+    time_banks = await db.time_banks.find(
+        {"company_id": company_id},
+        {"_id": 0}
+    ).to_list(500)
+    
+    # Enrich with user names
+    for tb in time_banks:
+        user = await db.users.find_one({"id": tb['user_id']}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            tb['user_name'] = user.get('name', 'Unknown')
+            tb['user_email'] = user.get('email', '')
+    
+    return time_banks
+
+@api_router.post("/timebank/{user_id}/adjust")
+async def adjust_timebank(
+    user_id: str,
+    data: TimeBankAdjustment,
+    current_user: dict = Depends(require_hr)
+):
+    """Manually adjust time bank balance (HR only)"""
+    # Verify user exists and belongs to company
+    user = await db.users.find_one(
+        {"id": user_id, "company_id": current_user['company_id']},
+        {"_id": 0}
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    now = datetime.now(timezone.utc)
+    
+    # Get or create time bank
+    time_bank = await db.time_banks.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if time_bank:
+        new_balance = time_bank['balance_hours'] + data.hours
+        await db.time_banks.update_one(
+            {"user_id": user_id},
+            {"$set": {"balance_hours": new_balance, "last_updated": now.isoformat()}}
+        )
+    else:
+        new_bank = TimeBank(
+            user_id=user_id,
+            company_id=current_user['company_id'],
+            balance_hours=data.hours
+        )
+        bank_dict = new_bank.model_dump()
+        bank_dict['last_updated'] = bank_dict['last_updated'].isoformat()
+        await db.time_banks.insert_one(bank_dict)
+        new_balance = data.hours
+    
+    # Create transaction
+    tx_type = "adjustment" if data.hours > 0 else "compensation"
+    transaction = TimeBankTransaction(
+        user_id=user_id,
+        company_id=current_user['company_id'],
+        hours=data.hours,
+        type=tx_type,
+        description=data.description
+    )
+    tx_dict = transaction.model_dump()
+    tx_dict['created_at'] = tx_dict['created_at'].isoformat()
+    await db.time_bank_transactions.insert_one(tx_dict)
+    
+    return {
+        "message": "Time bank adjusted",
+        "new_balance": new_balance,
+        "adjustment": data.hours
+    }
+
+@api_router.post("/timebank/use")
+async def use_timebank_hours(
+    hours: float,
+    date: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Use time bank hours for time off (employee request)"""
+    if hours <= 0:
+        raise HTTPException(status_code=400, detail="Hours must be positive")
+    
+    # Get current balance
+    time_bank = await db.time_banks.find_one(
+        {"user_id": current_user['id']},
+        {"_id": 0}
+    )
+    
+    if not time_bank or time_bank['balance_hours'] < hours:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient balance. Available: {time_bank['balance_hours'] if time_bank else 0:.1f}h"
+        )
+    
+    now = datetime.now(timezone.utc)
+    new_balance = time_bank['balance_hours'] - hours
+    
+    # Update balance
+    await db.time_banks.update_one(
+        {"user_id": current_user['id']},
+        {"$set": {"balance_hours": new_balance, "last_updated": now.isoformat()}}
+    )
+    
+    # Create transaction
+    transaction = TimeBankTransaction(
+        user_id=current_user['id'],
+        company_id=current_user['company_id'],
+        hours=-hours,
+        type="compensation",
+        description=f"Compensação de {hours:.1f}h em {date}"
+    )
+    tx_dict = transaction.model_dump()
+    tx_dict['created_at'] = tx_dict['created_at'].isoformat()
+    await db.time_bank_transactions.insert_one(tx_dict)
+    
+    return {
+        "message": "Hours deducted from time bank",
+        "used_hours": hours,
+        "new_balance": new_balance
+    }
+
 # ============== USER MANAGEMENT ROUTES ==============
 
 @api_router.post("/users", response_model=UserResponse)
