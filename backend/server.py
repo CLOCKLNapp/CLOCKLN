@@ -625,6 +625,20 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
             }}
         )
         
+        # Auto-create overtime request if there are extra hours
+        if overtime > 0:
+            overtime_req = OvertimeRequest(
+                user_id=user_id,
+                company_id=company_id,
+                clock_record_id=open_record['id'],
+                date=today,
+                regular_hours=min(total_hours, daily_hours),
+                overtime_hours=round(overtime, 2)
+            )
+            req_dict = overtime_req.model_dump()
+            req_dict['requested_at'] = req_dict['requested_at'].isoformat()
+            await db.overtime_requests.insert_one(req_dict)
+        
         # Create totem event for real-time display
         event = TotemClockEvent(
             company_id=company_id,
@@ -644,7 +658,8 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
             "total_hours": round(total_hours, 2),
             "overtime_hours": round(overtime, 2),
             "message": "Clock out successful",
-            "user_name": current_user['name']
+            "user_name": current_user['name'],
+            "overtime_request_created": overtime > 0
         }
     else:
         # Clock in
