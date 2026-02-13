@@ -160,6 +160,50 @@ class CLOCKLNAPITester:
             200
         )
 
+    def test_my_absences(self):
+        """Test getting user's absences and vacation info"""
+        return self.run_test("Get My Absences", "GET", "/api/absences/my", 200)
+
+    def test_vacation_requests_list(self):
+        """Test getting vacation requests (HR only)"""
+        return self.run_test("List Vacation Requests", "GET", "/api/vacation/requests", 200)
+
+    def test_totem_recent_events(self):
+        """Test getting recent totem events"""
+        return self.run_test("Get Totem Recent Events", "GET", "/api/totem/recent-events", 200)
+
+    def test_request_vacation(self):
+        """Test requesting vacation"""
+        from datetime import datetime, timedelta
+        start_date = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() + timedelta(days=32)).strftime("%Y-%m-%d")
+        
+        return self.run_test(
+            "Request Vacation",
+            "POST", 
+            "/api/vacation/request",
+            200,
+            data={
+                "start_date": start_date,
+                "end_date": end_date,
+                "reason": "Testing vacation request"
+            }
+        )
+
+    def test_export_csv(self):
+        """Test CSV export functionality"""
+        from datetime import datetime
+        start_date = datetime.now().strftime("%Y-%m-%d")
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        
+        success, response = self.run_test(
+            "Export CSV Report",
+            "GET", 
+            f"/api/reports/export/csv?start_date={start_date}&end_date={end_date}",
+            200
+        )
+        return success, response
+
 def main():
     print("=" * 60)
     print("🕐 CLOCKLN Backend API Test Suite")
