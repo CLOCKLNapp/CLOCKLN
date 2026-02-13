@@ -94,9 +94,8 @@ Sistema SaaS global de controle de ponto corporativo (CLOCKLN) - plataforma inte
 ---
 
 ## Credenciais de Teste
-- **HR Admin**: admin@techcorp.com / admin123
-- **Presencial**: joao@techcorp.com / joao123
-- **Remoto**: carlos@techcorp.com / carlos123 (SP: -23.5505, -46.6333, 200m)
+- **HR Admin (ACME)**: hr@acme.com / password123
+- **Remoto (ACME)**: carlos.remoto@acme.com / password123 (SP: -23.5505, -46.6333, 150m)
 
 ---
 
