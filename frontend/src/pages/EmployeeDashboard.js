@@ -197,7 +197,11 @@ export default function EmployeeDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + index * 0.05 }}
             >
-              <Card className="card-hover border-border/50">
+              <Card 
+                className={`card-hover border-border/50 ${stat.link ? 'cursor-pointer' : ''}`}
+                onClick={() => stat.link && navigate(stat.link)}
+                data-testid={stat.link ? 'timebank-card' : undefined}
+              >
                 <CardContent className="p-4 md:p-6">
                   <div className={`inline-flex p-2 rounded-lg ${stat.bgColor} mb-3`}>
                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -206,6 +210,11 @@ export default function EmployeeDashboard() {
                   <p className="text-xl md:text-2xl font-bold font-mono mt-1">
                     {loading ? '--' : stat.format(stat.value)}
                   </p>
+                  {stat.link && (
+                    <p className="text-xs text-primary mt-1 flex items-center gap-1">
+                      Ver detalhes <ChevronRight className="w-3 h-3" />
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
