@@ -1,5 +1,6 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -14,6 +15,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 import secrets
 import hashlib
+import io
+import base64
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -34,7 +37,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Security
 security = HTTPBearer()
 
-app = FastAPI(title="CLOCKLN API", version="1.0.0")
+app = FastAPI(title="CLOCKLN API", version="2.0.0")
 api_router = APIRouter(prefix="/api")
 
 # ============== MODELS ==============
@@ -51,6 +54,7 @@ class Company(BaseModel):
     timezone: str = "UTC"
     default_language: str = "en"
     weekly_hours: int = 40
+    vacation_days_per_year: int = 30  # Default vacation days
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class CompanyCreate(BaseModel):
@@ -58,6 +62,7 @@ class CompanyCreate(BaseModel):
     timezone: str = "UTC"
     default_language: str = "en"
     weekly_hours: int = 40
+    vacation_days_per_year: int = 30
 
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -70,6 +75,9 @@ class User(BaseModel):
     language: str = "en"
     timezone: str = "UTC"
     is_active: bool = True
+    vacation_days_total: int = 30  # Total vacation days entitled
+    vacation_days_used: int = 0    # Vacation days already used
+    hire_date: Optional[str] = None  # YYYY-MM-DD
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class UserCreate(BaseModel):
@@ -81,6 +89,8 @@ class UserCreate(BaseModel):
     pin: Optional[str] = None
     language: str = "en"
     timezone: str = "UTC"
+    vacation_days_total: int = 30
+    hire_date: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -99,6 +109,8 @@ class UserResponse(BaseModel):
     language: str
     timezone: str
     is_active: bool
+    vacation_days_total: int = 30
+    vacation_days_used: int = 0
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -115,6 +127,7 @@ class ClockRecord(BaseModel):
     total_hours: Optional[float] = None
     overtime_hours: float = 0
     date: str  # YYYY-MM-DD
+    status: str = "present"  # present, absent, vacation, sick
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class QRCode(BaseModel):
@@ -135,6 +148,88 @@ class UpdateUser(BaseModel):
     language: Optional[str] = None
     timezone: Optional[str] = None
     is_active: Optional[bool] = None
+    vacation_days_total: Optional[int] = None
+    vacation_days_used: Optional[int] = None
+
+# Phase 2 Models
+class Absence(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    date: str  # YYYY-MM-DD
+    type: str  # absent, vacation, sick, holiday
+    reason: Optional[str] = None
+    approved: bool = False
+    approved_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AbsenceCreate(BaseModel):
+    date: str
+    type: str
+    reason: Optional[str] = None
+
+class VacationRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    start_date: str
+    end_date: str
+    days_count: int
+    reason: Optional[str] = None
+    status: str = "pending"  # pending, approved, rejected
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class VacationRequestCreate(BaseModel):
+    start_date: str
+    end_date: str
+    reason: Optional[str] = None
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    user_id: Optional[str] = None  # None = all employees
+    title: str
+    message: str
+    type: str = "info"  # info, warning, success, error
+    read: bool = False
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NotificationCreate(BaseModel):
+    user_id: Optional[str] = None
+    title: str
+    message: str
+    type: str = "info"
+
+class Document(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    company_id: str
+    filename: str
+    file_type: str
+    file_data: str  # Base64 encoded
+    doc_type: str  # medical_certificate, justification, other
+    description: Optional[str] = None
+    status: str = "pending"  # pending, approved, rejected
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TotemClockEvent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    user_id: str
+    user_name: str
+    action: str  # clock_in, clock_out
+    time: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # ============== HELPERS ==============
 
@@ -173,35 +268,44 @@ async def require_hr(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="HR or Manager access required")
     return current_user
 
+def calculate_work_days(start_date: str, end_date: str) -> int:
+    """Calculate number of work days between two dates (excluding weekends)"""
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+    days = 0
+    current = start
+    while current <= end:
+        if current.weekday() < 5:  # Monday to Friday
+            days += 1
+        current += timedelta(days=1)
+    return days
+
 # ============== AUTH ROUTES ==============
 
 @api_router.post("/auth/register-company", response_model=dict)
 async def register_company(company: CompanyCreate, user: UserCreate):
     """Register a new company with initial HR user"""
-    # Check if company name exists
     existing = await db.companies.find_one({"name": company.name}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Company name already exists")
     
-    # Check if email exists
     existing_user = await db.users.find_one({"email": user.email}, {"_id": 0})
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create company
     company_obj = Company(**company.model_dump())
     company_dict = company_obj.model_dump()
     company_dict['created_at'] = company_dict['created_at'].isoformat()
     await db.companies.insert_one(company_dict)
     
-    # Create HR user
     user_obj = User(
         email=user.email,
         name=user.name,
         role=UserRole.HR,
         company_id=company_obj.id,
         language=user.language,
-        timezone=user.timezone
+        timezone=user.timezone,
+        vacation_days_total=company.vacation_days_per_year
     )
     user_dict = user_obj.model_dump()
     user_dict['password_hash'] = hash_password(user.password)
@@ -210,7 +314,6 @@ async def register_company(company: CompanyCreate, user: UserCreate):
         user_dict['pin_hash'] = hash_pin(user.pin)
     await db.users.insert_one(user_dict)
     
-    # Create token
     access_token = create_access_token(data={"sub": user_obj.id, "company_id": company_obj.id})
     
     return {
@@ -274,7 +377,6 @@ async def generate_qr(current_user: dict = Depends(require_hr)):
     """Generate a new QR code for totem (HR only)"""
     company_id = current_user["company_id"]
     
-    # Generate unique code
     code = secrets.token_urlsafe(32)
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=30)
     
@@ -288,7 +390,6 @@ async def generate_qr(current_user: dict = Depends(require_hr)):
     qr_dict['expires_at'] = qr_dict['expires_at'].isoformat()
     qr_dict['created_at'] = qr_dict['created_at'].isoformat()
     
-    # Delete old QR codes for this company
     await db.qr_codes.delete_many({"company_id": company_id})
     await db.qr_codes.insert_one(qr_dict)
     
@@ -318,22 +419,36 @@ async def get_current_qr(current_user: dict = Depends(require_hr)):
         "expires_in_seconds": max(0, int(remaining))
     }
 
+# ============== TOTEM EVENTS (for real-time feedback) ==============
+
+@api_router.get("/totem/recent-events", response_model=List[dict])
+async def get_recent_totem_events(current_user: dict = Depends(require_hr)):
+    """Get recent clock events for totem display"""
+    company_id = current_user["company_id"]
+    
+    # Get events from last 30 seconds
+    cutoff = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+    
+    events = await db.totem_events.find({
+        "company_id": company_id,
+        "created_at": {"$gte": cutoff}
+    }, {"_id": 0}).sort("created_at", -1).to_list(10)
+    
+    return events
+
 # ============== CLOCK ROUTES ==============
 
 @api_router.post("/clock/scan", response_model=dict)
 async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current_user)):
     """Clock in/out by scanning QR code"""
-    # Verify QR code
     qr = await db.qr_codes.find_one({"code": data.qr_code}, {"_id": 0})
     if not qr:
         raise HTTPException(status_code=400, detail="Invalid QR code")
     
-    # Check expiration
     expires_at = datetime.fromisoformat(qr['expires_at'].replace('Z', '+00:00')) if isinstance(qr['expires_at'], str) else qr['expires_at']
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="QR code expired")
     
-    # Verify company match
     if qr['company_id'] != current_user['company_id']:
         raise HTTPException(status_code=400, detail="Invalid QR code for your company")
     
@@ -342,7 +457,6 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
     now = datetime.now(timezone.utc)
     today = now.strftime("%Y-%m-%d")
     
-    # Check for existing open record today
     open_record = await db.clock_records.find_one({
         "user_id": user_id,
         "date": today,
@@ -354,7 +468,6 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
         clock_in_time = datetime.fromisoformat(open_record['clock_in'].replace('Z', '+00:00')) if isinstance(open_record['clock_in'], str) else open_record['clock_in']
         total_hours = (now - clock_in_time).total_seconds() / 3600
         
-        # Get company for overtime calculation
         company = await db.companies.find_one({"id": company_id}, {"_id": 0})
         daily_hours = (company.get("weekly_hours", 40) / 5) if company else 8
         overtime = max(0, total_hours - daily_hours)
@@ -368,12 +481,26 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
             }}
         )
         
+        # Create totem event for real-time display
+        event = TotemClockEvent(
+            company_id=company_id,
+            user_id=user_id,
+            user_name=current_user['name'],
+            action="clock_out",
+            time=now
+        )
+        event_dict = event.model_dump()
+        event_dict['time'] = event_dict['time'].isoformat()
+        event_dict['created_at'] = event_dict['created_at'].isoformat()
+        await db.totem_events.insert_one(event_dict)
+        
         return {
             "action": "clock_out",
             "time": now.isoformat(),
             "total_hours": round(total_hours, 2),
             "overtime_hours": round(overtime, 2),
-            "message": "Clock out successful"
+            "message": "Clock out successful",
+            "user_name": current_user['name']
         }
     else:
         # Clock in
@@ -388,10 +515,24 @@ async def clock_via_qr(data: QRClockIn, current_user: dict = Depends(get_current
         record_dict['created_at'] = record_dict['created_at'].isoformat()
         await db.clock_records.insert_one(record_dict)
         
+        # Create totem event
+        event = TotemClockEvent(
+            company_id=company_id,
+            user_id=user_id,
+            user_name=current_user['name'],
+            action="clock_in",
+            time=now
+        )
+        event_dict = event.model_dump()
+        event_dict['time'] = event_dict['time'].isoformat()
+        event_dict['created_at'] = event_dict['created_at'].isoformat()
+        await db.totem_events.insert_one(event_dict)
+        
         return {
             "action": "clock_in",
             "time": now.isoformat(),
-            "message": "Clock in successful"
+            "message": "Clock in successful",
+            "user_name": current_user['name']
         }
 
 @api_router.get("/clock/status", response_model=dict)
@@ -433,6 +574,322 @@ async def get_clock_history(
     
     return records
 
+# ============== ABSENCE & VACATION ROUTES ==============
+
+@api_router.get("/absences/my", response_model=dict)
+async def get_my_absences(current_user: dict = Depends(get_current_user)):
+    """Get current user's absences and vacation info"""
+    user_id = current_user['id']
+    now = datetime.now(timezone.utc)
+    year_start = now.replace(month=1, day=1).strftime("%Y-%m-%d")
+    
+    # Get absences this year
+    absences = await db.absences.find({
+        "user_id": user_id,
+        "date": {"$gte": year_start}
+    }, {"_id": 0}).to_list(365)
+    
+    # Count by type
+    absent_days = len([a for a in absences if a['type'] == 'absent'])
+    sick_days = len([a for a in absences if a['type'] == 'sick'])
+    vacation_days = len([a for a in absences if a['type'] == 'vacation' and a.get('approved', False)])
+    
+    # Get vacation requests
+    vacation_requests = await db.vacation_requests.find({
+        "user_id": user_id
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    return {
+        "vacation_days_total": current_user.get("vacation_days_total", 30),
+        "vacation_days_used": current_user.get("vacation_days_used", 0),
+        "vacation_days_remaining": current_user.get("vacation_days_total", 30) - current_user.get("vacation_days_used", 0),
+        "absent_days": absent_days,
+        "sick_days": sick_days,
+        "absences": absences[:20],
+        "vacation_requests": vacation_requests[:10]
+    }
+
+@api_router.post("/vacation/request", response_model=dict)
+async def request_vacation(request: VacationRequestCreate, current_user: dict = Depends(get_current_user)):
+    """Request vacation days"""
+    days_count = calculate_work_days(request.start_date, request.end_date)
+    
+    remaining = current_user.get("vacation_days_total", 30) - current_user.get("vacation_days_used", 0)
+    if days_count > remaining:
+        raise HTTPException(status_code=400, detail=f"Not enough vacation days. You have {remaining} days remaining.")
+    
+    vacation = VacationRequest(
+        user_id=current_user['id'],
+        company_id=current_user['company_id'],
+        start_date=request.start_date,
+        end_date=request.end_date,
+        days_count=days_count,
+        reason=request.reason
+    )
+    
+    vacation_dict = vacation.model_dump()
+    vacation_dict['created_at'] = vacation_dict['created_at'].isoformat()
+    await db.vacation_requests.insert_one(vacation_dict)
+    
+    return {"message": "Vacation request submitted", "days_requested": days_count, "request_id": vacation.id}
+
+@api_router.get("/vacation/requests", response_model=List[dict])
+async def get_vacation_requests(current_user: dict = Depends(require_hr)):
+    """Get all vacation requests for company (HR only)"""
+    company_id = current_user['company_id']
+    
+    requests = await db.vacation_requests.find({
+        "company_id": company_id
+    }, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with user names
+    for req in requests:
+        user = await db.users.find_one({"id": req['user_id']}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            req['user_name'] = user.get('name', 'Unknown')
+            req['user_email'] = user.get('email', '')
+    
+    return requests
+
+@api_router.patch("/vacation/requests/{request_id}", response_model=dict)
+async def review_vacation_request(request_id: str, approved: bool, current_user: dict = Depends(require_hr)):
+    """Approve or reject vacation request (HR only)"""
+    vacation = await db.vacation_requests.find_one({"id": request_id}, {"_id": 0})
+    if not vacation:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    status = "approved" if approved else "rejected"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    await db.vacation_requests.update_one(
+        {"id": request_id},
+        {"$set": {"status": status, "reviewed_by": current_user['id'], "reviewed_at": now}}
+    )
+    
+    if approved:
+        # Update user's vacation days used
+        await db.users.update_one(
+            {"id": vacation['user_id']},
+            {"$inc": {"vacation_days_used": vacation['days_count']}}
+        )
+        
+        # Create absence records for each vacation day
+        start = datetime.strptime(vacation['start_date'], "%Y-%m-%d")
+        end = datetime.strptime(vacation['end_date'], "%Y-%m-%d")
+        current = start
+        while current <= end:
+            if current.weekday() < 5:
+                absence = Absence(
+                    user_id=vacation['user_id'],
+                    company_id=vacation['company_id'],
+                    date=current.strftime("%Y-%m-%d"),
+                    type="vacation",
+                    approved=True,
+                    approved_by=current_user['id']
+                )
+                absence_dict = absence.model_dump()
+                absence_dict['created_at'] = absence_dict['created_at'].isoformat()
+                await db.absences.insert_one(absence_dict)
+            current += timedelta(days=1)
+    
+    return {"message": f"Request {status}", "status": status}
+
+# ============== NOTIFICATIONS ROUTES ==============
+
+@api_router.post("/notifications", response_model=dict)
+async def create_notification(notif: NotificationCreate, current_user: dict = Depends(require_hr)):
+    """Create a notification (HR only)"""
+    notification = Notification(
+        company_id=current_user['company_id'],
+        user_id=notif.user_id,
+        title=notif.title,
+        message=notif.message,
+        type=notif.type,
+        created_by=current_user['id']
+    )
+    
+    notif_dict = notification.model_dump()
+    notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+    await db.notifications.insert_one(notif_dict)
+    
+    return {"message": "Notification created", "id": notification.id}
+
+@api_router.get("/notifications/my", response_model=List[dict])
+async def get_my_notifications(current_user: dict = Depends(get_current_user)):
+    """Get notifications for current user"""
+    company_id = current_user['company_id']
+    user_id = current_user['id']
+    
+    notifications = await db.notifications.find({
+        "company_id": company_id,
+        "$or": [
+            {"user_id": user_id},
+            {"user_id": None}  # Company-wide notifications
+        ]
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    return notifications
+
+@api_router.patch("/notifications/{notif_id}/read")
+async def mark_notification_read(notif_id: str, current_user: dict = Depends(get_current_user)):
+    """Mark notification as read"""
+    await db.notifications.update_one(
+        {"id": notif_id},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Marked as read"}
+
+# ============== DOCUMENTS ROUTES ==============
+
+@api_router.post("/documents/upload", response_model=dict)
+async def upload_document(
+    file: UploadFile = File(...),
+    doc_type: str = "other",
+    description: str = "",
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a document (medical certificate, justification, etc.)"""
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:  # 10MB limit
+        raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+    
+    file_data = base64.b64encode(content).decode('utf-8')
+    
+    document = Document(
+        user_id=current_user['id'],
+        company_id=current_user['company_id'],
+        filename=file.filename,
+        file_type=file.content_type,
+        file_data=file_data,
+        doc_type=doc_type,
+        description=description
+    )
+    
+    doc_dict = document.model_dump()
+    doc_dict['created_at'] = doc_dict['created_at'].isoformat()
+    await db.documents.insert_one(doc_dict)
+    
+    return {"message": "Document uploaded", "id": document.id}
+
+@api_router.get("/documents/my", response_model=List[dict])
+async def get_my_documents(current_user: dict = Depends(get_current_user)):
+    """Get user's documents"""
+    docs = await db.documents.find({
+        "user_id": current_user['id']
+    }, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(50)
+    return docs
+
+@api_router.get("/documents/pending", response_model=List[dict])
+async def get_pending_documents(current_user: dict = Depends(require_hr)):
+    """Get pending documents for review (HR only)"""
+    docs = await db.documents.find({
+        "company_id": current_user['company_id'],
+        "status": "pending"
+    }, {"_id": 0, "file_data": 0}).sort("created_at", -1).to_list(100)
+    
+    for doc in docs:
+        user = await db.users.find_one({"id": doc['user_id']}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            doc['user_name'] = user.get('name', 'Unknown')
+    
+    return docs
+
+@api_router.patch("/documents/{doc_id}/review", response_model=dict)
+async def review_document(doc_id: str, approved: bool, current_user: dict = Depends(require_hr)):
+    """Approve or reject document (HR only)"""
+    status = "approved" if approved else "rejected"
+    now = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.documents.update_one(
+        {"id": doc_id, "company_id": current_user['company_id']},
+        {"$set": {"status": status, "reviewed_by": current_user['id'], "reviewed_at": now}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    return {"message": f"Document {status}"}
+
+# ============== REPORTS ROUTES ==============
+
+@api_router.get("/reports/attendance", response_model=dict)
+async def get_attendance_report(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Generate attendance report (HR only)"""
+    company_id = current_user['company_id']
+    
+    # Get all employees
+    employees = await db.users.find({
+        "company_id": company_id,
+        "is_active": True
+    }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(500)
+    
+    # Get all clock records in range
+    records = await db.clock_records.find({
+        "company_id": company_id,
+        "date": {"$gte": start_date, "$lte": end_date}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Get absences
+    absences = await db.absences.find({
+        "company_id": company_id,
+        "date": {"$gte": start_date, "$lte": end_date}
+    }, {"_id": 0}).to_list(10000)
+    
+    # Build report data
+    report_data = []
+    for emp in employees:
+        emp_records = [r for r in records if r['user_id'] == emp['id']]
+        emp_absences = [a for a in absences if a['user_id'] == emp['id']]
+        
+        total_hours = sum(r.get('total_hours', 0) or 0 for r in emp_records)
+        overtime_hours = sum(r.get('overtime_hours', 0) or 0 for r in emp_records)
+        days_worked = len([r for r in emp_records if r.get('total_hours')])
+        absent_days = len([a for a in emp_absences if a['type'] == 'absent'])
+        vacation_days = len([a for a in emp_absences if a['type'] == 'vacation'])
+        sick_days = len([a for a in emp_absences if a['type'] == 'sick'])
+        
+        report_data.append({
+            "employee_id": emp['id'],
+            "employee_name": emp['name'],
+            "employee_email": emp['email'],
+            "total_hours": round(total_hours, 2),
+            "overtime_hours": round(overtime_hours, 2),
+            "days_worked": days_worked,
+            "absent_days": absent_days,
+            "vacation_days": vacation_days,
+            "sick_days": sick_days
+        })
+    
+    return {
+        "start_date": start_date,
+        "end_date": end_date,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "employees": report_data
+    }
+
+@api_router.get("/reports/export/csv")
+async def export_report_csv(
+    start_date: str,
+    end_date: str,
+    current_user: dict = Depends(require_hr)
+):
+    """Export attendance report as CSV"""
+    report = await get_attendance_report(start_date, end_date, current_user)
+    
+    csv_content = "Employee Name,Email,Total Hours,Overtime Hours,Days Worked,Absent Days,Vacation Days,Sick Days\n"
+    for emp in report['employees']:
+        csv_content += f"{emp['employee_name']},{emp['employee_email']},{emp['total_hours']},{emp['overtime_hours']},{emp['days_worked']},{emp['absent_days']},{emp['vacation_days']},{emp['sick_days']}\n"
+    
+    return StreamingResponse(
+        io.StringIO(csv_content),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=attendance_report_{start_date}_{end_date}.csv"}
+    )
+
 # ============== DASHBOARD ROUTES ==============
 
 @api_router.get("/dashboard/employee", response_model=dict)
@@ -441,8 +898,8 @@ async def employee_dashboard(current_user: dict = Depends(get_current_user)):
     user_id = current_user['id']
     now = datetime.now(timezone.utc)
     
-    # Current month dates
     month_start = now.replace(day=1).strftime("%Y-%m-%d")
+    year_start = now.replace(month=1, day=1).strftime("%Y-%m-%d")
     today = now.strftime("%Y-%m-%d")
     
     # Get monthly records
@@ -460,11 +917,37 @@ async def employee_dashboard(current_user: dict = Depends(get_current_user)):
     company = await db.companies.find_one({"id": current_user['company_id']}, {"_id": 0})
     weekly_hours = company.get("weekly_hours", 40) if company else 40
     
-    # Calculate time bank (simplified: overtime accumulates)
     time_bank = overtime_hours
     
     # Current status
     status = await get_clock_status(current_user)
+    
+    # Get absences this year
+    absences = await db.absences.find({
+        "user_id": user_id,
+        "date": {"$gte": year_start}
+    }, {"_id": 0}).to_list(365)
+    
+    absent_days = len([a for a in absences if a['type'] == 'absent'])
+    sick_days = len([a for a in absences if a['type'] == 'sick'])
+    vacation_days_used = len([a for a in absences if a['type'] == 'vacation'])
+    
+    # Vacation info
+    vacation_total = current_user.get("vacation_days_total", 30)
+    vacation_used = current_user.get("vacation_days_used", 0)
+    
+    # Pending vacation requests
+    pending_vacations = await db.vacation_requests.count_documents({
+        "user_id": user_id,
+        "status": "pending"
+    })
+    
+    # Unread notifications
+    unread_notifications = await db.notifications.count_documents({
+        "company_id": current_user['company_id'],
+        "$or": [{"user_id": user_id}, {"user_id": None}],
+        "read": False
+    })
     
     return {
         "total_hours_month": round(total_hours, 2),
@@ -473,7 +956,15 @@ async def employee_dashboard(current_user: dict = Depends(get_current_user)):
         "days_worked": days_worked,
         "weekly_hours": weekly_hours,
         "current_status": status,
-        "recent_records": records[:7]
+        "recent_records": records[:7],
+        # Absences & Vacation
+        "absent_days": absent_days,
+        "sick_days": sick_days,
+        "vacation_days_total": vacation_total,
+        "vacation_days_used": vacation_used,
+        "vacation_days_remaining": vacation_total - vacation_used,
+        "pending_vacation_requests": pending_vacations,
+        "unread_notifications": unread_notifications
     }
 
 @api_router.get("/dashboard/hr", response_model=dict)
@@ -484,20 +975,17 @@ async def hr_dashboard(current_user: dict = Depends(require_hr)):
     today = now.strftime("%Y-%m-%d")
     month_start = now.replace(day=1).strftime("%Y-%m-%d")
     
-    # Count active employees
     total_employees = await db.users.count_documents({
         "company_id": company_id,
         "is_active": True
     })
     
-    # Count clocked in today
     clocked_in_today = await db.clock_records.count_documents({
         "company_id": company_id,
         "date": today,
         "clock_out": None
     })
     
-    # Get all records this month
     records = await db.clock_records.find({
         "company_id": company_id,
         "date": {"$gte": month_start}
@@ -505,17 +993,29 @@ async def hr_dashboard(current_user: dict = Depends(require_hr)):
     
     total_overtime = sum(r.get("overtime_hours", 0) or 0 for r in records)
     
-    # Get recent employees
     employees = await db.users.find({
         "company_id": company_id,
         "is_active": True
     }, {"_id": 0, "password_hash": 0, "pin_hash": 0}).to_list(100)
     
+    # Pending items
+    pending_documents = await db.documents.count_documents({
+        "company_id": company_id,
+        "status": "pending"
+    })
+    
+    pending_vacations = await db.vacation_requests.count_documents({
+        "company_id": company_id,
+        "status": "pending"
+    })
+    
     return {
         "total_employees": total_employees,
         "clocked_in_today": clocked_in_today,
         "total_overtime_month": round(total_overtime, 2),
-        "employees": employees[:10]
+        "employees": employees[:10],
+        "pending_documents": pending_documents,
+        "pending_vacation_requests": pending_vacations
     }
 
 # ============== USER MANAGEMENT ROUTES ==============
@@ -523,14 +1023,15 @@ async def hr_dashboard(current_user: dict = Depends(require_hr)):
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user_data: UserCreate, current_user: dict = Depends(require_hr)):
     """Create a new user (HR only)"""
-    # Check email exists
     existing = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Ensure same company
     if user_data.company_id != current_user['company_id']:
         raise HTTPException(status_code=403, detail="Cannot create user for another company")
+    
+    company = await db.companies.find_one({"id": current_user['company_id']}, {"_id": 0})
+    vacation_days = company.get("vacation_days_per_year", 30) if company else 30
     
     user_obj = User(
         email=user_data.email,
@@ -538,7 +1039,9 @@ async def create_user(user_data: UserCreate, current_user: dict = Depends(requir
         role=user_data.role,
         company_id=user_data.company_id,
         language=user_data.language,
-        timezone=user_data.timezone
+        timezone=user_data.timezone,
+        vacation_days_total=user_data.vacation_days_total or vacation_days,
+        hire_date=user_data.hire_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     )
     
     user_dict = user_obj.model_dump()
@@ -641,7 +1144,7 @@ async def update_pin(pin: str, current_user: dict = Depends(get_current_user)):
 
 @api_router.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {"status": "healthy", "version": "2.0.0", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 # Include router and middleware
 app.include_router(api_router)
