@@ -195,7 +195,7 @@ export default function HRDashboard() {
 
   const pendingCards = [
     {
-      title: 'Documentos Pendentes',
+      title: t('pending_documents'),
       value: dashboardData?.pending_documents || 0,
       icon: FileText,
       color: 'text-violet-400',
@@ -203,7 +203,7 @@ export default function HRDashboard() {
       path: '/documents-review',
     },
     {
-      title: 'Férias Pendentes',
+      title: t('pending_vacations'),
       value: dashboardData?.pending_vacation_requests || 0,
       icon: Palmtree,
       color: 'text-emerald-400',
