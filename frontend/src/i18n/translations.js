@@ -461,6 +461,9 @@ export const translations = {
     back: "Zurück",
     recent_records: "Aktuelle Einträge",
     waiting_records: "Warten auf Einträge...",
+    choose_language: "Wählen Sie Ihre bevorzugte Sprache",
+    pin_description: "Legen Sie eine 4-6-stellige PIN für die Schnellanmeldung fest",
+    enter_digits: "Geben Sie 4-6 Ziffern ein",
   },
   
   es: {
