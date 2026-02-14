@@ -125,7 +125,7 @@ export default function SettingsPage() {
                 {t('language')}
               </CardTitle>
               <CardDescription>
-                Choose your preferred language
+                {t('choose_language')}
               </CardDescription>
             </CardHeader>
             <CardContent>
