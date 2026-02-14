@@ -163,7 +163,7 @@ export default function SettingsPage() {
                 {t('change_pin')}
               </CardTitle>
               <CardDescription>
-                Set a 4-6 digit PIN for quick login
+                {t('pin_description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
