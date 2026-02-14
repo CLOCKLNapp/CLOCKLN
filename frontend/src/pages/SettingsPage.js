@@ -183,7 +183,7 @@ export default function SettingsPage() {
                 disabled={isUpdatingPin || pin.length < 4}
                 data-testid="update-pin-btn"
               >
-                {isUpdatingPin ? 'Updating...' : t('save')}
+                {isUpdatingPin ? t('loading') : t('save')}
               </Button>
             </CardContent>
           </Card>
