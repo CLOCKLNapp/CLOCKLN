@@ -252,6 +252,9 @@ export const translations = {
     back: "Voltar",
     recent_records: "Registros Recentes",
     waiting_records: "Aguardando registros...",
+    choose_language: "Escolha seu idioma preferido",
+    pin_description: "Defina um PIN de 4-6 dígitos para login rápido",
+    enter_digits: "Digite 4-6 dígitos",
   },
   
   pt_PT: {
