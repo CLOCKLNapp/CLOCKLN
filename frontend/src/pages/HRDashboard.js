@@ -235,7 +235,7 @@ export default function HRDashboard() {
               data-testid="subscription-btn"
             >
               <Crown className="w-4 h-4 mr-2 text-amber-400" />
-              Plano
+              {t('plan')}
             </Button>
             <Button
               variant="outline"
@@ -243,7 +243,7 @@ export default function HRDashboard() {
               data-testid="reports-btn"
             >
               <Table className="w-4 h-4 mr-2" />
-              Relatórios
+              {t('reports')}
             </Button>
             <Button
               variant="outline"
@@ -251,7 +251,7 @@ export default function HRDashboard() {
               data-testid="overtime-approvals-btn"
             >
               <Hourglass className="w-4 h-4 mr-2" />
-              Extras
+              {t('overtime_approvals')}
             </Button>
             <Button
               variant="outline"
@@ -259,7 +259,7 @@ export default function HRDashboard() {
               data-testid="send-notification-btn"
             >
               <Bell className="w-4 h-4 mr-2" />
-              Avisos
+              {t('notifications_alerts')}
             </Button>
             <Button
               variant="outline"
@@ -267,7 +267,7 @@ export default function HRDashboard() {
               data-testid="remote-map-btn"
             >
               <MapPin className="w-4 h-4 mr-2" />
-              Mapa
+              {t('map')}
             </Button>
             <Button
               variant="outline"
