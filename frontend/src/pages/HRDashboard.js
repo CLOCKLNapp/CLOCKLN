@@ -495,7 +495,7 @@ export default function HRDashboard() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Dias de Férias</Label>
+                  <Label>{t('vacation_days')}</Label>
                   <Input
                     type="number"
                     value={newEmployee.vacation_days_total}
