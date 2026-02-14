@@ -132,6 +132,37 @@ export const translations = {
     choose_language: "Choose your preferred language",
     pin_description: "Set a 4-6 digit PIN for quick login",
     enter_digits: "Enter 4-6 digits",
+    
+    // Notifications
+    hr_notifications: "HR notifications and announcements",
+    
+    // Subscription
+    plans_subscription: "Plans & Subscription",
+    current_plan: "Current Plan",
+    basic_plan: "Basic Plan",
+    
+    // Documents
+    pending_review: "Pending Review",
+    approved: "Approved",
+    rejected: "Rejected",
+    
+    // Manager
+    monthly_overtime: "Monthly Overtime",
+    
+    // Reports
+    attendance_report: "Attendance Report",
+    report_period: "Report Period",
+    about_reports: "About Reports",
+    
+    // Overtime
+    overtime_approval: "Overtime Approval",
+    reject_overtime: "Reject Overtime",
+    
+    // Remote Map
+    remote_clock_map: "Remote Clock-in Map",
+    
+    // Super Admin
+    distribution_by_plan: "Distribution by Plan",
   },
   
   pt_BR: {
