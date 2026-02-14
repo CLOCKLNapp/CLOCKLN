@@ -521,7 +521,7 @@ export default function HRDashboard() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  Modo de Trabalho
+                  {t('work_mode')}
                 </Label>
                 <Select
                   value={newEmployee.work_mode}
@@ -531,9 +531,9 @@ export default function HRDashboard() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="onsite">Presencial (só totem)</SelectItem>
-                    <SelectItem value="hybrid">Híbrido (totem + remoto)</SelectItem>
-                    <SelectItem value="remote">Remoto (só geolocalização)</SelectItem>
+                    <SelectItem value="onsite">{t('onsite_only')}</SelectItem>
+                    <SelectItem value="hybrid">{t('hybrid_mode')}</SelectItem>
+                    <SelectItem value="remote">{t('remote_only')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -543,11 +543,11 @@ export default function HRDashboard() {
                 <div className="space-y-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-primary" />
-                    Localização do Trabalho Remoto
+                    {t('remote_location')}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs">Latitude</Label>
+                      <Label className="text-xs">{t('latitude')}</Label>
                       <Input
                         type="number"
                         step="0.000001"
@@ -558,7 +558,7 @@ export default function HRDashboard() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Longitude</Label>
+                      <Label className="text-xs">{t('longitude')}</Label>
                       <Input
                         type="number"
                         step="0.000001"
@@ -570,7 +570,7 @@ export default function HRDashboard() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Raio permitido (metros)</Label>
+                    <Label className="text-xs">{t('allowed_radius')}</Label>
                     <Input
                       type="number"
                       value={newEmployee.location_radius}
@@ -581,7 +581,7 @@ export default function HRDashboard() {
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Dica: Use o Google Maps para obter as coordenadas do endereço
+                    {t('coordinates_tip')}
                   </p>
                 </div>
               )}
@@ -589,16 +589,16 @@ export default function HRDashboard() {
               {/* Manager Assignment (only for employees) */}
               {newEmployee.role === 'employee' && managers.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Gerente Responsável (opcional)</Label>
+                  <Label>{t('responsible_manager')} ({t('cancel').toLowerCase()})</Label>
                   <Select
                     value={newEmployee.manager_id || 'none'}
                     onValueChange={(value) => setNewEmployee({ ...newEmployee, manager_id: value === 'none' ? '' : value })}
                   >
                     <SelectTrigger data-testid="new-employee-manager">
-                      <SelectValue placeholder="Sem gerente atribuído" />
+                      <SelectValue placeholder={t('no_manager')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Sem gerente</SelectItem>
+                      <SelectItem value="none">{t('no_manager')}</SelectItem>
                       {managers.map(manager => (
                         <SelectItem key={manager.id} value={manager.id}>
                           {manager.name}
