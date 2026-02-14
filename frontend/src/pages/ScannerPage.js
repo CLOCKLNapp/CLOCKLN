@@ -65,13 +65,14 @@ export default function ScannerPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex items-center gap-4 p-4 border-b border-border/50">
+      {/* Header - with safe area padding for mobile notch */}
+      <header className="flex items-center gap-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] border-b border-border/50">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate('/dashboard')}
           data-testid="back-btn"
+          className="min-w-[44px] min-h-[44px]"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
