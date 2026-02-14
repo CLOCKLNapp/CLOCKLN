@@ -116,20 +116,20 @@ export default function TotemPage() {
       {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1)_0%,transparent_60%)]" />
       
-      {/* Fullscreen button */}
+      {/* Fullscreen button - with safe area for mobile notch */}
       <button
         onClick={toggleFullscreen}
         data-testid="fullscreen-btn"
-        className="absolute top-6 right-6 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors z-20"
+        className="absolute top-[max(1.5rem,env(safe-area-inset-top))] right-6 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors z-20 min-w-[44px] min-h-[44px]"
       >
         <Maximize2 className="w-5 h-5 text-white/70" />
       </button>
 
-      {/* Company name */}
+      {/* Company name - with safe area for mobile notch */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-6 left-6 flex items-center gap-3 z-20"
+        className="absolute top-[max(1.5rem,env(safe-area-inset-top))] left-6 flex items-center gap-3 z-20"
       >
         <div className="p-2 rounded-lg bg-primary/20 border border-primary/30">
           <Clock className="w-5 h-5 text-primary" />
