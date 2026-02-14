@@ -129,6 +129,9 @@ export const translations = {
     back: "Back",
     recent_records: "Recent Records",
     waiting_records: "Waiting for records...",
+    choose_language: "Choose your preferred language",
+    pin_description: "Set a 4-6 digit PIN for quick login",
+    enter_digits: "Enter 4-6 digits",
   },
   
   pt_BR: {
