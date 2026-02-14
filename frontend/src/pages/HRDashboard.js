@@ -344,7 +344,7 @@ export default function HRDashboard() {
                     </div>
                     {card.value > 0 && (
                       <Badge variant="secondary" className="bg-amber-500/20 text-amber-400">
-                        Pendente
+                        {t('pending')}
                       </Badge>
                     )}
                   </div>
