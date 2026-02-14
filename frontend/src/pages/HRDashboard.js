@@ -413,7 +413,7 @@ export default function HRDashboard() {
                         {employee.work_mode && employee.work_mode !== 'onsite' && (
                           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                             <MapPin className="w-3 h-3 mr-1" />
-                            {employee.work_mode === 'remote' ? 'Remoto' : 'Híbrido'}
+                            {employee.work_mode === 'remote' ? t('remote') : t('hybrid')}
                           </Badge>
                         )}
                         <DropdownMenu>
@@ -424,7 +424,7 @@ export default function HRDashboard() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleToggleStatus(employee.id, employee.is_active)}>
-                              {employee.is_active ? 'Desativar' : 'Ativar'}
+                              {employee.is_active ? t('deactivate') : t('activate')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
