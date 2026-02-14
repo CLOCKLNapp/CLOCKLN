@@ -286,6 +286,37 @@ export const translations = {
     choose_language: "Escolha seu idioma preferido",
     pin_description: "Defina um PIN de 4-6 dígitos para login rápido",
     enter_digits: "Digite 4-6 dígitos",
+    
+    // Notifications
+    hr_notifications: "Avisos e comunicados do RH",
+    
+    // Subscription
+    plans_subscription: "Planos e Assinatura",
+    current_plan: "Plano Atual",
+    basic_plan: "Plano Básico",
+    
+    // Documents
+    pending_review: "Pendente",
+    approved: "Aprovado",
+    rejected: "Rejeitado",
+    
+    // Manager
+    monthly_overtime: "Horas Extras (Mês)",
+    
+    // Reports
+    attendance_report: "Relatório de Ponto",
+    report_period: "Período do Relatório",
+    about_reports: "Sobre os Relatórios",
+    
+    // Overtime
+    overtime_approval: "Aprovação de Horas Extras",
+    reject_overtime: "Rejeitar Horas Extras",
+    
+    // Remote Map
+    remote_clock_map: "Mapa de Ponto Remoto",
+    
+    // Super Admin
+    distribution_by_plan: "Distribuição por Plano",
   },
   
   pt_PT: {
