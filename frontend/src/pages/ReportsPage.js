@@ -24,6 +24,7 @@ export default function ReportsPage() {
   const [downloading, setDownloading] = useState(null);
 
   const { api } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleDownload = async (type, format) => {
