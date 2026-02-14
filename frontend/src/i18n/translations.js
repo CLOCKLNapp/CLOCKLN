@@ -127,6 +127,8 @@ export const translations = {
     export_error: "Error exporting report",
     close: "Close",
     back: "Back",
+    recent_records: "Recent Records",
+    waiting_records: "Waiting for records...",
   },
   
   pt_BR: {
