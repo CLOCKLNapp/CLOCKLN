@@ -526,6 +526,37 @@ export const translations = {
     choose_language: "Wählen Sie Ihre bevorzugte Sprache",
     pin_description: "Legen Sie eine 4-6-stellige PIN für die Schnellanmeldung fest",
     enter_digits: "Geben Sie 4-6 Ziffern ein",
+    
+    // Notifications
+    hr_notifications: "HR-Benachrichtigungen und Ankündigungen",
+    
+    // Subscription
+    plans_subscription: "Pläne & Abonnement",
+    current_plan: "Aktueller Plan",
+    basic_plan: "Basisplan",
+    
+    // Documents
+    pending_review: "Ausstehend",
+    approved: "Genehmigt",
+    rejected: "Abgelehnt",
+    
+    // Manager
+    monthly_overtime: "Monatliche Überstunden",
+    
+    // Reports
+    attendance_report: "Anwesenheitsbericht",
+    report_period: "Berichtszeitraum",
+    about_reports: "Über Berichte",
+    
+    // Overtime
+    overtime_approval: "Überstundengenehmigung",
+    reject_overtime: "Überstunden ablehnen",
+    
+    // Remote Map
+    remote_clock_map: "Remote-Stempelkarte",
+    
+    // Super Admin
+    distribution_by_plan: "Verteilung nach Plan",
   },
   
   es: {
