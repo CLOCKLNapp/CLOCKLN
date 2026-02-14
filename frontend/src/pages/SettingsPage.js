@@ -173,7 +173,7 @@ export default function SettingsPage() {
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="Enter 4-6 digits"
+                  placeholder={t('enter_digits')}
                   maxLength={6}
                   data-testid="pin-input"
                 />
