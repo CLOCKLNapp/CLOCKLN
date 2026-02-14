@@ -434,7 +434,7 @@ export default function HRDashboard() {
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-8">
-                  Nenhum funcionário encontrado
+                  {t('no_employees_found')}
                 </p>
               )}
             </CardContent>
