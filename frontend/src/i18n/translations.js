@@ -453,6 +453,8 @@ export const translations = {
     export_error: "Fehler beim Exportieren des Berichts",
     close: "Schließen",
     back: "Zurück",
+    recent_records: "Aktuelle Einträge",
+    waiting_records: "Warten auf Einträge...",
   },
   
   es: {
