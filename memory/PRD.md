@@ -9,7 +9,7 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - Organização de documentos trabalhistas (atestados)
 - Geração de relatórios PDF/Excel
 - Sistema de notificações
-- Multilíngue e seguro (multi-tenant, LGPD/DSGVO)
+- Multilíngue (17 idiomas) e seguro (multi-tenant, LGPD/DSGVO)
 - Modelo SaaS por assinatura (Free, Pro, Business)
 
 ## Stack Tecnológico
@@ -18,14 +18,16 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - **Integrações**: Stripe, SendGrid, PWA
 - **Deploy**: Vercel (Frontend) + Railway (Backend)
 
-## Status de Deploy - 13/02/2026
+## Status de Deploy - 14/02/2026
 - ✅ Frontend: Online na Vercel
-- 🔄 Backend: Corrigido problema de dependência (`emergentintegrations`), aguardando redeploy no Railway
+- ✅ Backend: Online no Railway
+- ✅ MongoDB: Configurado no Railway
 
-## Últimas Alterações
-- Removida dependência `emergentintegrations` do requirements.txt
-- Código do Stripe convertido para usar SDK oficial
-- Funcionalidade de Super Admin implementada
+## Últimas Alterações - 14/02/2026
+- Corrigidas traduções incompletas (alemão, português, inglês)
+- Adicionado suporte a safe-area para iPhones com notch
+- Suprimido erro ResizeObserver nas configurações
+- Adicionadas traduções para páginas: HRDashboard, Settings, TotemPage, Reports
 
 ## Funcionalidades Implementadas
 - [x] Autenticação (email/senha e PIN)
@@ -39,11 +41,35 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - [x] Planos de assinatura com Stripe
 - [x] Super Admin para conceder acesso VIP
 - [x] PWA (Progressive Web App)
+- [x] 17 idiomas suportados
 
 ## Tarefas Pendentes
-- [ ] Configurar variáveis de ambiente em produção (Railway + Vercel)
+- [ ] Configurar Stripe para pagamentos reais
 - [ ] Configurar webhook do Stripe
-- [ ] Investigar teste instável do frontend
+- [ ] Adicionar mais traduções para páginas secundárias
 
 ## Credenciais de Teste
 - **Super Admin**: michaelcaceres71@gmail.com / 123456
+
+## URLs de Produção
+- **Frontend**: https://clockln-*.vercel.app
+- **Backend**: https://clockln-production.up.railway.app
+
+## Idiomas Suportados
+1. English
+2. Português (Brasil)
+3. Português (Portugal)
+4. Deutsch
+5. Español
+6. Français
+7. Italiano
+8. Nederlands
+9. Polski
+10. Svenska
+11. 简体中文
+12. 繁體中文
+13. 日本語
+14. 한국어
+15. العربية
+16. हिन्दी
+17. Русский
