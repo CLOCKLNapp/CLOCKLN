@@ -58,9 +58,9 @@ export default function ReportsPage() {
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
       
-      toast.success('Download iniciado!');
+      toast.success(t('report_exported'));
     } catch (error) {
-      toast.error('Erro ao gerar relatório');
+      toast.error(t('export_error'));
     } finally {
       setDownloading(null);
     }
