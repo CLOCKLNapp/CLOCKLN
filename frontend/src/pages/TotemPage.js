@@ -213,7 +213,7 @@ export default function TotemPage() {
       <div className="w-80 bg-black/40 backdrop-blur-xl border-l border-white/10 p-6 flex flex-col z-10">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
-          Registros Recentes
+          {t('recent_records')}
         </h3>
 
         <div className="flex-1 space-y-3 overflow-y-auto">
@@ -247,7 +247,7 @@ export default function TotemPage() {
                       <p className={`text-sm ${
                         event.action === 'clock_in' ? 'text-emerald-400' : 'text-blue-400'
                       }`}>
-                        {event.action === 'clock_in' ? 'Entrada' : 'Saída'} - {formatEventTime(event.time)}
+                        {event.action === 'clock_in' ? t('clock_in') : t('clock_out')} - {formatEventTime(event.time)}
                       </p>
                     </div>
                     <CheckCircle2 className={`w-6 h-6 ${
@@ -259,7 +259,7 @@ export default function TotemPage() {
             ) : (
               <div className="text-center py-8">
                 <Clock className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-                <p className="text-zinc-500 text-sm">Aguardando registros...</p>
+                <p className="text-zinc-500 text-sm">{t('waiting_records')}</p>
               </div>
             )}
           </AnimatePresence>
