@@ -52,46 +52,6 @@ const plans = {
   }
 };
 
-const stats = [
-  { value: '10K+', label: 'Active Users' },
-  { value: '500+', label: 'Companies' },
-  { value: '99.9%', label: 'Uptime' },
-  { value: '17+', label: 'Languages' }
-];
-
-const features = [
-  { 
-    icon: Clock, 
-    title: 'Smart Clock-in', 
-    description: 'QR Code scanning and NFC for fast, accurate time tracking at kiosks.'
-  },
-  { 
-    icon: MapPin, 
-    title: 'Geolocation', 
-    description: 'Track remote workers with GPS validation within configurable radius.'
-  },
-  { 
-    icon: FileText, 
-    title: 'Reports & Analytics', 
-    description: 'Generate detailed PDF and Excel reports. Track hours, overtime, and more.'
-  },
-  { 
-    icon: Shield, 
-    title: 'Enterprise Security', 
-    description: 'LGPD/GDPR compliant. Multi-tenant architecture with data isolation.'
-  },
-  { 
-    icon: Users, 
-    title: 'Role Management', 
-    description: 'Separate views for Employees, Managers, and HR with custom permissions.'
-  },
-  { 
-    icon: Bell, 
-    title: 'Smart Notifications', 
-    description: 'Automated alerts for overtime, missed clock-ins, and approvals.'
-  }
-];
-
 export default function LandingPage() {
   const navigate = useNavigate();
   const { language, setLanguage, languages, t } = useLanguage();
