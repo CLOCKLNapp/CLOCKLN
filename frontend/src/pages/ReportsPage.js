@@ -142,7 +142,7 @@ export default function ReportsPage() {
                   />
                 </div>
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="end-date">Data Final</Label>
+                  <Label htmlFor="end-date">{t('end_date')}</Label>
                   <Input
                     id="end-date"
                     type="date"
