@@ -275,7 +275,7 @@ export default function HRDashboard() {
               data-testid="export-csv-btn"
             >
               <Download className="w-4 h-4 mr-2" />
-              CSV
+              {t('export_csv')}
             </Button>
             <Button
               className="btn-glow-blue"
