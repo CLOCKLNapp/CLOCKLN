@@ -10,7 +10,7 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - Geração de relatórios PDF/Excel
 - Sistema de notificações
 - Multilíngue (17 idiomas) e seguro (multi-tenant, LGPD/DSGVO)
-- Modelo SaaS por assinatura (Free, Pro, Business)
+- Modelo SaaS por assinatura (Trial 15 dias, Pro, Business)
 
 ## Stack Tecnológico
 - **Backend**: FastAPI + MongoDB (Pymongo/Motor)
@@ -18,16 +18,25 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - **Integrações**: Stripe, SendGrid, PWA
 - **Deploy**: Vercel (Frontend) + Railway (Backend)
 
-## Status de Deploy - 14/02/2026
+## Status de Deploy - 15/02/2026
 - ✅ Frontend: Online na Vercel
 - ✅ Backend: Online no Railway
 - ✅ MongoDB: Configurado no Railway
 
-## Últimas Alterações - 14/02/2026
-- Corrigidas traduções incompletas (alemão, português, inglês)
-- Adicionado suporte a safe-area para iPhones com notch
-- Suprimido erro ResizeObserver nas configurações
-- Adicionadas traduções para páginas: HRDashboard, Settings, TotemPage, Reports
+## Últimas Alterações - 15/02/2026
+### Nova Estrutura de Planos (apenas mensais, em Euro):
+- **Trial**: €0 (15 dias grátis, acesso completo, até 50 funcionários)
+- **Pro**: €49/mês (até 50 funcionários)
+- **Business**: €120/mês (até 500 funcionários)
+
+### Mudanças Implementadas:
+- Removidos todos os planos anuais
+- Plano "Free" substituído por "Trial" de 15 dias
+- Moeda alterada de USD para EUR
+- Preços atualizados: Pro €49, Business €120
+- Sistema de expiração de trial implementado
+- Frontend atualizado para mostrar dias restantes do trial
+- Traduções adicionadas para nova estrutura de planos
 
 ## Funcionalidades Implementadas
 - [x] Autenticação (email/senha e PIN)
@@ -38,15 +47,16 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - [x] Upload de documentos
 - [x] Notificações e alertas
 - [x] Relatórios PDF/Excel
-- [x] Planos de assinatura com Stripe
+- [x] Planos de assinatura com Stripe (EUR)
+- [x] Trial de 15 dias para novas empresas
 - [x] Super Admin para conceder acesso VIP
 - [x] PWA (Progressive Web App)
 - [x] 17 idiomas suportados
 
 ## Tarefas Pendentes
-- [ ] Configurar Stripe para pagamentos reais
-- [ ] Configurar webhook do Stripe
-- [ ] Adicionar mais traduções para páginas secundárias
+- [ ] Configurar Stripe para pagamentos reais (chaves de produção)
+- [ ] Configurar webhook do Stripe no Railway
+- [ ] Deploy das alterações na Vercel (Save to GitHub)
 
 ## Credenciais de Teste
 - **Super Admin**: michaelcaceres71@gmail.com / 123456
