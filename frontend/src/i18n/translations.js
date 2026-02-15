@@ -347,8 +347,18 @@ export const translations = {
     
     // Reports
     attendance_report: "Relatório de Ponto",
+    attendance_report_desc: "Registros detalhados de entrada e saída de todos os funcionários",
+    employees_list: "Lista de Funcionários",
+    employees_list_desc: "Cadastro completo de funcionários ativos com informações essenciais",
+    reports: "Relatórios",
+    reports_desc: "Gere relatórios em PDF ou Excel",
     report_period: "Período do Relatório",
+    select_period_desc: "Selecione o período para relatórios de ponto",
+    start_date: "Data Inicial",
+    end_date: "Data Final",
     about_reports: "Sobre os Relatórios",
+    about_reports_desc: "Os relatórios em PDF são ideais para impressão e compartilhamento. Os relatórios em Excel permitem análises mais detalhadas e podem ser editados conforme sua necessidade.",
+    export_csv: "CSV",
     
     // Overtime
     overtime_approval: "Aprovação de Horas Extras",
