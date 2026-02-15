@@ -142,9 +142,9 @@ export default function SubscriptionPage() {
           <div>
             <h1 className="text-2xl font-bold font-[Manrope] flex items-center gap-2">
               <Crown className="w-6 h-6 text-amber-400" />
-              Planos e Assinatura
+              {t('plans_subscription')}
             </h1>
-            <p className="text-muted-foreground">Gerencie seu plano CLOCKLN</p>
+            <p className="text-muted-foreground">{t('manage_plan')}</p>
           </div>
         </motion.div>
 
@@ -156,7 +156,7 @@ export default function SubscriptionPage() {
             className="bg-primary/10 border border-primary/30 rounded-lg p-4 flex items-center gap-3"
           >
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span>Verificando status do pagamento...</span>
+            <span>{t('checking_payment')}</span>
           </motion.div>
         )}
 
@@ -171,7 +171,7 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" />
-                  Plano Atual
+                  {t('current_plan')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
