@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import HRDashboard from './pages/HRDashboard';
