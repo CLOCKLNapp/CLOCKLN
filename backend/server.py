@@ -168,7 +168,7 @@ class PaymentTransaction(BaseModel):
     user_id: str
     plan: str
     amount: float
-    currency: str = "usd"
+    currency: str = "eur"
     session_id: str
     payment_status: str = "pending"  # pending, paid, failed, expired
     metadata: Optional[dict] = None
