@@ -391,11 +391,7 @@ export default function LandingPage() {
                   </div>
                 )}
                 <div className="flex items-center justify-center gap-2 mb-3">
-                  {period.id === 'lifetime' ? (
-                    <span className="text-amber-400">∞</span>
-                  ) : (
-                    <Crown className="w-4 h-4 text-primary" />
-                  )}
+                  <Crown className="w-4 h-4 text-primary" />
                   <span className="font-medium">{period.label}</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold mb-2">
