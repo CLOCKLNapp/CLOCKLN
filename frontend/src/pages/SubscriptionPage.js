@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { AppLayout } from '../components/AppLayout';
 import { toast } from 'sonner';
 
@@ -23,6 +24,7 @@ export default function SubscriptionPage() {
   const [searchParams] = useSearchParams();
 
   const { api } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -34,7 +36,7 @@ export default function SubscriptionPage() {
       setPlans(plansRes.data.plans);
       setCurrentSub(subRes.data);
     } catch (error) {
-      toast.error('Erro ao carregar planos');
+      toast.error(t('error'));
     } finally {
       setLoading(false);
     }
