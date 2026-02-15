@@ -122,7 +122,6 @@ export default function LandingPage() {
       case 'yearly': return '/year';
       case 'threeYear': return '';
       case 'fiveYear': return '';
-      case 'lifetime': return '';
       default: return '/month';
     }
   };
@@ -132,7 +131,6 @@ export default function LandingPage() {
       case 'yearly': return '+2 months free';
       case 'threeYear': return '+6 months free';
       case 'fiveYear': return '+12 months free';
-      case 'lifetime': return 'Forever access';
       default: return null;
     }
   };
