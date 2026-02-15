@@ -167,8 +167,18 @@ export const translations = {
     
     // Reports
     attendance_report: "Attendance Report",
+    attendance_report_desc: "Detailed entry and exit records for all employees",
+    employees_list: "Employees List",
+    employees_list_desc: "Complete register of active employees with essential information",
+    reports: "Reports",
+    reports_desc: "Generate reports in PDF or Excel",
     report_period: "Report Period",
+    select_period_desc: "Select the period for attendance reports",
+    start_date: "Start Date",
+    end_date: "End Date",
     about_reports: "About Reports",
+    about_reports_desc: "PDF reports are ideal for printing and sharing. Excel reports allow more detailed analysis and can be edited as needed.",
+    export_csv: "CSV",
     
     // Overtime
     overtime_approval: "Overtime Approval",
