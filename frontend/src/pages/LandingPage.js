@@ -23,7 +23,6 @@ const plans = {
     yearly: 290,
     threeYear: 790,
     fiveYear: 1190,
-    lifetime: 1999,
     features: [
       'Up to 50 employees',
       'QR Code & Geolocation',
@@ -39,8 +38,7 @@ const plans = {
     monthly: 99,
     yearly: 990,
     threeYear: 2640,
-    fiveYear: 4450,
-    lifetime: 7499,
+    fiveYear: 5940,
     popular: true,
     features: [
       'Up to 500 employees',
