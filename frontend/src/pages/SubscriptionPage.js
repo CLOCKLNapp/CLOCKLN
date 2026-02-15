@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Crown, Check, Zap, Building2, Users,
+  Crown, Check, Zap, Building2, Clock,
   ArrowLeft, CreditCard, Loader2, AlertCircle,
-  ChevronRight
+  ChevronRight, AlertTriangle
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -13,6 +13,7 @@ import { Progress } from '../components/ui/progress';
 import { useAuth } from '../context/AuthContext';
 import { AppLayout } from '../components/AppLayout';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function SubscriptionPage() {
   const [plans, setPlans] = useState([]);
