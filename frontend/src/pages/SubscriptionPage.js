@@ -86,12 +86,12 @@ export default function SubscriptionPage() {
 
   const handleUpgrade = async (planId) => {
     if (planId === currentSub?.plan) {
-      toast.info('Este é seu plano atual');
+      toast.info(t('this_is_current_plan'));
       return;
     }
     
-    if (planId === 'free') {
-      toast.info('Para fazer downgrade, entre em contato com o suporte');
+    if (planId === 'trial') {
+      toast.info(t('trial_no_downgrade'));
       return;
     }
 
@@ -105,19 +105,19 @@ export default function SubscriptionPage() {
       // Redirect to Stripe
       window.location.href = response.data.checkout_url;
     } catch (error) {
-      toast.error('Erro ao iniciar checkout');
+      toast.error(t('checkout_error'));
       setUpgrading(false);
     }
   };
 
   const planIcons = {
-    free: <Users className="w-8 h-8" />,
+    trial: <Clock className="w-8 h-8" />,
     pro: <Zap className="w-8 h-8" />,
     business: <Building2 className="w-8 h-8" />
   };
 
   const planColors = {
-    free: 'border-slate-500',
+    trial: 'border-slate-500',
     pro: 'border-primary ring-2 ring-primary/20',
     business: 'border-amber-500'
   };
