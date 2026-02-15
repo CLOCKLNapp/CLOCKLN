@@ -94,13 +94,32 @@ const features = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { language, setLanguage, languages } = useLanguage();
+  const { language, setLanguage, languages, t } = useLanguage();
   const [currency, setCurrency] = useState('EUR');
   const [selectedPlan, setSelectedPlan] = useState('business');
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [showLanguages, setShowLanguages] = useState(false);
 
   const availableLanguages = languages || [];
+
+  // Translated features for plans
+  const getProFeatures = () => [
+    t('up_to_50_employees'),
+    t('qr_geolocation'),
+    t('remote_clock_map'),
+    t('basic_reports'),
+    t('email_support')
+  ];
+
+  const getBusinessFeatures = () => [
+    t('up_to_500_employees'),
+    t('all_pro_features'),
+    t('manager_roles'),
+    t('advanced_reports'),
+    t('time_bank_management'),
+    t('priority_support'),
+    t('custom_branding')
+  ];
 
   const formatPrice = (price) => {
     const converted = Math.round(price * currencies[currency].rate);
@@ -112,25 +131,24 @@ export default function LandingPage() {
       case 'yearly': return plan.yearly;
       case 'threeYear': return plan.threeYear;
       case 'fiveYear': return plan.fiveYear;
-      case 'lifetime': return plan.lifetime;
       default: return plan.monthly;
     }
   };
 
   const getPeriodLabel = () => {
     switch (billingPeriod) {
-      case 'yearly': return '/year';
+      case 'yearly': return '/' + t('year');
       case 'threeYear': return '';
       case 'fiveYear': return '';
-      default: return '/month';
+      default: return '/' + t('month');
     }
   };
 
   const getBonusText = () => {
     switch (billingPeriod) {
-      case 'yearly': return '+2 months free';
-      case 'threeYear': return '+6 months free';
-      case 'fiveYear': return '+12 months free';
+      case 'yearly': return t('plus_2_months_free');
+      case 'threeYear': return t('plus_6_months_free');
+      case 'fiveYear': return t('plus_12_months_free');
       default: return null;
     }
   };
