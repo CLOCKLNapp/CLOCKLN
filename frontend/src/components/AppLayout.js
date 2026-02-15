@@ -35,7 +35,7 @@ export function AppLayout({ children }) {
   const employeeNavItems = [
     { icon: LayoutDashboard, label: t('home'), path: '/dashboard' },
     { icon: QrCode, label: t('scanner'), path: '/scanner' },
-    ...(isRemoteWorker ? [{ icon: MapPin, label: 'Remoto', path: '/remote-clock' }] : []),
+    ...(isRemoteWorker ? [{ icon: MapPin, label: t('remote'), path: '/remote-clock' }] : []),
     { icon: History, label: t('history'), path: '/history' },
     { icon: Settings, label: t('settings'), path: '/settings' },
   ];
