@@ -96,11 +96,13 @@ const features = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { language, setLanguage, availableLanguages } = useLanguage();
+  const { language, setLanguage, languages } = useLanguage();
   const [currency, setCurrency] = useState('EUR');
   const [selectedPlan, setSelectedPlan] = useState('business');
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [showLanguages, setShowLanguages] = useState(false);
+
+  const availableLanguages = languages || [];
 
   const formatPrice = (price) => {
     const converted = Math.round(price * currencies[currency].rate);
