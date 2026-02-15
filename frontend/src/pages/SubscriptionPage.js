@@ -22,6 +22,7 @@ export default function SubscriptionPage() {
   const [upgrading, setUpgrading] = useState(false);
   const [checking, setChecking] = useState(false);
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   const { api } = useAuth();
   const navigate = useNavigate();
