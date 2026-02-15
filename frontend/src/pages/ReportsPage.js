@@ -69,8 +69,8 @@ export default function ReportsPage() {
   const reportCards = [
     {
       id: 'attendance',
-      title: 'Relatório de Ponto',
-      description: 'Registros detalhados de entrada e saída de todos os funcionários',
+      title: t('attendance_report'),
+      description: t('attendance_report_desc'),
       icon: Clock,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
@@ -79,8 +79,8 @@ export default function ReportsPage() {
     },
     {
       id: 'employees',
-      title: 'Lista de Funcionários',
-      description: 'Cadastro completo de funcionários ativos com informações essenciais',
+      title: t('employees_list'),
+      description: t('employees_list_desc'),
       icon: Users,
       color: 'text-emerald-400',
       bgColor: 'bg-emerald-400/10',
@@ -109,9 +109,9 @@ export default function ReportsPage() {
           <div>
             <h1 className="text-2xl font-bold font-[Manrope] flex items-center gap-2">
               <FileText className="w-6 h-6 text-primary" />
-              Relatórios
+              {t('reports')}
             </h1>
-            <p className="text-muted-foreground">Gere relatórios em PDF ou Excel</p>
+            <p className="text-muted-foreground">{t('reports_desc')}</p>
           </div>
         </motion.div>
 
@@ -125,14 +125,14 @@ export default function ReportsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Calendar className="w-5 h-5 text-primary" />
-                Período do Relatório
+                {t('report_period')}
               </CardTitle>
-              <CardDescription>Selecione o período para relatórios de ponto</CardDescription>
+              <CardDescription>{t('select_period_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="start-date">Data Inicial</Label>
+                  <Label htmlFor="start-date">{t('start_date')}</Label>
                   <Input
                     id="start-date"
                     type="date"
