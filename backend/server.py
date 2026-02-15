@@ -1570,8 +1570,8 @@ async def get_current_subscription(current_user: dict = Depends(require_hr)):
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    plan_id = company.get('subscription_plan', 'free')
-    plan_details = SUBSCRIPTION_PLANS.get(plan_id, SUBSCRIPTION_PLANS['free'])
+    plan_id = company.get('subscription_plan', 'trial')
+    plan_details = SUBSCRIPTION_PLANS.get(plan_id, SUBSCRIPTION_PLANS['trial'])
     
     # Get employee count
     employee_count = await db.users.count_documents({
@@ -1579,15 +1579,34 @@ async def get_current_subscription(current_user: dict = Depends(require_hr)):
         "is_active": True
     })
     
+    # Calculate trial days remaining
+    trial_days_remaining = None
+    trial_expired = False
+    if plan_id == 'trial':
+        trial_start = company.get('trial_start_date')
+        if trial_start:
+            start_date = datetime.strptime(trial_start, '%Y-%m-%d')
+            end_date = start_date + timedelta(days=TRIAL_DURATION_DAYS)
+            remaining = (end_date - datetime.now()).days
+            trial_days_remaining = max(0, remaining)
+            trial_expired = remaining < 0
+    
+    # Check if company is exempt (VIP)
+    is_exempt = company.get('is_exempt', False)
+    
     return {
         "plan": plan_id,
         "plan_name": plan_details['name'],
         "price": plan_details['price'],
+        "currency": plan_details.get('currency', 'eur'),
         "features": plan_details['features'],
         "max_employees": plan_details['max_employees'],
         "current_employees": employee_count,
-        "status": company.get('subscription_status', 'active'),
-        "end_date": company.get('subscription_end_date')
+        "status": "expired" if trial_expired and not is_exempt else company.get('subscription_status', 'active'),
+        "end_date": company.get('subscription_end_date'),
+        "trial_days_remaining": trial_days_remaining,
+        "trial_expired": trial_expired and not is_exempt,
+        "is_exempt": is_exempt
     }
 
 @api_router.post("/subscription/checkout")
