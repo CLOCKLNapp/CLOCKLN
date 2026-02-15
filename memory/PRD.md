@@ -23,7 +23,21 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - ✅ Backend: Online no Railway
 - ✅ MongoDB: Configurado no Railway
 
-## Últimas Alterações - 14/02/2026
+## Últimas Alterações - 15/02/2026
+- ✅ CRIADA Landing Page completa com:
+  - Hero Section "Time Tracking Modern for Your Business"
+  - Estatísticas (10K+ Users, 500+ Companies, 99.9% Uptime, 17+ Languages)
+  - Seção de Features (6 features)
+  - Seção de Preços com toggle EUR/USD
+  - Planos Pro e Business
+  - Períodos: Monthly, 3 Years (+6 meses grátis), 5 Years (+12 meses grátis)
+  - REMOVIDO plano Lifetime (a pedido do usuário)
+  - 5 Years agora é "BEST VALUE"
+  - Call to Action e Footer
+- ✅ Landing Page é agora a página inicial (rota /)
+- ✅ Corrigido bug do LanguageContext na Landing Page
+
+## Alterações Anteriores - 14/02/2026
 - Corrigidas traduções incompletas (alemão, português, inglês)
 - Adicionado suporte a safe-area para iPhones com notch
 - Suprimido erro ResizeObserver nas configurações
