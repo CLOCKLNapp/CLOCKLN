@@ -142,9 +142,9 @@ export default function SubscriptionPage() {
           <div>
             <h1 className="text-2xl font-bold font-[Manrope] flex items-center gap-2">
               <Crown className="w-6 h-6 text-amber-400" />
-              Planos e Assinatura
+              {t('plans_subscription')}
             </h1>
-            <p className="text-muted-foreground">Gerencie seu plano CLOCKLN</p>
+            <p className="text-muted-foreground">{t('manage_plan')}</p>
           </div>
         </motion.div>
 
@@ -156,7 +156,22 @@ export default function SubscriptionPage() {
             className="bg-primary/10 border border-primary/30 rounded-lg p-4 flex items-center gap-3"
           >
             <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span>Verificando status do pagamento...</span>
+            <span>{t('checking_payment')}</span>
+          </motion.div>
+        )}
+
+        {/* Trial Expired Warning */}
+        {currentSub?.trial_expired && !currentSub?.is_exempt && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-center gap-3"
+          >
+            <AlertTriangle className="w-6 h-6 text-red-400" />
+            <div>
+              <h3 className="font-semibold text-red-400">{t('trial_expired_title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('trial_expired_message')}</p>
+            </div>
           </motion.div>
         )}
 
@@ -171,7 +186,7 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" />
-                  Plano Atual
+                  {t('current_plan')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -183,18 +198,44 @@ export default function SubscriptionPage() {
                     <div>
                       <h3 className="text-xl font-bold">{currentSub.plan_name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {currentSub.price === 0 ? 'Gratuito' : `$${currentSub.price}/mês`}
+                        {currentSub.price === 0 ? t('free_trial') : `€${currentSub.price}/${t('month')}`}
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-                    {currentSub.status === 'active' ? 'Ativo' : currentSub.status}
-                  </Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant="outline" className={`${
+                      currentSub.trial_expired && !currentSub.is_exempt
+                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                    }`}>
+                      {currentSub.trial_expired && !currentSub.is_exempt 
+                        ? t('expired') 
+                        : currentSub.status === 'active' ? t('active') : currentSub.status}
+                    </Badge>
+                    {currentSub.is_exempt && (
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30">
+                        VIP
+                      </Badge>
+                    )}
+                  </div>
                 </div>
+                
+                {/* Trial days remaining */}
+                {currentSub.plan === 'trial' && currentSub.trial_days_remaining !== null && !currentSub.is_exempt && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-amber-400" />
+                    <div>
+                      <span className="font-semibold text-amber-400">
+                        {currentSub.trial_days_remaining} {t('days_remaining')}
+                      </span>
+                      <p className="text-xs text-muted-foreground">{t('trial_upgrade_hint')}</p>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Funcionários</span>
+                    <span>{t('employees')}</span>
                     <span>{currentSub.current_employees} / {currentSub.max_employees}</span>
                   </div>
                   <Progress 
@@ -204,7 +245,7 @@ export default function SubscriptionPage() {
                   {currentSub.current_employees >= currentSub.max_employees && (
                     <div className="flex items-center gap-2 text-amber-400 text-sm">
                       <AlertCircle className="w-4 h-4" />
-                      Limite de funcionários atingido
+                      {t('employee_limit_reached')}
                     </div>
                   )}
                 </div>
@@ -220,7 +261,7 @@ export default function SubscriptionPage() {
               <div key={i} className="h-96 bg-muted/50 rounded-lg animate-pulse" />
             ))
           ) : (
-            plans.map((plan, index) => (
+            plans.filter(plan => plan.id !== 'trial').map((plan, index) => (
               <motion.div
                 key={plan.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -235,22 +276,18 @@ export default function SubscriptionPage() {
                 >
                   <CardHeader className="text-center">
                     <div className={`mx-auto p-4 rounded-2xl mb-4 ${
-                      plan.id === 'free' ? 'bg-slate-500/10' :
                       plan.id === 'pro' ? 'bg-primary/10' : 'bg-amber-500/10'
                     }`}>
                       {planIcons[plan.id]}
                     </div>
                     <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     <CardDescription>
-                      {plan.id === 'free' && 'Para pequenos times'}
-                      {plan.id === 'pro' && 'Para empresas em crescimento'}
-                      {plan.id === 'business' && 'Para grandes organizações'}
+                      {plan.id === 'pro' && t('plan_pro_desc')}
+                      {plan.id === 'business' && t('plan_business_desc')}
                     </CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold">
-                        {plan.price === 0 ? 'Grátis' : `$${plan.price}`}
-                      </span>
-                      {plan.price > 0 && <span className="text-muted-foreground">/mês</span>}
+                      <span className="text-4xl font-bold">€{plan.price}</span>
+                      <span className="text-muted-foreground">/{t('month')}</span>
                     </div>
                   </CardHeader>
                   <CardContent className="flex-1">
@@ -258,7 +295,6 @@ export default function SubscriptionPage() {
                       {plan.features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <Check className={`w-5 h-5 ${
-                            plan.id === 'free' ? 'text-slate-400' :
                             plan.id === 'pro' ? 'text-primary' : 'text-amber-400'
                           }`} />
                           <span className="text-sm">{feature}</span>
@@ -269,11 +305,7 @@ export default function SubscriptionPage() {
                   <CardFooter>
                     {currentSub?.plan === plan.id ? (
                       <Button variant="outline" className="w-full" disabled>
-                        Plano Atual
-                      </Button>
-                    ) : plan.price === 0 ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        Plano Básico
+                        {t('current_plan')}
                       </Button>
                     ) : (
                       <Button 
@@ -289,7 +321,7 @@ export default function SubscriptionPage() {
                         ) : (
                           <ChevronRight className="w-4 h-4 mr-2" />
                         )}
-                        Fazer Upgrade
+                        {currentSub?.plan === 'trial' ? t('subscribe_now') : t('upgrade')}
                       </Button>
                     )}
                   </CardFooter>
@@ -307,20 +339,20 @@ export default function SubscriptionPage() {
         >
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle>Perguntas Frequentes</CardTitle>
+              <CardTitle>{t('faq_title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-medium">Posso mudar de plano a qualquer momento?</h4>
-                <p className="text-sm text-muted-foreground">Sim, você pode fazer upgrade a qualquer momento. O novo plano é ativado imediatamente.</p>
+                <h4 className="font-medium">{t('faq_change_plan')}</h4>
+                <p className="text-sm text-muted-foreground">{t('faq_change_plan_answer')}</p>
               </div>
               <div>
-                <h4 className="font-medium">Como funciona a cobrança?</h4>
-                <p className="text-sm text-muted-foreground">A cobrança é mensal, processada via Stripe com total segurança.</p>
+                <h4 className="font-medium">{t('faq_billing')}</h4>
+                <p className="text-sm text-muted-foreground">{t('faq_billing_answer')}</p>
               </div>
               <div>
-                <h4 className="font-medium">O que acontece se eu exceder o limite de funcionários?</h4>
-                <p className="text-sm text-muted-foreground">Você não poderá adicionar novos funcionários até fazer upgrade ou remover funcionários existentes.</p>
+                <h4 className="font-medium">{t('faq_trial')}</h4>
+                <p className="text-sm text-muted-foreground">{t('faq_trial_answer')}</p>
               </div>
             </CardContent>
           </Card>
