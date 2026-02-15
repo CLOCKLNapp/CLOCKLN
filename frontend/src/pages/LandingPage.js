@@ -480,7 +480,7 @@ export default function LandingPage() {
               {t('ready_to_modernize')}
             </h2>
             <p className="text-zinc-400 mb-8">
-              Start for free. No credit card required.
+              {t('start_free_no_card')}
             </p>
             <Button
               size="lg"
@@ -488,7 +488,7 @@ export default function LandingPage() {
               className="btn-glow-blue text-lg px-8 py-6"
               data-testid="cta-start-btn"
             >
-              Create Free Account
+              {t('create_free_account')}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </motion.div>
@@ -506,7 +506,7 @@ export default function LandingPage() {
               <span className="font-bold font-[Manrope]">CLOCKLN</span>
             </div>
             <p className="text-sm text-zinc-500">
-              © 2026 CLOCKLN. All rights reserved.
+              © 2026 CLOCKLN. {t('all_rights_reserved')}
             </p>
           </div>
         </div>
