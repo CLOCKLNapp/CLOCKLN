@@ -254,7 +254,7 @@ export default function LandingPage() {
                 className="btn-glow-blue text-lg px-8 py-6"
                 data-testid="hero-start-btn"
               >
-                Start for Free
+                {t('start_for_free')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <Button
@@ -264,7 +264,7 @@ export default function LandingPage() {
                 className="text-lg px-8 py-6 border-zinc-700 hover:bg-zinc-800"
                 data-testid="see-features-btn"
               >
-                See Features
+                {t('see_features')}
               </Button>
             </div>
           </motion.div>
@@ -275,7 +275,12 @@ export default function LandingPage() {
       <section className="py-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, i) => (
+            {[
+              { value: '10K+', label: t('active_users') },
+              { value: '500+', label: t('companies') },
+              { value: '99.9%', label: t('uptime') },
+              { value: '17+', label: t('languages_count') }
+            ].map((stat, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
@@ -298,15 +303,23 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Everything You Need
+              {t('everything_you_need')}
             </h2>
             <p className="text-zinc-400 max-w-2xl mx-auto">
-              Complete time management solution for modern businesses
+              {t('complete_solution')}
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
+            {[
+              { icon: Clock, title: t('smart_clock_in'), description: t('smart_clock_in_desc') },
+              { icon: MapPin, title: t('geolocation_feature'), description: t('geolocation_feature_desc') },
+              { icon: FileText, title: t('reports_analytics'), description: t('reports_analytics_desc') },
+              { icon: Shield, title: t('enterprise_security'), description: t('enterprise_security_desc') },
+              { icon: Users, title: t('role_management'), description: t('role_management_desc') },
+              { icon: Bell, title: t('smart_notifications'), description: t('smart_notifications_desc') }
+            ].map((feature, i) => (
+              <motion.div
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
