@@ -613,8 +613,18 @@ export const translations = {
     
     // Reports
     attendance_report: "Anwesenheitsbericht",
+    attendance_report_desc: "Detaillierte Ein- und Ausstempelzeiten aller Mitarbeiter",
+    employees_list: "Mitarbeiterliste",
+    employees_list_desc: "Vollständiges Verzeichnis aktiver Mitarbeiter mit wichtigen Informationen",
+    reports: "Berichte",
+    reports_desc: "Berichte als PDF oder Excel generieren",
     report_period: "Berichtszeitraum",
+    select_period_desc: "Wählen Sie den Zeitraum für Anwesenheitsberichte",
+    start_date: "Startdatum",
+    end_date: "Enddatum",
     about_reports: "Über Berichte",
+    about_reports_desc: "PDF-Berichte sind ideal zum Drucken und Teilen. Excel-Berichte ermöglichen detailliertere Analysen und können nach Bedarf bearbeitet werden.",
+    export_csv: "CSV",
     
     // Overtime
     overtime_approval: "Überstundengenehmigung",
