@@ -122,7 +122,7 @@ class TestSubscriptionPlans:
         
         response = self.session.post(
             f"{BASE_URL}/api/subscription/checkout",
-            json={"plan": "pro", "origin_url": "https://clockln-preview.preview.emergentagent.com"},
+            json={"plan": "pro", "origin_url": "https://point-control-test.preview.emergentagent.com"},
             headers=headers
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -143,7 +143,7 @@ class TestSubscriptionPlans:
         
         response = self.session.post(
             f"{BASE_URL}/api/subscription/checkout",
-            json={"plan": "business", "origin_url": "https://clockln-preview.preview.emergentagent.com"},
+            json={"plan": "business", "origin_url": "https://point-control-test.preview.emergentagent.com"},
             headers=headers
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"

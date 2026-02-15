@@ -2,7 +2,7 @@
 
 ## 📍 Status Atual: APP 100% COMPLETO
 
-**URL de Preview:** https://clockln-preview.preview.emergentagent.com
+**URL de Preview:** https://point-control-test.preview.emergentagent.com
 
 **Credenciais de Teste:**
 - HR: hr@acme.com / password123
