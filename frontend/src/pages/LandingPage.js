@@ -320,7 +320,6 @@ export default function LandingPage() {
               { icon: Bell, title: t('smart_notifications'), description: t('smart_notifications_desc') }
             ].map((feature, i) => (
               <motion.div
-              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -344,10 +343,10 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Plans and Pricing
+              {t('plans_and_pricing')}
             </h2>
             <p className="text-zinc-400 mb-8">
-              Choose the ideal plan for your company. Cancel anytime.
+              {t('choose_plan_desc')}
             </p>
             
             {/* Currency Toggle */}
@@ -393,7 +392,7 @@ export default function LandingPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-zinc-400">
               <Users className="w-5 h-5" />
-              Up to <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> employees
+              {t('up_to')} <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> {t('employees')}
             </div>
           </div>
 
