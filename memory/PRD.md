@@ -56,18 +56,39 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - [x] Super Admin para conceder acesso VIP
 - [x] PWA (Progressive Web App)
 - [x] 17 idiomas suportados
+- [x] Landing Page completa com preços
+
+## Planos de Preços (SEM Lifetime)
+### Pro (até 50 funcionários)
+- Monthly: €29
+- 3 Years: €790 (+6 meses grátis)
+- 5 Years: €1,190 (+12 meses grátis)
+
+### Business (até 500 funcionários) - RECOMENDADO
+- Monthly: €99
+- 3 Years: €2,640 (+6 meses grátis)
+- 5 Years: €5,940 (+12 meses grátis) **BEST VALUE**
 
 ## Tarefas Pendentes
 - [ ] Configurar Stripe para pagamentos reais
 - [ ] Configurar webhook do Stripe
-- [ ] Adicionar mais traduções para páginas secundárias
+- [ ] Verificar link de produção na Vercel
 
 ## Credenciais de Teste
 - **Super Admin**: michaelcaceres71@gmail.com / 123456
+- **Funcionários teste**: joao.silva@marc.com / 123456 (e outros)
 
-## URLs de Produção
-- **Frontend**: https://clockln-*.vercel.app
-- **Backend**: https://clockln-production.up.railway.app
+## URLs
+- **Preview (temporário)**: https://hr-platform-staging.preview.emergentagent.com
+- **Produção Vercel**: Verificar na conta Vercel do usuário
+- **Backend Railway**: https://clockln-production.up.railway.app
+
+## Notas Importantes para Próximos Agentes
+- O usuário é não-técnico e usa celular
+- Responder sempre em Português (Brasil)
+- Landing Page está em /app/frontend/src/pages/LandingPage.js
+- O plano Lifetime foi REMOVIDO a pedido do usuário
+- Manter comunicação clara e passo a passo
 
 ## Idiomas Suportados
 1. English
