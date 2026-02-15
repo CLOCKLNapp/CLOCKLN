@@ -399,9 +399,9 @@ export default function LandingPage() {
           {/* Pricing Cards */}
           <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {[
-              { id: 'monthly', label: 'Monthly', price: plans[selectedPlan].monthly },
-              { id: 'threeYear', label: '3 Years', price: plans[selectedPlan].threeYear, bonus: '+6 months free' },
-              { id: 'fiveYear', label: '5 Years', price: plans[selectedPlan].fiveYear, bonus: '+12 months free', best: true }
+              { id: 'monthly', label: t('monthly'), price: plans[selectedPlan].monthly },
+              { id: 'threeYear', label: t('three_years'), price: plans[selectedPlan].threeYear, bonus: t('plus_6_months_free') },
+              { id: 'fiveYear', label: t('five_years'), price: plans[selectedPlan].fiveYear, bonus: t('plus_12_months_free'), best: true }
             ].map((period) => (
               <motion.button
                 key={period.id}
@@ -416,7 +416,7 @@ export default function LandingPage() {
               >
                 {period.best && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                    BEST VALUE
+                    {t('best_value')}
                   </div>
                 )}
                 <div className="flex items-center justify-center gap-2 mb-3">
@@ -436,10 +436,10 @@ export default function LandingPage() {
           {/* Features List */}
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8">
             <h4 className="font-semibold mb-4 text-center">
-              {plans[selectedPlan].name} Plan includes:
+              {plans[selectedPlan].name} {t('plan_includes')}:
             </h4>
             <div className="grid sm:grid-cols-2 gap-3">
-              {plans[selectedPlan].features.map((feature, i) => (
+              {(selectedPlan === 'pro' ? getProFeatures() : getBusinessFeatures()).map((feature, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                   <span className="text-sm text-zinc-300">{feature}</span>
@@ -456,11 +456,11 @@ export default function LandingPage() {
               className="btn-glow-blue text-lg px-12 py-6"
               data-testid="pricing-start-btn"
             >
-              Get Started
+              {t('get_started')}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <p className="text-sm text-zinc-500 mt-4">
-              Start with free plan. No credit card required.
+              {t('start_free_no_card')}
             </p>
           </div>
         </div>
@@ -477,7 +477,7 @@ export default function LandingPage() {
           >
             <Crown className="w-12 h-12 text-amber-400 mx-auto mb-6" />
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-              Ready to Modernize?
+              {t('ready_to_modernize')}
             </h2>
             <p className="text-zinc-400 mb-8">
               Start for free. No credit card required.
