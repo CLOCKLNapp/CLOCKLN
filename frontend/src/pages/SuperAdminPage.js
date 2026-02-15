@@ -186,7 +186,7 @@ export default function SuperAdminPage() {
             <CardContent>
               <div className="flex gap-4 flex-wrap">
                 <Badge variant="secondary" className="text-base px-4 py-2">
-                  Free: {stats.by_plan.free}
+                  Trial: {stats.by_plan.trial || 0}
                 </Badge>
                 <Badge variant="default" className="text-base px-4 py-2 bg-blue-600">
                   Pro: {stats.by_plan.pro}
@@ -239,7 +239,7 @@ export default function SuperAdminPage() {
                           <span>{company.employee_count} funcionários</span>
                           <span>•</span>
                           <Badge variant={company.is_exempt ? 'default' : 'secondary'} className={company.is_exempt ? 'bg-yellow-600' : ''}>
-                            {company.is_exempt ? 'VIP' : (company.subscription_plan || 'free').toUpperCase()}
+                            {company.is_exempt ? 'VIP' : (company.subscription_plan || 'trial').toUpperCase()}
                           </Badge>
                         </div>
                       </div>
