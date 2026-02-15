@@ -232,11 +232,9 @@ export default function ReportsPage() {
               <div className="flex items-start gap-3">
                 <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="font-medium">Sobre os Relatórios</h4>
+                  <h4 className="font-medium">{t('about_reports')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Os relatórios em PDF são ideais para impressão e compartilhamento.
-                    Os relatórios em Excel permitem análises mais detalhadas e podem ser 
-                    editados conforme sua necessidade.
+                    {t('about_reports_desc')}
                   </p>
                 </div>
               </div>
