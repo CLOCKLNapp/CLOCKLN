@@ -151,9 +151,9 @@ export default function HRDashboard() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success('Relatório exportado!');
+      toast.success(t('report_exported'));
     } catch (error) {
-      toast.error('Erro ao exportar relatório');
+      toast.error(t('export_error'));
     }
   };
 
