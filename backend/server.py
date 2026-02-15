@@ -474,6 +474,10 @@ async def register_company(company: CompanyCreate, user: UserCreate):
     company_obj = Company(**company.model_dump())
     company_dict = company_obj.model_dump()
     company_dict['created_at'] = company_dict['created_at'].isoformat()
+    # Set trial start date for new companies
+    company_dict['trial_start_date'] = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    company_dict['subscription_plan'] = 'trial'
+    company_dict['max_employees'] = SUBSCRIPTION_PLANS['trial']['max_employees']
     await db.companies.insert_one(company_dict)
     
     user_obj = User(
