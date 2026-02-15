@@ -1621,7 +1621,7 @@ async def create_checkout_session(
     
     plan = SUBSCRIPTION_PLANS[data.plan]
     if plan['price'] == 0:
-        raise HTTPException(status_code=400, detail="Cannot checkout free plan")
+        raise HTTPException(status_code=400, detail="Cannot checkout trial plan")
     
     company_id = current_user['company_id']
     user_id = current_user['id']
@@ -1634,21 +1634,24 @@ async def create_checkout_session(
     stripe.api_key = STRIPE_API_KEY
     
     try:
-        # Create checkout session using Stripe SDK
+        # Create checkout session using Stripe SDK - EUR currency
         session = stripe.checkout.Session.create(
             payment_method_types=['card'],
             line_items=[{
                 'price_data': {
-                    'currency': 'usd',
+                    'currency': 'eur',
                     'product_data': {
                         'name': f"CLOCKLN {plan['name']} Plan",
-                        'description': f"Monthly subscription to {plan['name']} plan"
+                        'description': f"Assinatura mensal do plano {plan['name']}"
                     },
                     'unit_amount': int(plan['price'] * 100),  # Stripe uses cents
+                    'recurring': {
+                        'interval': 'month'
+                    }
                 },
                 'quantity': 1,
             }],
-            mode='payment',
+            mode='subscription',
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={
@@ -1664,7 +1667,7 @@ async def create_checkout_session(
             user_id=user_id,
             plan=data.plan,
             amount=plan['price'],
-            currency="usd",
+            currency="eur",
             session_id=session.id,
             payment_status="pending",
             metadata={"plan_name": plan['name']}
