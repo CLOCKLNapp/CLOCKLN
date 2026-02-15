@@ -75,7 +75,8 @@ class Company(BaseModel):
     default_language: str = "en"
     weekly_hours: int = 40
     vacation_days_per_year: int = 30  # Default vacation days
-    subscription_plan: str = "free"  # free, pro, business
+    subscription_plan: str = "trial"  # trial, pro, business
+    trial_start_date: Optional[str] = None  # YYYY-MM-DD for trial start
     subscription_status: str = "active"  # active, cancelled, expired
     subscription_end_date: Optional[str] = None  # YYYY-MM-DD
     max_employees: int = 5  # Limit based on plan
@@ -128,29 +129,35 @@ class TimeBankTransaction(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SubscriptionPlan:
-    FREE = "free"
+    TRIAL = "trial"
     PRO = "pro"
     BUSINESS = "business"
 
-# Plan details - defined on server only (security)
+# Trial duration in days
+TRIAL_DURATION_DAYS = 15
+
+# Plan details - defined on server only (security) - All prices in EUR
 SUBSCRIPTION_PLANS = {
-    "free": {
-        "name": "Free",
+    "trial": {
+        "name": "Trial",
         "price": 0.0,
-        "max_employees": 5,
-        "features": ["QR Code clock-in", "Basic reports", "5 employees max"]
+        "max_employees": 50,
+        "currency": "eur",
+        "features": ["15 dias grátis", "Acesso completo", "Até 50 funcionários", "Sem cartão necessário"]
     },
     "pro": {
         "name": "Pro",
-        "price": 29.0,
+        "price": 49.0,
         "max_employees": 50,
-        "features": ["All Free features", "Geolocation clock-in", "Remote map", "50 employees max", "Priority support"]
+        "currency": "eur",
+        "features": ["QR Code clock-in", "Clock-in por geolocalização", "Mapa de funcionários remotos", "Até 50 funcionários", "Suporte prioritário"]
     },
     "business": {
         "name": "Business",
-        "price": 99.0,
+        "price": 120.0,
         "max_employees": 500,
-        "features": ["All Pro features", "Manager roles", "Advanced reports", "500 employees max", "Dedicated support", "Custom branding"]
+        "currency": "eur",
+        "features": ["Todas funcionalidades Pro", "Papéis de gerente", "Relatórios avançados", "Até 500 funcionários", "Suporte dedicado", "Branding personalizado"]
     }
 }
 
