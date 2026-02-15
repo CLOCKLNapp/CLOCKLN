@@ -2787,8 +2787,8 @@ async def toggle_company_exempt(company_id: str, is_exempt: bool, current_user: 
         {"id": company_id},
         {"$set": {
             "is_exempt": is_exempt,
-            "subscription_plan": "business" if is_exempt else "free",
-            "max_employees": 9999 if is_exempt else 5
+            "subscription_plan": "business" if is_exempt else "trial",
+            "max_employees": 9999 if is_exempt else SUBSCRIPTION_PLANS['trial']['max_employees']
         }}
     )
     
@@ -2831,7 +2831,7 @@ async def get_admin_stats(current_user: dict = Depends(require_superadmin)):
     exempt_companies = await db.companies.count_documents({"is_exempt": True})
     
     # Companies by plan
-    free_count = await db.companies.count_documents({"subscription_plan": "free", "is_exempt": {"$ne": True}})
+    trial_count = await db.companies.count_documents({"subscription_plan": "trial", "is_exempt": {"$ne": True}})
     pro_count = await db.companies.count_documents({"subscription_plan": "pro", "is_exempt": {"$ne": True}})
     business_count = await db.companies.count_documents({"subscription_plan": "business", "is_exempt": {"$ne": True}})
     
@@ -2841,7 +2841,7 @@ async def get_admin_stats(current_user: dict = Depends(require_superadmin)):
         "total_clock_records": total_records,
         "exempt_companies": exempt_companies,
         "by_plan": {
-            "free": free_count,
+            "trial": trial_count,
             "pro": pro_count,
             "business": business_count
         }
