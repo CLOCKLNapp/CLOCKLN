@@ -205,14 +205,14 @@ export default function LandingPage() {
               className="text-zinc-300 hover:text-white"
               data-testid="login-btn"
             >
-              Login
+              {t('login')}
             </Button>
             <Button
               onClick={() => navigate('/login')}
               className="btn-glow-blue hidden sm:flex"
               data-testid="start-free-btn"
             >
-              Start for Free
+              {t('start_for_free')}
             </Button>
           </div>
         </div>
@@ -231,21 +231,20 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
               <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm text-primary font-medium">Smart Time Tracking</span>
+              <span className="text-sm text-primary font-medium">{t('smart_time_tracking')}</span>
             </div>
             
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-              Time Tracking{' '}
+              {t('time_tracking')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-400">
-                Modern
+                {t('modern')}
               </span>
               <br />
-              for Your Business
+              {t('for_your_business')}
             </h1>
             
             <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto mb-10">
-              Simplify time tracking with QR Code, geolocation and smart reports.
-              Secure, multilingual and ready for global use.
+              {t('landing_description')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
