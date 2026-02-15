@@ -13,7 +13,7 @@ import { Progress } from '../components/ui/progress';
 import { useAuth } from '../context/AuthContext';
 import { AppLayout } from '../components/AppLayout';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SubscriptionPage() {
   const [plans, setPlans] = useState([]);
