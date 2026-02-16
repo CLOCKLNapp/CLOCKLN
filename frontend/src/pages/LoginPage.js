@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Building2, Mail, Lock, User, Loader2, Globe } from 'lucide-react';
+import { Clock, Building2, Mail, Lock, User, Loader2, Globe, Gift, Sparkles, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [userName, setUserName] = useState('');
+  const [showBanner, setShowBanner] = useState(true);
   
   const { login, registerCompany } = useAuth();
   const { t } = useLanguage();
