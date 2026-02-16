@@ -162,9 +162,15 @@ export const translations = {
     faq_change_plan: "Can I change plans anytime?",
     faq_change_plan_answer: "Yes, you can upgrade anytime. The new plan is activated immediately.",
     faq_billing: "How does billing work?",
-    faq_billing_answer: "Billing is monthly, securely processed via Stripe.",
+    faq_billing_answer: "Billing is monthly or annually, securely processed via Stripe.",
     faq_trial: "What happens when my trial expires?",
     faq_trial_answer: "After 15 days, you'll need to subscribe to a paid plan to continue using CLOCKLN.",
+    choose_billing_period: "Choose your billing period",
+    annual_discount_info: "Pay upfront and get free months!",
+    save: "Save",
+    free_months: "free months",
+    faq_annual: "How does the annual discount work?",
+    faq_annual_answer: "When you choose an annual plan, you pay upfront and get 2 free months per year. The more years, the more savings!",
     
     // Documents
     pending_review: "Pending Review",
