@@ -48,7 +48,36 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col">
+      {/* Promotional Banner */}
+      {showBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-3 px-4"
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 text-sm md:text-base">
+            <Sparkles className="w-5 h-5 animate-pulse" />
+            <span className="font-medium">
+              <Gift className="w-4 h-4 inline mr-1" />
+              {t('promo_banner') || 'Oferta Especial: Assine por 1 ano e ganhe 2 meses grátis!'}
+            </span>
+            <span className="hidden md:inline text-emerald-100">
+              {t('promo_banner_detail') || 'Economize até €720 com planos anuais'}
+            </span>
+            <Sparkles className="w-5 h-5 animate-pulse" />
+          </div>
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
+            aria-label="Fechar banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </motion.div>
+      )}
+
+      <div className="flex-1 flex">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800 items-center justify-center p-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.15)_0%,transparent_50%)]" />
@@ -71,6 +100,25 @@ export default function LoginPage() {
             <p className="text-lg text-zinc-400 mb-8">
               Smart corporate time tracking platform. Modern, secure, and ready for global use.
             </p>
+
+            {/* Promo Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="mb-8 p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <Gift className="w-6 h-6 text-emerald-400" />
+                <span className="font-bold text-emerald-400">{t('special_offer') || 'Oferta Especial'}</span>
+              </div>
+              <p className="text-white text-lg font-semibold mb-1">
+                {t('promo_headline') || 'Assine por 1 ano, ganhe 2 meses grátis!'}
+              </p>
+              <p className="text-zinc-400 text-sm">
+                {t('promo_subline') || 'Planos a partir de €40,83/mês. Economize até 17%.'}
+              </p>
+            </motion.div>
             
             <div className="grid grid-cols-2 gap-4">
               {[
