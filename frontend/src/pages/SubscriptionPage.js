@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Crown, Check, Zap, Building2, Clock,
   ArrowLeft, CreditCard, Loader2, AlertCircle,
-  ChevronRight, AlertTriangle
+  ChevronRight, AlertTriangle, Gift, Sparkles
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
@@ -17,10 +17,12 @@ import { useLanguage } from '../context/LanguageContext';
 
 export default function SubscriptionPage() {
   const [plans, setPlans] = useState([]);
+  const [billingPeriods, setBillingPeriods] = useState({});
   const [currentSub, setCurrentSub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
 
@@ -34,6 +36,7 @@ export default function SubscriptionPage() {
         api.get('/subscription/current')
       ]);
       setPlans(plansRes.data.plans);
+      setBillingPeriods(plansRes.data.billing_periods || {});
       setCurrentSub(subRes.data);
     } catch (error) {
       toast.error('Erro ao carregar planos');
@@ -54,7 +57,6 @@ export default function SubscriptionPage() {
         if (response.data.status === 'completed') {
           toast.success(response.data.message);
           fetchData();
-          // Clean URL
           window.history.replaceState({}, '', '/subscription');
           setChecking(false);
           return;
@@ -77,7 +79,6 @@ export default function SubscriptionPage() {
   useEffect(() => {
     fetchData();
     
-    // Check if returning from Stripe
     const sessionId = searchParams.get('session_id');
     if (sessionId) {
       checkPaymentStatus(sessionId);
@@ -99,10 +100,10 @@ export default function SubscriptionPage() {
     try {
       const response = await api.post('/subscription/checkout', {
         plan: planId,
+        billing_period: selectedPeriod,
         origin_url: window.location.origin
       });
       
-      // Redirect to Stripe
       window.location.href = response.data.checkout_url;
     } catch (error) {
       toast.error(t('checkout_error'));
@@ -120,6 +121,33 @@ export default function SubscriptionPage() {
     trial: 'border-slate-500',
     pro: 'border-primary ring-2 ring-primary/20',
     business: 'border-amber-500'
+  };
+
+  const periodLabels = {
+    monthly: { label: 'Mensal', short: 'mês' },
+    yearly_1: { label: '1 Ano', short: 'ano', badge: '2 meses grátis' },
+    yearly_2: { label: '2 Anos', short: '2 anos', badge: '4 meses grátis' },
+    yearly_3: { label: '3 Anos', short: '3 anos', badge: '6 meses grátis' }
+  };
+
+  const getPriceDisplay = (plan) => {
+    if (!plan.pricing || !plan.pricing[selectedPeriod]) {
+      return { price: plan.price, suffix: '/mês', savings: 0 };
+    }
+    
+    const pricing = plan.pricing[selectedPeriod];
+    
+    if (selectedPeriod === 'monthly') {
+      return { price: pricing.total_price, suffix: '/mês', savings: 0 };
+    }
+    
+    return {
+      price: pricing.total_price,
+      monthlyEquivalent: pricing.monthly_equivalent,
+      savings: pricing.savings,
+      freeMonths: pricing.free_months,
+      suffix: ''
+    };
   };
 
   return (
@@ -254,80 +282,139 @@ export default function SubscriptionPage() {
           </motion.div>
         )}
 
+        {/* Billing Period Selector */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <h2 className="text-lg font-semibold text-center">{t('choose_billing_period') || 'Escolha o período de pagamento'}</h2>
+          <div className="flex flex-wrap justify-center gap-2">
+            {Object.entries(periodLabels).map(([key, value]) => (
+              <Button
+                key={key}
+                variant={selectedPeriod === key ? 'default' : 'outline'}
+                onClick={() => setSelectedPeriod(key)}
+                className={`relative ${selectedPeriod === key ? 'ring-2 ring-primary/50' : ''}`}
+                data-testid={`period-${key}-btn`}
+              >
+                {value.label}
+                {value.badge && (
+                  <Badge className="absolute -top-2 -right-2 bg-emerald-500 text-[10px] px-1.5 py-0.5">
+                    <Gift className="w-3 h-3 mr-0.5" />
+                    {value.badge}
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </div>
+          {selectedPeriod !== 'monthly' && (
+            <p className="text-sm text-emerald-400 flex items-center gap-1">
+              <Sparkles className="w-4 h-4" />
+              {t('annual_discount_info') || 'Pague antecipado e ganhe meses grátis!'}
+            </p>
+          )}
+        </motion.div>
+
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {loading ? (
-            [1, 2, 3].map(i => (
+            [1, 2].map(i => (
               <div key={i} className="h-96 bg-muted/50 rounded-lg animate-pulse" />
             ))
           ) : (
-            plans.filter(plan => plan.id !== 'trial').map((plan, index) => (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-              >
-                <Card 
-                  className={`h-full flex flex-col border-2 transition-all hover:shadow-lg ${
-                    planColors[plan.id] || 'border-border'
-                  } ${currentSub?.plan === plan.id ? 'bg-muted/20' : ''}`}
-                  data-testid={`plan-card-${plan.id}`}
+            plans.filter(plan => plan.id !== 'trial').map((plan, index) => {
+              const priceDisplay = getPriceDisplay(plan);
+              
+              return (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + index * 0.1 }}
                 >
-                  <CardHeader className="text-center">
-                    <div className={`mx-auto p-4 rounded-2xl mb-4 ${
-                      plan.id === 'pro' ? 'bg-primary/10' : 'bg-amber-500/10'
-                    }`}>
-                      {planIcons[plan.id]}
-                    </div>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription>
-                      {plan.id === 'pro' && t('plan_pro_desc')}
-                      {plan.id === 'business' && t('plan_business_desc')}
-                    </CardDescription>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold">€{plan.price}</span>
-                      <span className="text-muted-foreground">/{t('month')}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-center gap-2">
-                          <Check className={`w-5 h-5 ${
-                            plan.id === 'pro' ? 'text-primary' : 'text-amber-400'
-                          }`} />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    {currentSub?.plan === plan.id ? (
-                      <Button variant="outline" className="w-full" disabled>
-                        {t('current_plan')}
-                      </Button>
-                    ) : (
-                      <Button 
-                        className={`w-full ${
-                          plan.id === 'pro' ? 'btn-glow-blue' : 'bg-amber-500 hover:bg-amber-600'
-                        }`}
-                        onClick={() => handleUpgrade(plan.id)}
-                        disabled={upgrading}
-                        data-testid={`upgrade-${plan.id}-btn`}
-                      >
-                        {upgrading ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <Card 
+                    className={`h-full flex flex-col border-2 transition-all hover:shadow-lg ${
+                      planColors[plan.id] || 'border-border'
+                    } ${currentSub?.plan === plan.id ? 'bg-muted/20' : ''}`}
+                    data-testid={`plan-card-${plan.id}`}
+                  >
+                    <CardHeader className="text-center">
+                      {priceDisplay.savings > 0 && (
+                        <Badge className="absolute top-4 right-4 bg-emerald-500">
+                          {t('save') || 'Economize'} €{priceDisplay.savings}
+                        </Badge>
+                      )}
+                      <div className={`mx-auto p-4 rounded-2xl mb-4 ${
+                        plan.id === 'pro' ? 'bg-primary/10' : 'bg-amber-500/10'
+                      }`}>
+                        {planIcons[plan.id]}
+                      </div>
+                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                      <CardDescription>
+                        {plan.id === 'pro' && t('plan_pro_desc')}
+                        {plan.id === 'business' && t('plan_business_desc')}
+                      </CardDescription>
+                      <div className="mt-4">
+                        <span className="text-4xl font-bold">€{priceDisplay.price}</span>
+                        {selectedPeriod === 'monthly' ? (
+                          <span className="text-muted-foreground">/{t('month')}</span>
                         ) : (
-                          <ChevronRight className="w-4 h-4 mr-2" />
+                          <span className="text-muted-foreground">/{periodLabels[selectedPeriod]?.short}</span>
                         )}
-                        {currentSub?.plan === 'trial' ? t('subscribe_now') : t('upgrade')}
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))
+                      </div>
+                      {selectedPeriod !== 'monthly' && priceDisplay.monthlyEquivalent && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          (€{priceDisplay.monthlyEquivalent}/{t('month')})
+                        </p>
+                      )}
+                      {priceDisplay.freeMonths > 0 && (
+                        <Badge variant="outline" className="mt-2 bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                          <Gift className="w-3 h-3 mr-1" />
+                          {priceDisplay.freeMonths} {t('free_months') || 'meses grátis'}
+                        </Badge>
+                      )}
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <ul className="space-y-3">
+                        {plan.features.map((feature, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            <Check className={`w-5 h-5 ${
+                              plan.id === 'pro' ? 'text-primary' : 'text-amber-400'
+                            }`} />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      {currentSub?.plan === plan.id ? (
+                        <Button variant="outline" className="w-full" disabled>
+                          {t('current_plan')}
+                        </Button>
+                      ) : (
+                        <Button 
+                          className={`w-full ${
+                            plan.id === 'pro' ? 'btn-glow-blue' : 'bg-amber-500 hover:bg-amber-600'
+                          }`}
+                          onClick={() => handleUpgrade(plan.id)}
+                          disabled={upgrading}
+                          data-testid={`upgrade-${plan.id}-btn`}
+                        >
+                          {upgrading ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 mr-2" />
+                          )}
+                          {currentSub?.plan === 'trial' ? t('subscribe_now') : t('upgrade')}
+                        </Button>
+                      )}
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              );
+            })
           )}
         </div>
 
@@ -349,6 +436,10 @@ export default function SubscriptionPage() {
               <div>
                 <h4 className="font-medium">{t('faq_billing')}</h4>
                 <p className="text-sm text-muted-foreground">{t('faq_billing_answer')}</p>
+              </div>
+              <div>
+                <h4 className="font-medium">{t('faq_annual') || 'Como funciona o desconto anual?'}</h4>
+                <p className="text-sm text-muted-foreground">{t('faq_annual_answer') || 'Ao escolher um plano anual, você paga adiantado e ganha 2 meses grátis por ano. Quanto mais anos, mais economia!'}</p>
               </div>
               <div>
                 <h4 className="font-medium">{t('faq_trial')}</h4>
