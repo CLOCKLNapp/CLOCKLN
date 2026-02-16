@@ -136,6 +136,14 @@ class SubscriptionPlan:
 # Trial duration in days
 TRIAL_DURATION_DAYS = 15
 
+# Billing periods with discount (2 months free per year = ~17% discount)
+BILLING_PERIODS = {
+    "monthly": {"months": 1, "discount": 0, "label": "Mensal"},
+    "yearly_1": {"months": 12, "discount": 2, "label": "1 Ano", "free_months": 2},
+    "yearly_2": {"months": 24, "discount": 4, "label": "2 Anos", "free_months": 4},
+    "yearly_3": {"months": 36, "discount": 6, "label": "3 Anos", "free_months": 6},
+}
+
 # Plan details - defined on server only (security) - All prices in EUR
 SUBSCRIPTION_PLANS = {
     "trial": {
@@ -160,6 +168,38 @@ SUBSCRIPTION_PLANS = {
         "features": ["Todas funcionalidades Pro", "Papéis de gerente", "Relatórios avançados", "Até 500 funcionários", "Suporte dedicado", "Branding personalizado"]
     }
 }
+
+def calculate_price(plan_id: str, billing_period: str) -> dict:
+    """Calculate price based on plan and billing period"""
+    if plan_id not in SUBSCRIPTION_PLANS or plan_id == "trial":
+        return None
+    
+    plan = SUBSCRIPTION_PLANS[plan_id]
+    period = BILLING_PERIODS.get(billing_period, BILLING_PERIODS["monthly"])
+    
+    monthly_price = plan["price"]
+    months = period["months"]
+    free_months = period.get("free_months", 0)
+    
+    # Calculate: pay for (months - free_months) but get full months
+    paid_months = months - free_months
+    total_price = monthly_price * paid_months
+    
+    # Calculate savings
+    original_price = monthly_price * months
+    savings = original_price - total_price
+    discount_percent = round((savings / original_price) * 100) if original_price > 0 else 0
+    
+    return {
+        "total_price": total_price,
+        "monthly_equivalent": round(total_price / months, 2),
+        "original_price": original_price,
+        "savings": savings,
+        "discount_percent": discount_percent,
+        "months": months,
+        "free_months": free_months,
+        "label": period["label"]
+    }
 
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
