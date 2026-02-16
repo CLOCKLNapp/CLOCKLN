@@ -19,6 +19,13 @@ export const translations = {
     error: "Error",
     success: "Success",
     
+    // Promo Banner
+    promo_banner: "Special Offer: Subscribe for 1 year and get 2 months free!",
+    promo_banner_detail: "Save up to €720 with annual plans",
+    special_offer: "Special Offer",
+    promo_headline: "Subscribe for 1 year, get 2 months free!",
+    promo_subline: "Plans from €40.83/month. Save up to 17%.",
+    
     // Auth
     welcome_back: "Welcome back",
     sign_in_to_continue: "Sign in to your account",
