@@ -1678,6 +1678,15 @@ async def create_checkout_session(
     if plan['price'] == 0:
         raise HTTPException(status_code=400, detail="Cannot checkout trial plan")
     
+    # Validate billing period
+    if data.billing_period not in BILLING_PERIODS:
+        raise HTTPException(status_code=400, detail="Invalid billing period")
+    
+    # Calculate price based on billing period
+    price_info = calculate_price(data.plan, data.billing_period)
+    if not price_info:
+        raise HTTPException(status_code=400, detail="Could not calculate price")
+    
     company_id = current_user['company_id']
     user_id = current_user['id']
     
@@ -1688,44 +1697,85 @@ async def create_checkout_session(
     # Initialize Stripe
     stripe.api_key = STRIPE_API_KEY
     
+    billing_period = BILLING_PERIODS[data.billing_period]
+    is_monthly = data.billing_period == "monthly"
+    
     try:
-        # Create checkout session using Stripe SDK - EUR currency
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'eur',
-                    'product_data': {
-                        'name': f"CLOCKLN {plan['name']} Plan",
-                        'description': f"Assinatura mensal do plano {plan['name']}"
+        if is_monthly:
+            # Monthly subscription (recurring)
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'eur',
+                        'product_data': {
+                            'name': f"CLOCKLN {plan['name']} Plan",
+                            'description': f"Assinatura mensal do plano {plan['name']}"
+                        },
+                        'unit_amount': int(plan['price'] * 100),
+                        'recurring': {
+                            'interval': 'month'
+                        }
                     },
-                    'unit_amount': int(plan['price'] * 100),  # Stripe uses cents
-                    'recurring': {
-                        'interval': 'month'
-                    }
-                },
-                'quantity': 1,
-            }],
-            mode='subscription',
-            success_url=success_url,
-            cancel_url=cancel_url,
-            metadata={
-                "company_id": company_id,
-                "user_id": user_id,
-                "plan": data.plan
-            }
-        )
+                    'quantity': 1,
+                }],
+                mode='subscription',
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata={
+                    "company_id": company_id,
+                    "user_id": user_id,
+                    "plan": data.plan,
+                    "billing_period": data.billing_period,
+                    "months": 1
+                }
+            )
+        else:
+            # Annual payment (one-time with discount)
+            free_months = price_info['free_months']
+            description = f"Plano {plan['name']} - {price_info['label']} ({free_months} meses grátis)"
+            
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'eur',
+                        'product_data': {
+                            'name': f"CLOCKLN {plan['name']} - {price_info['label']}",
+                            'description': description
+                        },
+                        'unit_amount': int(price_info['total_price'] * 100),
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url=success_url,
+                cancel_url=cancel_url,
+                metadata={
+                    "company_id": company_id,
+                    "user_id": user_id,
+                    "plan": data.plan,
+                    "billing_period": data.billing_period,
+                    "months": price_info['months']
+                }
+            )
         
         # Create payment transaction record
         transaction = PaymentTransaction(
             company_id=company_id,
             user_id=user_id,
             plan=data.plan,
-            amount=plan['price'],
+            amount=price_info['total_price'],
             currency="eur",
             session_id=session.id,
             payment_status="pending",
-            metadata={"plan_name": plan['name']}
+            metadata={
+                "plan_name": plan['name'],
+                "billing_period": data.billing_period,
+                "months": price_info['months'],
+                "free_months": price_info.get('free_months', 0),
+                "savings": price_info.get('savings', 0)
+            }
         )
         tx_dict = transaction.model_dump()
         tx_dict['created_at'] = tx_dict['created_at'].isoformat()
