@@ -1585,6 +1585,7 @@ async def get_remote_workers_locations(current_user: dict = Depends(require_hr))
 
 class SubscriptionUpgradeRequest(BaseModel):
     plan: str
+    billing_period: str = "monthly"  # monthly, yearly_1, yearly_2, yearly_3
     origin_url: str
 
 class CheckoutStatusRequest(BaseModel):
@@ -1592,12 +1593,26 @@ class CheckoutStatusRequest(BaseModel):
 
 @api_router.get("/plans")
 async def get_subscription_plans():
-    """Get available subscription plans"""
+    """Get available subscription plans with pricing options"""
+    plans_with_pricing = []
+    
+    for plan_id, details in SUBSCRIPTION_PLANS.items():
+        plan_data = {"id": plan_id, **details}
+        
+        # Add pricing for each billing period (except trial)
+        if plan_id != "trial":
+            pricing_options = {}
+            for period_id in BILLING_PERIODS:
+                price_info = calculate_price(plan_id, period_id)
+                if price_info:
+                    pricing_options[period_id] = price_info
+            plan_data["pricing"] = pricing_options
+        
+        plans_with_pricing.append(plan_data)
+    
     return {
-        "plans": [
-            {"id": plan_id, **details}
-            for plan_id, details in SUBSCRIPTION_PLANS.items()
-        ]
+        "plans": plans_with_pricing,
+        "billing_periods": BILLING_PERIODS
     }
 
 @api_router.get("/subscription/current")
