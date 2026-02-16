@@ -18,25 +18,41 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - **Integrações**: Stripe, SendGrid, PWA
 - **Deploy**: Vercel (Frontend) + Railway (Backend)
 
-## Status de Deploy - 15/02/2026
+## Status de Deploy - 16/02/2026
 - ✅ Frontend: Online na Vercel
 - ✅ Backend: Online no Railway
 - ✅ MongoDB: Configurado no Railway
 
-## Últimas Alterações - 15/02/2026
-### Nova Estrutura de Planos (apenas mensais, em Euro):
-- **Trial**: €0 (15 dias grátis, acesso completo, até 50 funcionários)
-- **Pro**: €49/mês (até 50 funcionários)
-- **Business**: €120/mês (até 500 funcionários)
+## Últimas Alterações - 16/02/2026
+### Nova Estrutura de Planos com Pacotes Anuais:
+
+**Trial (15 dias grátis)**
+- Acesso completo, até 50 funcionários, sem cartão necessário
+
+**Pro (€49/mês)**
+| Período | Preço | Economia | Meses Grátis |
+|---------|-------|----------|--------------|
+| Mensal | €49/mês | - | - |
+| 1 Ano | €490 | €98 | 2 |
+| 2 Anos | €980 | €196 | 4 |
+| 3 Anos | €1.470 | €294 | 6 |
+
+**Business (€120/mês)**
+| Período | Preço | Economia | Meses Grátis |
+|---------|-------|----------|--------------|
+| Mensal | €120/mês | - | - |
+| 1 Ano | €1.200 | €240 | 2 |
+| 2 Anos | €2.400 | €480 | 4 |
+| 3 Anos | €3.600 | €720 | 6 |
 
 ### Mudanças Implementadas:
-- Removidos todos os planos anuais
+- Removidos todos os planos anuais antigos
 - Plano "Free" substituído por "Trial" de 15 dias
 - Moeda alterada de USD para EUR
-- Preços atualizados: Pro €49, Business €120
-- Sistema de expiração de trial implementado
-- Frontend atualizado para mostrar dias restantes do trial
-- Traduções adicionadas para nova estrutura de planos
+- Sistema de pacotes anuais: 1, 2 ou 3 anos
+- Desconto fixo de 17% (2 meses grátis por ano)
+- Frontend atualizado com seletor de período
+- Exibe economia e preço equivalente mensal
 
 ## Funcionalidades Implementadas
 - [x] Autenticação (email/senha e PIN)
@@ -49,6 +65,7 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - [x] Relatórios PDF/Excel
 - [x] Planos de assinatura com Stripe (EUR)
 - [x] Trial de 15 dias para novas empresas
+- [x] Pacotes anuais com desconto (1-3 anos)
 - [x] Super Admin para conceder acesso VIP
 - [x] PWA (Progressive Web App)
 - [x] 17 idiomas suportados
