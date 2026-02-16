@@ -347,9 +347,15 @@ export const translations = {
     faq_change_plan: "Posso mudar de plano a qualquer momento?",
     faq_change_plan_answer: "Sim, você pode fazer upgrade a qualquer momento. O novo plano é ativado imediatamente.",
     faq_billing: "Como funciona a cobrança?",
-    faq_billing_answer: "A cobrança é mensal, processada via Stripe com total segurança.",
+    faq_billing_answer: "A cobrança pode ser mensal ou anual, processada via Stripe com total segurança.",
     faq_trial: "O que acontece quando meu teste expira?",
     faq_trial_answer: "Após 15 dias, você precisará assinar um plano pago para continuar usando o CLOCKLN.",
+    choose_billing_period: "Escolha o período de pagamento",
+    annual_discount_info: "Pague antecipado e ganhe meses grátis!",
+    save: "Economize",
+    free_months: "meses grátis",
+    faq_annual: "Como funciona o desconto anual?",
+    faq_annual_answer: "Ao escolher um plano anual, você paga adiantado e ganha 2 meses grátis por ano. Quanto mais anos, mais economia!",
     
     // Documents
     pending_review: "Pendente",
