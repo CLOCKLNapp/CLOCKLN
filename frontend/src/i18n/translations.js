@@ -221,6 +221,13 @@ export const translations = {
     error: "Erro",
     success: "Sucesso",
     
+    // Promo Banner
+    promo_banner: "Oferta Especial: Assine por 1 ano e ganhe 2 meses grátis!",
+    promo_banner_detail: "Economize até €720 com planos anuais",
+    special_offer: "Oferta Especial",
+    promo_headline: "Assine por 1 ano, ganhe 2 meses grátis!",
+    promo_subline: "Planos a partir de €40,83/mês. Economize até 17%.",
+    
     welcome_back: "Bem-vindo de volta",
     sign_in_to_continue: "Entre na sua conta",
     register_company: "Registrar Empresa",
