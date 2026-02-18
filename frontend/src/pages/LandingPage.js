@@ -105,8 +105,11 @@ export default function LandingPage() {
   ];
 
   const formatPrice = (price) => {
-    const converted = Math.round(price * currencies[currency].rate);
-    return `${currencies[currency].symbol}${converted.toLocaleString()}`;
+    const converted = price * currencies[currency].rate;
+    if (currency === 'BRL') {
+      return `${currencies[currency].symbol}${converted.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    return `${currencies[currency].symbol}${Math.round(converted).toLocaleString()}`;
   };
 
   const getPriceForPeriod = (plan) => {
