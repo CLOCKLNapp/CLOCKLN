@@ -79,22 +79,29 @@ export default function LandingPage() {
   const availableLanguages = languages || [];
 
   // Translated features for plans
-  const getProFeatures = () => [
-    t('up_to_50_employees'),
-    t('qr_geolocation'),
-    t('remote_clock_map'),
-    t('basic_reports'),
-    t('email_support')
+  const getBasicoFeatures = () => [
+    t('up_to_10_employees') || 'Até 10 funcionários',
+    t('qr_geolocation') || 'QR Code & Geolocalização',
+    t('basic_reports') || 'Relatórios básicos',
+    t('email_support') || 'Suporte por email'
   ];
 
-  const getBusinessFeatures = () => [
-    t('up_to_500_employees'),
-    t('all_pro_features'),
-    t('manager_roles'),
-    t('advanced_reports'),
-    t('time_bank_management'),
-    t('priority_support'),
-    t('custom_branding')
+  const getIntermediarioFeatures = () => [
+    t('up_to_50_employees') || 'Até 50 funcionários',
+    t('all_basic_features') || 'Todas funções do Básico',
+    t('remote_clock_map') || 'Mapa de ponto remoto',
+    t('advanced_reports') || 'Relatórios avançados (PDF/Excel)',
+    t('time_bank_management') || 'Gestão de banco de horas',
+    t('priority_support') || 'Suporte prioritário'
+  ];
+
+  const getPremiumFeatures = () => [
+    t('up_to_500_employees') || 'Até 500 funcionários',
+    t('all_intermediario_features') || 'Todas funções do Intermediário',
+    t('manager_roles') || 'Perfis de gerente',
+    t('custom_branding') || 'Marca personalizada',
+    t('api_access') || 'Acesso à API',
+    t('dedicated_support') || 'Suporte dedicado'
   ];
 
   const formatPrice = (price) => {
