@@ -320,9 +320,9 @@ export default function SubscriptionPage() {
         </motion.div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {loading ? (
-            [1, 2].map(i => (
+            [1, 2, 3].map(i => (
               <div key={i} className="h-96 bg-muted/50 rounded-lg animate-pulse" />
             ))
           ) : (
@@ -349,13 +349,15 @@ export default function SubscriptionPage() {
                         </Badge>
                       )}
                       <div className={`mx-auto p-4 rounded-2xl mb-4 ${
-                        plan.id === 'pro' ? 'bg-primary/10' : 'bg-amber-500/10'
+                        plan.id === 'pro' ? 'bg-primary/10' : 
+                        plan.id === 'plus' ? 'bg-purple-500/10' : 'bg-amber-500/10'
                       }`}>
                         {planIcons[plan.id]}
                       </div>
                       <CardTitle className="text-2xl">{plan.name}</CardTitle>
                       <CardDescription>
                         {plan.id === 'pro' && (t('plan_pro_desc') || 'Para pequenas empresas')}
+                        {plan.id === 'plus' && (t('plan_plus_desc') || 'Para empresas em crescimento')}
                         {plan.id === 'business' && (t('plan_business_desc') || 'Para grandes organizações')}
                       </CardDescription>
                       <div className="mt-4">
