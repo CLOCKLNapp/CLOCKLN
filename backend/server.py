@@ -134,7 +134,7 @@ class SubscriptionPlan:
     BUSINESS = "business"
 
 # Trial duration in days
-TRIAL_DURATION_DAYS = 15
+TRIAL_DURATION_DAYS = 30
 
 # Billing periods with discount (2 months free per year = ~17% discount)
 BILLING_PERIODS = {
@@ -151,7 +151,7 @@ SUBSCRIPTION_PLANS = {
         "price": 0.0,
         "max_employees": 50,
         "currency": "eur",
-        "features": ["15 dias grátis", "Acesso completo", "Até 50 funcionários", "Sem cartão necessário"]
+        "features": ["30 dias grátis", "Acesso completo", "Até 50 funcionários", "Sem cartão necessário"]
     },
     "pro": {
         "name": "Pro",
