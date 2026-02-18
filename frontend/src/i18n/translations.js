@@ -177,6 +177,7 @@ export const translations = {
     annual_discount_info: "Pay upfront and get free months!",
     save: "Save",
     free_months: "free months",
+    free_year: "free year",
     faq_annual: "How does the annual discount work?",
     faq_annual_answer: "When you choose an annual plan, you pay upfront and get 2 free months per year. The more years, the more savings!",
     
@@ -370,6 +371,7 @@ export const translations = {
     annual_discount_info: "Pague antecipado e ganhe meses grátis!",
     save: "Economize",
     free_months: "meses grátis",
+    free_year: "ano grátis",
     faq_annual: "Como funciona o desconto anual?",
     faq_annual_answer: "Ao escolher um plano anual, você paga adiantado e ganha 2 meses grátis por ano. Quanto mais anos, mais economia!",
     
