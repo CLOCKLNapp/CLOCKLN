@@ -143,11 +143,9 @@ export default function LandingPage() {
   };
 
   const formatPrice = (price) => {
+    if (price === 0) return t('free') || 'Grátis';
     const converted = price * currencies[currency].rate;
-    if (currency === 'BRL') {
-      return `${currencies[currency].symbol}${converted.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    return `${currencies[currency].symbol}${Math.round(converted).toLocaleString()}`;
+    return `${currencies[currency].symbol}${converted.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const getPriceForPeriod = (plan) => {
