@@ -121,11 +121,12 @@ export default function LandingPage() {
 
   const getFeatureText = (key) => {
     const translations = {
-      'up_to_10_employees': 'Até 10 funcionários',
+      'up_to_5_employees': 'Até 5 funcionários',
       'up_to_50_employees': 'Até 50 funcionários', 
+      'up_to_150_employees': 'Até 150 funcionários',
       'up_to_500_employees': 'Até 500 funcionários',
-      'all_basic_features': 'Todas funções do Básico',
-      'all_intermediario_features': 'Todas funções do Intermediário',
+      'all_pro_features': 'Todas funções do Pro',
+      'all_plus_features': 'Todas funções do Plus',
       'qr_geolocation': 'QR Code & Geolocalização',
       'remote_clock_map': 'Mapa de ponto remoto',
       'basic_reports': 'Relatórios básicos',
@@ -136,7 +137,8 @@ export default function LandingPage() {
       'time_bank_management': 'Gestão de banco de horas',
       'manager_roles': 'Perfis de gerente',
       'custom_branding': 'Marca personalizada',
-      'api_access': 'Acesso à API'
+      'api_access': 'Acesso à API',
+      '30_days_free': '30 dias grátis'
     };
     const translated = t(key);
     return (translated && translated !== key) ? translated : translations[key] || key;
