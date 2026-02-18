@@ -389,7 +389,7 @@ export default function LandingPage() {
             {/* Free Trial Banner */}
             <div className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500/20 border border-emerald-500/30 rounded-full mb-8">
               <Zap className="w-5 h-5 text-emerald-400" />
-              <span className="text-emerald-400 font-semibold">{t('free_trial_30_days') || '30 dias grátis para testar!'}</span>
+              <span className="text-emerald-400 font-semibold">30 dias grátis para testar!</span>
             </div>
           </div>
 
