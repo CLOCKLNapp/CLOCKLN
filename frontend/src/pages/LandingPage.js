@@ -437,10 +437,12 @@ export default function LandingPage() {
           {/* Features List */}
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8">
             <h4 className="font-semibold mb-4 text-center">
-              {plans[selectedPlan].name} {t('plan_includes')}:
+              {plans[selectedPlan].name} {t('plan_includes') || 'inclui'}:
             </h4>
             <div className="grid sm:grid-cols-2 gap-3">
-              {(selectedPlan === 'pro' ? getProFeatures() : getBusinessFeatures()).map((feature, i) => (
+              {(selectedPlan === 'basico' ? getBasicoFeatures() : 
+                selectedPlan === 'intermediario' ? getIntermediarioFeatures() : 
+                getPremiumFeatures()).map((feature, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Check className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                   <span className="text-sm text-zinc-300">{feature}</span>
