@@ -519,6 +519,16 @@ async def register_company(company: CompanyCreate, user: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
+    # Check if user email domain already used trial (prevent re-registration)
+    email_domain = user.email.split('@')[-1] if '@' in user.email else None
+    if email_domain and email_domain not in ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com']:
+        existing_domain_company = await db.companies.find_one({
+            "owner_email_domain": email_domain,
+            "trial_used": True
+        }, {"_id": 0})
+        if existing_domain_company:
+            raise HTTPException(status_code=400, detail="This company domain has already used the free trial. Please subscribe to continue.")
+    
     company_obj = Company(**company.model_dump())
     company_dict = company_obj.model_dump()
     company_dict['created_at'] = company_dict['created_at'].isoformat()
@@ -526,6 +536,8 @@ async def register_company(company: CompanyCreate, user: UserCreate):
     company_dict['trial_start_date'] = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     company_dict['subscription_plan'] = 'trial'
     company_dict['max_employees'] = SUBSCRIPTION_PLANS['trial']['max_employees']
+    company_dict['trial_used'] = True  # Mark that trial has been used
+    company_dict['owner_email_domain'] = email_domain  # Store domain for future checks
     await db.companies.insert_one(company_dict)
     
     user_obj = User(
