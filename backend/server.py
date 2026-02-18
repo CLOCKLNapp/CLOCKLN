@@ -131,7 +131,6 @@ class TimeBankTransaction(BaseModel):
 class SubscriptionPlan:
     TRIAL = "trial"
     PRO = "pro"
-    PLUS = "plus"
     BUSINESS = "business"
 
 # Trial duration in days
@@ -139,13 +138,12 @@ TRIAL_DURATION_DAYS = 30
 
 # Billing periods with discount
 BILLING_PERIODS = {
-    "monthly": {"months": 1, "discount": 0, "label": "Mensal", "free_months": 0},
-    "yearly_1": {"months": 12, "discount": 1, "label": "1 Ano", "free_months": 1},
-    "yearly_3": {"months": 36, "discount": 5, "label": "3 Anos", "free_months": 5},
-    "yearly_5": {"months": 60, "discount": 12, "label": "5 Anos", "free_months": 12},
+    "monthly": {"months": 1, "label": "Mensal", "free_months": 0},
+    "yearly_3": {"months": 36, "label": "3 Anos", "free_months": 6},
+    "yearly_5": {"months": 60, "label": "5 Anos", "free_months": 12},
 }
 
-# Plan details - defined on server only (security) - All prices in EUR
+# Plan details with FIXED prices - All prices in EUR
 SUBSCRIPTION_PLANS = {
     "trial": {
         "name": "Trial",
@@ -156,24 +154,27 @@ SUBSCRIPTION_PLANS = {
     },
     "pro": {
         "name": "Pro",
-        "price": 49.0,
+        "price": 29.0,
         "max_employees": 50,
         "currency": "eur",
-        "features": ["QR Code clock-in", "Clock-in por geolocalização", "Mapa de funcionários remotos", "Até 50 funcionários", "Suporte por email"]
-    },
-    "plus": {
-        "name": "Plus",
-        "price": 79.0,
-        "max_employees": 150,
-        "currency": "eur",
-        "features": ["Todas funcionalidades Pro", "Até 150 funcionários", "Relatórios avançados", "Suporte prioritário", "Gestão de equipes"]
+        "features": ["QR Code clock-in", "Clock-in por geolocalização", "Mapa de funcionários remotos", "Até 50 funcionários", "Suporte por email"],
+        "fixed_prices": {
+            "monthly": 29.0,
+            "yearly_3": 790.0,
+            "yearly_5": 1190.0
+        }
     },
     "business": {
         "name": "Business",
-        "price": 120.0,
+        "price": 99.0,
         "max_employees": 500,
         "currency": "eur",
-        "features": ["Todas funcionalidades Plus", "Até 500 funcionários", "Papéis de gerente", "Suporte dedicado", "Branding personalizado", "API access"]
+        "features": ["Todas funcionalidades Pro", "Até 500 funcionários", "Papéis de gerente", "Relatórios avançados", "Suporte dedicado", "Branding personalizado"],
+        "fixed_prices": {
+            "monthly": 99.0,
+            "yearly_3": 2640.0,
+            "yearly_5": 5940.0
+        }
     }
 }
 
@@ -185,15 +186,19 @@ def calculate_price(plan_id: str, billing_period: str) -> dict:
     plan = SUBSCRIPTION_PLANS[plan_id]
     period = BILLING_PERIODS.get(billing_period, BILLING_PERIODS["monthly"])
     
-    monthly_price = plan["price"]
+    # Use fixed prices if available
+    if "fixed_prices" in plan and billing_period in plan["fixed_prices"]:
+        total_price = plan["fixed_prices"][billing_period]
+    else:
+        monthly_price = plan["price"]
+        months = period["months"]
+        free_months = period.get("free_months", 0)
+        paid_months = months - free_months
+        total_price = monthly_price * paid_months
+    
     months = period["months"]
     free_months = period.get("free_months", 0)
-    
-    # Calculate: pay for (months - free_months) but get full months
-    paid_months = months - free_months
-    total_price = monthly_price * paid_months
-    
-    # Calculate savings
+    monthly_price = plan["price"]
     original_price = monthly_price * months
     savings = original_price - total_price
     discount_percent = round((savings / original_price) * 100) if original_price > 0 else 0
@@ -206,6 +211,8 @@ def calculate_price(plan_id: str, billing_period: str) -> dict:
         "discount_percent": discount_percent,
         "months": months,
         "free_months": free_months,
+        "label": period["label"]
+    }
         "label": period["label"]
     }
 
