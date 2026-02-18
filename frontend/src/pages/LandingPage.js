@@ -10,44 +10,60 @@ import { Button } from '../components/ui/button';
 import { useLanguage } from '../context/LanguageContext';
 
 const currencies = {
-  EUR: { symbol: '€', rate: 1 },
-  USD: { symbol: '$', rate: 1.08 }
+  BRL: { symbol: 'R$', rate: 1 },
+  EUR: { symbol: '€', rate: 0.18 },
+  USD: { symbol: '$', rate: 0.19 }
 };
 
 const plans = {
-  pro: {
-    name: 'Pro',
+  basico: {
+    name: 'Básico',
     icon: Zap,
-    maxEmployees: 50,
-    monthly: 29,
-    yearly: 290,
-    threeYear: 790,
-    fiveYear: 1190,
+    maxEmployees: 10,
+    monthly: 29.90,
+    yearly: 328.90,      // 11 meses (1 mês grátis)
+    threeYear: 1047.50,  // 35 meses (5 meses grátis)
+    fiveYear: 1495.00,   // 48 meses (1 ano/12 meses grátis)
     features: [
-      'Up to 50 employees',
-      'QR Code & Geolocation',
-      'Remote clock-in map',
-      'Basic reports',
-      'Email support'
+      'up_to_10_employees',
+      'qr_geolocation',
+      'basic_reports',
+      'email_support'
     ]
   },
-  business: {
-    name: 'Business',
+  intermediario: {
+    name: 'Intermediário',
     icon: Building2,
-    maxEmployees: 500,
-    monthly: 99,
-    yearly: 990,
-    threeYear: 2640,
-    fiveYear: 5940,
+    maxEmployees: 50,
+    monthly: 59.90,
+    yearly: 658.90,      // 11 meses (1 mês grátis)
+    threeYear: 2096.50,  // 35 meses (5 meses grátis)
+    fiveYear: 2995.00,   // 48 meses (1 ano/12 meses grátis)
     popular: true,
     features: [
-      'Up to 500 employees',
-      'All Pro features',
-      'Manager roles',
-      'Advanced reports (PDF/Excel)',
-      'Time bank management',
-      'Priority support',
-      'Custom branding'
+      'up_to_50_employees',
+      'all_basic_features',
+      'remote_clock_map',
+      'advanced_reports',
+      'time_bank_management',
+      'priority_support'
+    ]
+  },
+  premium: {
+    name: 'Premium',
+    icon: Crown,
+    maxEmployees: 500,
+    monthly: 99.90,
+    yearly: 1098.90,     // 11 meses (1 mês grátis)
+    threeYear: 3496.50,  // 35 meses (5 meses grátis)
+    fiveYear: 4995.00,   // 48 meses (1 ano/12 meses grátis)
+    features: [
+      'up_to_500_employees',
+      'all_intermediario_features',
+      'manager_roles',
+      'custom_branding',
+      'api_access',
+      'dedicated_support'
     ]
   }
 };
