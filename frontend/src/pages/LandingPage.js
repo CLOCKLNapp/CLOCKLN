@@ -10,47 +10,62 @@ import { Button } from '../components/ui/button';
 import { useLanguage } from '../context/LanguageContext';
 
 const currencies = {
-  BRL: { symbol: 'R$', rate: 1 },
-  EUR: { symbol: '€', rate: 0.18 },
-  USD: { symbol: '$', rate: 0.19 }
+  EUR: { symbol: '€', rate: 1 },
+  USD: { symbol: '$', rate: 1.08 }
 };
 
 const plans = {
-  basico: {
-    name: 'Básico',
+  trial: {
+    name: 'Trial',
     icon: Zap,
-    maxEmployees: 10,
+    maxEmployees: 5,
+    monthly: 0,
+    yearly: 0,
+    threeYear: 0,
+    fiveYear: 0,
+    isTrial: true,
+    features: [
+      'up_to_5_employees',
+      'qr_geolocation',
+      'basic_reports',
+      '30_days_free'
+    ]
+  },
+  pro: {
+    name: 'Pro',
+    icon: Zap,
+    maxEmployees: 50,
     monthly: 29.90,
     yearly: 328.90,      // 11 meses (1 mês grátis)
     threeYear: 1047.50,  // 35 meses (5 meses grátis)
     fiveYear: 1495.00,   // 48 meses (1 ano/12 meses grátis)
     features: [
-      'up_to_10_employees',
+      'up_to_50_employees',
       'qr_geolocation',
+      'remote_clock_map',
       'basic_reports',
       'email_support'
     ]
   },
-  intermediario: {
-    name: 'Intermediário',
+  plus: {
+    name: 'Plus',
     icon: Building2,
-    maxEmployees: 50,
+    maxEmployees: 150,
     monthly: 59.90,
     yearly: 658.90,      // 11 meses (1 mês grátis)
     threeYear: 2096.50,  // 35 meses (5 meses grátis)
     fiveYear: 2995.00,   // 48 meses (1 ano/12 meses grátis)
     popular: true,
     features: [
-      'up_to_50_employees',
-      'all_basic_features',
-      'remote_clock_map',
+      'up_to_150_employees',
+      'all_pro_features',
       'advanced_reports',
       'time_bank_management',
       'priority_support'
     ]
   },
-  premium: {
-    name: 'Premium',
+  business: {
+    name: 'Business',
     icon: Crown,
     maxEmployees: 500,
     monthly: 99.90,
@@ -59,7 +74,7 @@ const plans = {
     fiveYear: 4995.00,   // 48 meses (1 ano/12 meses grátis)
     features: [
       'up_to_500_employees',
-      'all_intermediario_features',
+      'all_plus_features',
       'manager_roles',
       'custom_branding',
       'api_access',
