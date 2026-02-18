@@ -114,21 +114,18 @@ export default function SubscriptionPage() {
   const planIcons = {
     trial: <Clock className="w-8 h-8" />,
     pro: <Zap className="w-8 h-8" />,
-    plus: <Sparkles className="w-8 h-8" />,
     business: <Building2 className="w-8 h-8" />
   };
 
   const planColors = {
     trial: 'border-slate-500',
     pro: 'border-primary ring-2 ring-primary/20',
-    plus: 'border-purple-500 ring-2 ring-purple-500/20',
     business: 'border-amber-500'
   };
 
   const periodLabels = {
     monthly: { label: 'Mensal', short: 'mês' },
-    yearly_1: { label: '1 Ano', short: 'ano', badge: '1 mês grátis' },
-    yearly_3: { label: '3 Anos', short: '3 anos', badge: '5 meses grátis' },
+    yearly_3: { label: '3 Anos', short: '3 anos', badge: '6 meses grátis' },
     yearly_5: { label: '5 Anos', short: '5 anos', badge: '1 ano grátis' }
   };
 
