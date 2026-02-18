@@ -26,7 +26,7 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 ## Últimas Alterações - 16/02/2026
 ### Nova Estrutura de Planos com Pacotes Anuais:
 
-**Trial (15 dias grátis)**
+**Trial (30 dias grátis)**
 - Acesso completo, até 50 funcionários, sem cartão necessário
 
 **Pro (€49/mês)**
