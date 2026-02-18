@@ -213,8 +213,6 @@ def calculate_price(plan_id: str, billing_period: str) -> dict:
         "free_months": free_months,
         "label": period["label"]
     }
-        "label": period["label"]
-    }
 
 class PaymentTransaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
