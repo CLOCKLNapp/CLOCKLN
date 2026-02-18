@@ -1,86 +1,41 @@
 # CLOCKLN - Product Requirements Document
 
 ## Problema Original
-Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo. O sistema deve suportar diferentes tipos de usuários (Funcionário, RH, Gerente) com permissões específicas.
-
-## Funcionalidades Principais
-- Registro de ponto automático (via totem com QR code/NFC e geolocalização para remotos)
-- Cálculo de horas e gestão de banco de horas
-- Organização de documentos trabalhistas (atestados)
-- Geração de relatórios PDF/Excel
-- Sistema de notificações
-- Multilíngue (17 idiomas) e seguro (multi-tenant, LGPD/DSGVO)
-- Modelo SaaS por assinatura (Trial 15 dias, Pro, Business)
-
-## Stack Tecnológico
-- **Backend**: FastAPI + MongoDB (Pymongo/Motor)
-- **Frontend**: React + Tailwind CSS + Shadcn/UI
-- **Integrações**: Stripe, SendGrid, PWA
-- **Deploy**: Vercel (Frontend) + Railway (Backend)
+Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo.
 
 ## Status de Deploy - 16/02/2026
-- ✅ Frontend: Online na Vercel
-- ✅ Backend: Online no Railway
-- ✅ MongoDB: Configurado no Railway
+- ✅ Frontend: https://clockln-app.vercel.app
+- ✅ Backend: Railway
 
-## Últimas Alterações - 16/02/2026
-### Nova Estrutura de Planos com Pacotes Anuais:
+## Estrutura de Planos Atual
 
-**Trial (30 dias grátis)**
-- Acesso completo, até 50 funcionários, sem cartão necessário
+### Trial (30 dias grátis)
+- Acesso completo, até 50 funcionários
+- **Uso único por empresa** (não pode re-cadastrar para novo trial)
 
-**Pro (€49/mês)**
-| Período | Preço | Economia | Meses Grátis |
-|---------|-------|----------|--------------|
-| Mensal | €49/mês | - | - |
-| 1 Ano | €490 | €98 | 2 |
-| 2 Anos | €980 | €196 | 4 |
-| 3 Anos | €1.470 | €294 | 6 |
+### Planos Pagos (EUR)
 
-**Business (€120/mês)**
-| Período | Preço | Economia | Meses Grátis |
-|---------|-------|----------|--------------|
-| Mensal | €120/mês | - | - |
-| 1 Ano | €1.200 | €240 | 2 |
-| 2 Anos | €2.400 | €480 | 4 |
-| 3 Anos | €3.600 | €720 | 6 |
+| Plano | Mensal | Funcionários | Recursos |
+|-------|--------|--------------|----------|
+| **Pro** | €49/mês | 50 | QR Code, Geolocalização, Mapa remoto |
+| **Plus** | €79/mês | 150 | + Relatórios avançados, Gestão equipes |
+| **Business** | €120/mês | 500 | + Gerentes, Branding, API |
 
-### Mudanças Implementadas:
-- Removidos todos os planos anuais antigos
-- Plano "Free" substituído por "Trial" de 15 dias
-- Moeda alterada de USD para EUR
-- Sistema de pacotes anuais: 1, 2 ou 3 anos
-- Desconto fixo de 17% (2 meses grátis por ano)
-- Frontend atualizado com seletor de período
-- Exibe economia e preço equivalente mensal
+### Descontos por Período
 
-## Funcionalidades Implementadas
-- [x] Autenticação (email/senha e PIN)
-- [x] QR Code dinâmico para totem
-- [x] Clock-in via geolocalização (remoto/híbrido)
-- [x] Dashboard para funcionários, RH e gerentes
-- [x] Gestão de férias e ausências
-- [x] Upload de documentos
-- [x] Notificações e alertas
-- [x] Relatórios PDF/Excel
-- [x] Planos de assinatura com Stripe (EUR)
-- [x] Trial de 15 dias para novas empresas
-- [x] Pacotes anuais com desconto (1-3 anos)
-- [x] Super Admin para conceder acesso VIP
-- [x] PWA (Progressive Web App)
-- [x] 17 idiomas suportados
-
-## Tarefas Pendentes
-- [ ] Configurar Stripe para pagamentos reais (chaves de produção)
-- [ ] Configurar webhook do Stripe no Railway
-- [ ] Deploy das alterações na Vercel (Save to GitHub)
+| Período | Desconto | Pro | Plus | Business |
+|---------|----------|-----|------|----------|
+| **1 Ano** | 1 mês grátis | €539 | €869 | €1.320 |
+| **3 Anos** | 5 meses grátis | €1.519 | €2.449 | €3.720 |
+| **5 Anos** | 1 ano grátis | €2.352 | €3.792 | €5.760 |
 
 ## Credenciais de Teste
 - **Super Admin**: michaelcaceres71@gmail.com / 123456
 
-## URLs de Produção
-- **Frontend**: https://clockln-*.vercel.app
-- **Backend**: https://clockln-production.up.railway.app
+## Links
+- **Clientes**: https://clockln-app.vercel.app
+- **Login**: https://clockln-app.vercel.app/login
+- **Totem**: https://clockln-app.vercel.app/totem
 
 ## Idiomas Suportados
 1. English
