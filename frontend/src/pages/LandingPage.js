@@ -397,11 +397,12 @@ export default function LandingPage() {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid sm:grid-cols-4 gap-4 mb-8">
             {[
-              { id: 'monthly', label: t('monthly'), price: plans[selectedPlan].monthly },
-              { id: 'threeYear', label: t('three_years'), price: plans[selectedPlan].threeYear, bonus: t('plus_6_months_free') },
-              { id: 'fiveYear', label: t('five_years'), price: plans[selectedPlan].fiveYear, bonus: t('plus_12_months_free'), best: true }
+              { id: 'monthly', label: t('monthly') || 'Mensal', price: plans[selectedPlan].monthly },
+              { id: 'yearly', label: t('yearly') || 'Anual', price: plans[selectedPlan].yearly, bonus: '+1 mês grátis' },
+              { id: 'threeYear', label: t('three_years') || '3 Anos', price: plans[selectedPlan].threeYear, bonus: '+5 meses grátis' },
+              { id: 'fiveYear', label: t('five_years') || '5 Anos', price: plans[selectedPlan].fiveYear, bonus: '+1 ano grátis', best: true }
             ].map((period) => (
               <motion.button
                 key={period.id}
