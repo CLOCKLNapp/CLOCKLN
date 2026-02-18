@@ -86,8 +86,8 @@ const plans = {
 export default function LandingPage() {
   const navigate = useNavigate();
   const { language, setLanguage, languages, t } = useLanguage();
-  const [currency, setCurrency] = useState('BRL');
-  const [selectedPlan, setSelectedPlan] = useState('intermediario');
+  const [currency, setCurrency] = useState('EUR');
+  const [selectedPlan, setSelectedPlan] = useState('plus');
   const [billingPeriod, setBillingPeriod] = useState('monthly');
   const [showLanguages, setShowLanguages] = useState(false);
 
