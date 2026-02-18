@@ -104,6 +104,29 @@ export default function LandingPage() {
     t('dedicated_support') || 'Suporte dedicado'
   ];
 
+  const getFeatureText = (key) => {
+    const translations = {
+      'up_to_10_employees': 'Até 10 funcionários',
+      'up_to_50_employees': 'Até 50 funcionários', 
+      'up_to_500_employees': 'Até 500 funcionários',
+      'all_basic_features': 'Todas funções do Básico',
+      'all_intermediario_features': 'Todas funções do Intermediário',
+      'qr_geolocation': 'QR Code & Geolocalização',
+      'remote_clock_map': 'Mapa de ponto remoto',
+      'basic_reports': 'Relatórios básicos',
+      'advanced_reports': 'Relatórios avançados (PDF/Excel)',
+      'email_support': 'Suporte por email',
+      'priority_support': 'Suporte prioritário',
+      'dedicated_support': 'Suporte dedicado',
+      'time_bank_management': 'Gestão de banco de horas',
+      'manager_roles': 'Perfis de gerente',
+      'custom_branding': 'Marca personalizada',
+      'api_access': 'Acesso à API'
+    };
+    const translated = t(key);
+    return (translated && translated !== key) ? translated : translations[key] || key;
+  };
+
   const formatPrice = (price) => {
     const converted = price * currencies[currency].rate;
     if (currency === 'BRL') {
