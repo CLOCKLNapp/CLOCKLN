@@ -132,9 +132,9 @@ export default function LandingPage() {
 
   const getBonusText = () => {
     switch (billingPeriod) {
-      case 'yearly': return t('plus_2_months_free');
-      case 'threeYear': return t('plus_6_months_free');
-      case 'fiveYear': return t('plus_12_months_free');
+      case 'yearly': return t('plus_1_month_free') || '+1 mês grátis';
+      case 'threeYear': return t('plus_5_months_free') || '+5 meses grátis';
+      case 'fiveYear': return t('plus_12_months_free') || '+1 ano grátis';
       default: return null;
     }
   };
