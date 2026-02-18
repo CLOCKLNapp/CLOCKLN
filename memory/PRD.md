@@ -1,7 +1,20 @@
 # CLOCKLN - Product Requirements Document
 
 ## Problema Original
-Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo. O sistema deve suportar diferentes tipos de usuários (Funcionário, RH, Gerente) com permissões específicas.
+Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de controle de ponto corporativo.
+
+## Última Atualização - 18/02/2026
+- ✅ NOVOS PLANOS IMPLEMENTADOS:
+  - **Trial**: 30 dias grátis / 5 funcionários
+  - **Pro**: €29,90/mês / 50 funcionários
+  - **Plus**: €59,90/mês / 150 funcionários  
+  - **Business**: €99,90/mês / 500 funcionários
+- ✅ Descontos por período:
+  - Anual: +1 mês grátis
+  - 3 Anos: +5 meses grátis
+  - 5 Anos: +1 ano grátis (BEST VALUE)
+- ✅ Moedas: EUR e USD (removido BRL)
+- ✅ Trial com card especial destacado
 
 ## Funcionalidades Principais
 - Registro de ponto automático (via totem com QR code/NFC e geolocalização para remotos)
@@ -10,101 +23,64 @@ Criar um aplicativo SaaS global chamado CLOCKLN, uma plataforma inteligente de c
 - Geração de relatórios PDF/Excel
 - Sistema de notificações
 - Multilíngue (17 idiomas) e seguro (multi-tenant, LGPD/DSGVO)
-- Modelo SaaS por assinatura (Free, Pro, Business)
+- Modelo SaaS por assinatura
 
 ## Stack Tecnológico
-- **Backend**: FastAPI + MongoDB (Pymongo/Motor)
+- **Backend**: FastAPI + MongoDB
 - **Frontend**: React + Tailwind CSS + Shadcn/UI
 - **Integrações**: Stripe, SendGrid, PWA
 - **Deploy**: Vercel (Frontend) + Railway (Backend)
 
-## Status de Deploy - 14/02/2026
-- ✅ Frontend: Online na Vercel
-- ✅ Backend: Online no Railway
-- ✅ MongoDB: Configurado no Railway
+## Planos de Preços (ATUALIZADO)
 
-## Últimas Alterações - 15/02/2026
-- ✅ CRIADA Landing Page completa com:
-  - Hero Section "Time Tracking Modern for Your Business"
-  - Estatísticas (10K+ Users, 500+ Companies, 99.9% Uptime, 17+ Languages)
-  - Seção de Features (6 features)
-  - Seção de Preços com toggle EUR/USD
-  - Planos Pro e Business
-  - Períodos: Monthly, 3 Years (+6 meses grátis), 5 Years (+12 meses grátis)
-  - REMOVIDO plano Lifetime (a pedido do usuário)
-  - 5 Years agora é "BEST VALUE"
-  - Call to Action e Footer
-- ✅ Landing Page é agora a página inicial (rota /)
-- ✅ Corrigido bug do LanguageContext na Landing Page
+### Trial (Grátis)
+- 30 dias grátis
+- Até 5 funcionários
+- Todas funcionalidades básicas
 
-## Alterações Anteriores - 14/02/2026
-- Corrigidas traduções incompletas (alemão, português, inglês)
-- Adicionado suporte a safe-area para iPhones com notch
-- Suprimido erro ResizeObserver nas configurações
-- Adicionadas traduções para páginas: HRDashboard, Settings, TotemPage, Reports
+### Pro - €29,90/mês
+- Até 50 funcionários
+- QR Code & Geolocalização
+- Mapa de ponto remoto
+- Relatórios básicos
+- Suporte por email
+- **Anual**: €328,90 (+1 mês grátis)
+- **3 Anos**: €1.047,50 (+5 meses grátis)
+- **5 Anos**: €1.495,00 (+1 ano grátis)
 
-## Funcionalidades Implementadas
-- [x] Autenticação (email/senha e PIN)
-- [x] QR Code dinâmico para totem
-- [x] Clock-in via geolocalização (remoto/híbrido)
-- [x] Dashboard para funcionários, RH e gerentes
-- [x] Gestão de férias e ausências
-- [x] Upload de documentos
-- [x] Notificações e alertas
-- [x] Relatórios PDF/Excel
-- [x] Planos de assinatura com Stripe
-- [x] Super Admin para conceder acesso VIP
-- [x] PWA (Progressive Web App)
-- [x] 17 idiomas suportados
-- [x] Landing Page completa com preços
+### Plus - €59,90/mês (Popular)
+- Até 150 funcionários
+- Todas funções do Pro
+- Relatórios avançados (PDF/Excel)
+- Gestão de banco de horas
+- Suporte prioritário
+- **Anual**: €658,90 (+1 mês grátis)
+- **3 Anos**: €2.096,50 (+5 meses grátis)
+- **5 Anos**: €2.995,00 (+1 ano grátis)
 
-## Planos de Preços (SEM Lifetime)
-### Pro (até 50 funcionários)
-- Monthly: €29
-- 3 Years: €790 (+6 meses grátis)
-- 5 Years: €1,190 (+12 meses grátis)
-
-### Business (até 500 funcionários) - RECOMENDADO
-- Monthly: €99
-- 3 Years: €2,640 (+6 meses grátis)
-- 5 Years: €5,940 (+12 meses grátis) **BEST VALUE**
-
-## Tarefas Pendentes
-- [ ] Configurar Stripe para pagamentos reais
-- [ ] Configurar webhook do Stripe
-- [ ] Verificar link de produção na Vercel
+### Business - €99,90/mês
+- Até 500 funcionários
+- Todas funções do Plus
+- Perfis de gerente
+- Marca personalizada
+- Acesso à API
+- Suporte dedicado
+- **Anual**: €1.098,90 (+1 mês grátis)
+- **3 Anos**: €3.496,50 (+5 meses grátis)
+- **5 Anos**: €4.995,00 (+1 ano grátis)
 
 ## Credenciais de Teste
 - **Super Admin**: michaelcaceres71@gmail.com / 123456
-- **Funcionários teste**: joao.silva@marc.com / 123456 (e outros)
 
 ## URLs
-- **Preview (temporário)**: https://hr-platform-staging.preview.emergentagent.com
-- **Produção Vercel**: Verificar na conta Vercel do usuário
+- **Produção Vercel**: https://clockln-app.vercel.app
 - **Backend Railway**: https://clockln-production.up.railway.app
 
-## Notas Importantes para Próximos Agentes
-- O usuário é não-técnico e usa celular
-- Responder sempre em Português (Brasil)
-- Landing Page está em /app/frontend/src/pages/LandingPage.js
-- O plano Lifetime foi REMOVIDO a pedido do usuário
-- Manter comunicação clara e passo a passo
+## Arquivos Importantes
+- Landing Page: `/app/frontend/src/pages/LandingPage.js`
+- Contexto de idiomas: `/app/frontend/src/context/LanguageContext.js`
 
-## Idiomas Suportados
-1. English
-2. Português (Brasil)
-3. Português (Portugal)
-4. Deutsch
-5. Español
-6. Français
-7. Italiano
-8. Nederlands
-9. Polski
-10. Svenska
-11. 简体中文
-12. 繁體中文
-13. 日本語
-14. 한국어
-15. العربية
-16. हिन्दी
-17. Русский
+## Próximas Tarefas
+- [ ] Configurar Stripe para pagamentos reais
+- [ ] Configurar webhook do Stripe
+- [ ] Deploy das alterações na Vercel
