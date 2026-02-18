@@ -131,17 +131,18 @@ class TimeBankTransaction(BaseModel):
 class SubscriptionPlan:
     TRIAL = "trial"
     PRO = "pro"
+    PLUS = "plus"
     BUSINESS = "business"
 
 # Trial duration in days
 TRIAL_DURATION_DAYS = 30
 
-# Billing periods with discount (2 months free per year = ~17% discount)
+# Billing periods with discount
 BILLING_PERIODS = {
-    "monthly": {"months": 1, "discount": 0, "label": "Mensal"},
-    "yearly_1": {"months": 12, "discount": 2, "label": "1 Ano", "free_months": 2},
-    "yearly_2": {"months": 24, "discount": 4, "label": "2 Anos", "free_months": 4},
-    "yearly_3": {"months": 36, "discount": 6, "label": "3 Anos", "free_months": 6},
+    "monthly": {"months": 1, "discount": 0, "label": "Mensal", "free_months": 0},
+    "yearly_1": {"months": 12, "discount": 1, "label": "1 Ano", "free_months": 1},
+    "yearly_3": {"months": 36, "discount": 5, "label": "3 Anos", "free_months": 5},
+    "yearly_5": {"months": 60, "discount": 12, "label": "5 Anos", "free_months": 12},
 }
 
 # Plan details - defined on server only (security) - All prices in EUR
@@ -151,21 +152,28 @@ SUBSCRIPTION_PLANS = {
         "price": 0.0,
         "max_employees": 50,
         "currency": "eur",
-        "features": ["30 dias grátis", "Acesso completo", "Até 50 funcionários", "Sem cartão necessário"]
+        "features": ["30 dias grátis", "Acesso completo", "Até 50 funcionários", "Sem cartão necessário", "Uso único por empresa"]
     },
     "pro": {
         "name": "Pro",
         "price": 49.0,
         "max_employees": 50,
         "currency": "eur",
-        "features": ["QR Code clock-in", "Clock-in por geolocalização", "Mapa de funcionários remotos", "Até 50 funcionários", "Suporte prioritário"]
+        "features": ["QR Code clock-in", "Clock-in por geolocalização", "Mapa de funcionários remotos", "Até 50 funcionários", "Suporte por email"]
+    },
+    "plus": {
+        "name": "Plus",
+        "price": 79.0,
+        "max_employees": 150,
+        "currency": "eur",
+        "features": ["Todas funcionalidades Pro", "Até 150 funcionários", "Relatórios avançados", "Suporte prioritário", "Gestão de equipes"]
     },
     "business": {
         "name": "Business",
         "price": 120.0,
         "max_employees": 500,
         "currency": "eur",
-        "features": ["Todas funcionalidades Pro", "Papéis de gerente", "Relatórios avançados", "Até 500 funcionários", "Suporte dedicado", "Branding personalizado"]
+        "features": ["Todas funcionalidades Plus", "Até 500 funcionários", "Papéis de gerente", "Suporte dedicado", "Branding personalizado", "API access"]
     }
 }
 
