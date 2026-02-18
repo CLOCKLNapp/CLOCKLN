@@ -338,6 +338,14 @@ export default function LandingPage() {
             {/* Currency Toggle */}
             <div className="inline-flex items-center gap-2 p-1 bg-zinc-800 rounded-full mb-8">
               <button
+                onClick={() => setCurrency('BRL')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  currency === 'BRL' ? 'bg-primary text-white' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                R$ BRL
+              </button>
+              <button
                 onClick={() => setCurrency('EUR')}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   currency === 'EUR' ? 'bg-primary text-white' : 'text-zinc-400 hover:text-white'
@@ -353,6 +361,12 @@ export default function LandingPage() {
               >
                 $ USD
               </button>
+            </div>
+
+            {/* Free Trial Banner */}
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500/20 border border-emerald-500/30 rounded-full mb-8">
+              <Zap className="w-5 h-5 text-emerald-400" />
+              <span className="text-emerald-400 font-semibold">{t('free_trial_30_days') || '30 dias grátis para testar!'}</span>
             </div>
           </div>
 
