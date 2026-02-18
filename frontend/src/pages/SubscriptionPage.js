@@ -400,7 +400,9 @@ export default function SubscriptionPage() {
                       ) : (
                         <Button 
                           className={`w-full ${
-                            plan.id === 'pro' ? 'btn-glow-blue' : 'bg-amber-500 hover:bg-amber-600'
+                            plan.id === 'pro' ? 'btn-glow-blue' : 
+                            plan.id === 'plus' ? 'bg-purple-500 hover:bg-purple-600' : 
+                            'bg-amber-500 hover:bg-amber-600'
                           }`}
                           onClick={() => handleUpgrade(plan.id)}
                           disabled={upgrading}
