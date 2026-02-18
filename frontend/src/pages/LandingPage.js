@@ -395,19 +395,22 @@ export default function LandingPage() {
           </div>
 
           {/* Plan Selector */}
-          <div className="flex justify-center gap-4 mb-8">
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
             {Object.entries(plans).map(([key, plan]) => (
               <button
                 key={key}
                 onClick={() => setSelectedPlan(key)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full border transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full border transition-all ${
                   selectedPlan === key
-                    ? 'bg-primary/20 border-primary text-white'
+                    ? plan.isTrial 
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                      : 'bg-primary/20 border-primary text-white'
                     : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                }`}
+                } ${plan.isTrial ? 'order-first' : ''}`}
               >
                 <plan.icon className="w-4 h-4" />
                 {plan.name}
+                {plan.isTrial && <span className="text-xs bg-emerald-500 text-black px-2 py-0.5 rounded-full ml-1">30 dias</span>}
               </button>
             ))}
           </div>
@@ -416,47 +419,56 @@ export default function LandingPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-zinc-400">
               <Users className="w-5 h-5" />
-              {t('up_to')} <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> {t('employees')}
+              {t('up_to') || 'Até'} <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> {t('employees') || 'funcionários'}
             </div>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid sm:grid-cols-4 gap-4 mb-8">
-            {[
-              { id: 'monthly', label: t('monthly') || 'Mensal', price: plans[selectedPlan].monthly },
-              { id: 'yearly', label: t('yearly') || 'Anual', price: plans[selectedPlan].yearly, bonus: '+1 mês grátis' },
-              { id: 'threeYear', label: t('three_years') || '3 Anos', price: plans[selectedPlan].threeYear, bonus: '+5 meses grátis' },
-              { id: 'fiveYear', label: t('five_years') || '5 Anos', price: plans[selectedPlan].fiveYear, bonus: '+1 ano grátis', best: true }
-            ].map((period) => (
-              <motion.button
-                key={period.id}
-                onClick={() => setBillingPeriod(period.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`relative p-6 rounded-2xl border text-center transition-all ${
-                  billingPeriod === period.id
-                    ? 'bg-zinc-800 border-primary shadow-lg shadow-primary/20'
-                    : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
-                }`}
-              >
-                {period.best && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                    {t('best_value')}
+          {/* Trial Info or Pricing Cards */}
+          {plans[selectedPlan].isTrial ? (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-8 mb-8 text-center">
+              <Zap className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-emerald-400 mb-2">30 dias grátis!</h3>
+              <p className="text-zinc-400 mb-4">Teste todas as funcionalidades com até 5 funcionários.</p>
+              <p className="text-sm text-zinc-500">Sem cartão de crédito. Cancele quando quiser.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-4 gap-4 mb-8">
+              {[
+                { id: 'monthly', label: t('monthly') || 'Mensal', price: plans[selectedPlan].monthly },
+                { id: 'yearly', label: t('yearly') || 'Anual', price: plans[selectedPlan].yearly, bonus: '+1 mês grátis' },
+                { id: 'threeYear', label: t('three_years') || '3 Anos', price: plans[selectedPlan].threeYear, bonus: '+5 meses grátis' },
+                { id: 'fiveYear', label: t('five_years') || '5 Anos', price: plans[selectedPlan].fiveYear, bonus: '+1 ano grátis', best: true }
+              ].map((period) => (
+                <motion.button
+                  key={period.id}
+                  onClick={() => setBillingPeriod(period.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative p-6 rounded-2xl border text-center transition-all ${
+                    billingPeriod === period.id
+                      ? 'bg-zinc-800 border-primary shadow-lg shadow-primary/20'
+                      : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
+                  }`}
+                >
+                  {period.best && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
+                      {t('best_value') || 'BEST VALUE'}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <Crown className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{period.label}</span>
                   </div>
-                )}
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Crown className="w-4 h-4 text-primary" />
-                  <span className="font-medium">{period.label}</span>
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold mb-2">
-                  {formatPrice(period.price)}
-                </div>
-                {period.bonus && (
-                  <div className="text-xs text-emerald-400">{period.bonus}</div>
-                )}
-              </motion.button>
-            ))}
-          </div>
+                  <div className="text-2xl sm:text-3xl font-bold mb-2">
+                    {formatPrice(period.price)}
+                  </div>
+                  {period.bonus && (
+                    <div className="text-xs text-emerald-400">{period.bonus}</div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          )}
 
           {/* Features List */}
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8">
