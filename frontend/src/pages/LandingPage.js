@@ -143,8 +143,10 @@ export default function LandingPage() {
       'up_to_50_employees': 'Até 50 funcionários', 
       'up_to_150_employees': 'Até 150 funcionários',
       'up_to_500_employees': 'Até 500 funcionários',
+      'unlimited_employees': 'Funcionários ilimitados',
       'all_pro_features': 'Todas funções do Pro',
       'all_plus_features': 'Todas funções do Plus',
+      'all_business_features': 'Todas funções do Business',
       'qr_geolocation': 'QR Code & Geolocalização',
       'remote_clock_map': 'Mapa de ponto remoto',
       'basic_reports': 'Relatórios básicos',
@@ -156,7 +158,11 @@ export default function LandingPage() {
       'manager_roles': 'Perfis de gerente',
       'custom_branding': 'Marca personalizada',
       'api_access': 'Acesso à API',
-      '30_days_free': '30 dias grátis'
+      '30_days_free': '30 dias grátis',
+      'ai_hr_operator': 'CLOCKLN AI - Operador RH',
+      'compliance_monitor': 'Monitor de Compliance (Alemanha)',
+      'immutable_audit': 'Auditoria imutável',
+      'predictive_analytics': 'Analytics preditivo'
     };
     const translated = t(key);
     return (translated && translated !== key) ? translated : translations[key] || key;
