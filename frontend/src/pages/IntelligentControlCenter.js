@@ -53,8 +53,11 @@ export default function IntelligentControlCenter() {
     }
   };
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const executeCommand = async () => {
     if (!commandInput.trim()) return;
+    setIsProcessing(true);
 
     try {
       const response = await axios.post(`${API}/ai/command`, {
@@ -66,15 +69,17 @@ export default function IntelligentControlCenter() {
 
       setPendingCommand(response.data);
       toast({
-        title: "Comando Analisado",
-        description: `Ação: ${response.data.action}. Confirme para executar.`
+        title: "AI Analyzed Command",
+        description: response.data.summary || `Action: ${response.data.action}`
       });
     } catch (error) {
       toast({
-        title: "Erro",
-        description: error.response?.data?.detail || "Erro ao processar comando",
+        title: "Error",
+        description: error.response?.data?.detail || "Failed to process command",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
