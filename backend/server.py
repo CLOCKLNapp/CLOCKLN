@@ -3303,11 +3303,17 @@ async def get_ai_commands(
 async def run_compliance_check(
     current_user: dict = Depends(require_intelligent_plan)
 ):
-    """Run compliance check for all employees (Germany mode)"""
+    """Run compliance check for all employees based on company country"""
     if current_user.get('role') not in [UserRole.HR]:
         raise HTTPException(status_code=403, detail="Only HR can run compliance checks")
     
     company_id = current_user['company_id']
+    
+    # Get company to determine country
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    country_code = company.get('country', 'DE') if company else 'DE'
+    compliance_rules = get_compliance_rules(country_code)
+    
     now = datetime.now(timezone.utc)
     week_start = (now - timedelta(days=now.weekday())).strftime("%Y-%m-%d")
     year_start = now.replace(month=1, day=1).strftime("%Y-%m-%d")
@@ -3321,78 +3327,101 @@ async def run_compliance_check(
     }, {"_id": 0}).to_list(1000)
     
     for emp in employees:
-        # Check 1: Weekly hours limit (48h ArbZG)
-        week_records = await db.clock_records.find({
-            "user_id": emp['id'],
-            "date": {"$gte": week_start}
-        }, {"_id": 0}).to_list(7)
-        
-        weekly_hours = sum(r.get('total_hours', 0) or 0 for r in week_records)
-        
-        if weekly_hours > GERMAN_COMPLIANCE['weekly_hours_limit']:
-            alert = ComplianceAlert(
-                company_id=company_id,
-                user_id=emp['id'],
-                alert_type="weekly_hours_exceeded",
-                severity="critical",
-                description=f"{emp['name']} exceeded weekly limit: {weekly_hours:.1f}h (limit: {GERMAN_COMPLIANCE['weekly_hours_limit']}h)",
-                data={"weekly_hours": weekly_hours, "limit": GERMAN_COMPLIANCE['weekly_hours_limit']}
-            )
-            alert_dict = alert.model_dump()
-            alert_dict['created_at'] = alert_dict['created_at'].isoformat()
-            await db.compliance_alerts.insert_one(alert_dict)
-            alerts_created.append(alert_dict)
-        
-        # Check 2: Overtime accumulation
-        overtime_records = await db.clock_records.find({
-            "user_id": emp['id'],
-            "date": {"$gte": year_start},
-            "overtime_hours": {"$gt": 0}
-        }, {"_id": 0}).to_list(365)
-        
-        total_overtime = sum(r.get('overtime_hours', 0) for r in overtime_records)
-        
-        if total_overtime > GERMAN_COMPLIANCE['overtime_warning_threshold']:
-            alert = ComplianceAlert(
-                company_id=company_id,
-                user_id=emp['id'],
-                alert_type="overtime_accumulation",
-                severity="warning",
-                description=f"{emp['name']} has accumulated {total_overtime:.1f}h overtime this year",
-                data={"total_overtime": total_overtime}
-            )
-            alert_dict = alert.model_dump()
-            alert_dict['created_at'] = alert_dict['created_at'].isoformat()
-            await db.compliance_alerts.insert_one(alert_dict)
-            alerts_created.append(alert_dict)
-        
-        # Check 3: Vacation not granted within 12 months
-        vacation_total = emp.get('vacation_days_total', 30)
-        vacation_used = emp.get('vacation_days_used', 0)
-        hire_date = emp.get('hire_date')
-        
-        if hire_date:
-            hire_dt = datetime.strptime(hire_date, "%Y-%m-%d")
-            months_employed = (now.year - hire_dt.year) * 12 + (now.month - hire_dt.month)
+        # Check 1: Weekly hours limit (if applicable)
+        if compliance_rules['weekly_hours_limit'] > 0:
+            week_records = await db.clock_records.find({
+                "user_id": emp['id'],
+                "date": {"$gte": week_start}
+            }, {"_id": 0}).to_list(7)
             
-            if months_employed >= 12 and vacation_used < vacation_total * 0.5:
+            weekly_hours = sum(r.get('total_hours', 0) or 0 for r in week_records)
+            
+            if weekly_hours > compliance_rules['weekly_hours_limit']:
                 alert = ComplianceAlert(
                     company_id=company_id,
                     user_id=emp['id'],
-                    alert_type="vacation_not_granted",
-                    severity="warning",
-                    description=f"{emp['name']} has used only {vacation_used}/{vacation_total} vacation days after {months_employed} months",
-                    data={"vacation_used": vacation_used, "vacation_total": vacation_total, "months_employed": months_employed}
+                    alert_type="weekly_hours_exceeded",
+                    severity="critical",
+                    description=f"{emp['name']} exceeded weekly limit: {weekly_hours:.1f}h (limit: {compliance_rules['weekly_hours_limit']}h - {compliance_rules['name']})",
+                    data={"weekly_hours": weekly_hours, "limit": compliance_rules['weekly_hours_limit'], "country": country_code}
                 )
                 alert_dict = alert.model_dump()
                 alert_dict['created_at'] = alert_dict['created_at'].isoformat()
                 await db.compliance_alerts.insert_one(alert_dict)
                 alerts_created.append(alert_dict)
+        
+        # Check 2: Overtime accumulation
+        if compliance_rules['overtime_warning_threshold'] > 0:
+            overtime_records = await db.clock_records.find({
+                "user_id": emp['id'],
+                "date": {"$gte": year_start},
+                "overtime_hours": {"$gt": 0}
+            }, {"_id": 0}).to_list(365)
+            
+            total_overtime = sum(r.get('overtime_hours', 0) for r in overtime_records)
+            
+            if total_overtime > compliance_rules['overtime_warning_threshold']:
+                alert = ComplianceAlert(
+                    company_id=company_id,
+                    user_id=emp['id'],
+                    alert_type="overtime_accumulation",
+                    severity="warning",
+                    description=f"{emp['name']} has accumulated {total_overtime:.1f}h overtime (threshold: {compliance_rules['overtime_warning_threshold']}h - {compliance_rules['name']})",
+                    data={"total_overtime": total_overtime, "threshold": compliance_rules['overtime_warning_threshold'], "country": country_code}
+                )
+                alert_dict = alert.model_dump()
+                alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+                await db.compliance_alerts.insert_one(alert_dict)
+                alerts_created.append(alert_dict)
+        
+        # Check 3: Vacation not granted (if applicable)
+        if compliance_rules['vacation_grant_months'] > 0:
+            vacation_total = emp.get('vacation_days_total', compliance_rules.get('vacation_days_min', 20))
+            vacation_used = emp.get('vacation_days_used', 0)
+            hire_date = emp.get('hire_date')
+            
+            if hire_date:
+                try:
+                    hire_dt = datetime.strptime(hire_date, "%Y-%m-%d")
+                    months_employed = (now.year - hire_dt.year) * 12 + (now.month - hire_dt.month)
+                    
+                    if months_employed >= compliance_rules['vacation_grant_months'] and vacation_used < vacation_total * 0.5:
+                        alert = ComplianceAlert(
+                            company_id=company_id,
+                            user_id=emp['id'],
+                            alert_type="vacation_not_granted",
+                            severity="warning",
+                            description=f"{emp['name']} has used only {vacation_used}/{vacation_total} vacation days after {months_employed} months ({compliance_rules['name']})",
+                            data={"vacation_used": vacation_used, "vacation_total": vacation_total, "months_employed": months_employed, "country": country_code}
+                        )
+                        alert_dict = alert.model_dump()
+                        alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+                        await db.compliance_alerts.insert_one(alert_dict)
+                        alerts_created.append(alert_dict)
+                except:
+                    pass
     
     return {
         "checked_employees": len(employees),
         "alerts_created": len(alerts_created),
+        "country": country_code,
+        "compliance_rules": compliance_rules['name'],
         "alerts": alerts_created
+    }
+
+@api_router.get("/compliance/rules", response_model=dict)
+async def get_company_compliance_rules(
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Get compliance rules for current company's country"""
+    company = await db.companies.find_one({"id": current_user['company_id']}, {"_id": 0})
+    country_code = company.get('country', 'DE') if company else 'DE'
+    rules = get_compliance_rules(country_code)
+    
+    return {
+        "country": country_code,
+        "rules": rules,
+        "all_supported_countries": list(COMPLIANCE_RULES.keys())
     }
 
 @api_router.get("/compliance/alerts", response_model=List[dict])
