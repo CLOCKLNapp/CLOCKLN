@@ -248,7 +248,7 @@ export default function SubscriptionPage() {
                     </CardDescription>
                     <div className="mt-4">
                       <span className="text-4xl font-bold">
-                        {plan.price === 0 ? 'Grátis' : `$${plan.price}`}
+                        {plan.price === 0 ? 'Grátis' : `€${plan.price}`}
                       </span>
                       {plan.price > 0 && <span className="text-muted-foreground">/mês</span>}
                     </div>
