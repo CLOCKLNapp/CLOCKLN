@@ -505,7 +505,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Intelligent Edition Section */}
+      {/* Premium IA Section */}
       <section id="intelligent" className="py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 rounded-3xl p-8 sm:p-12">
@@ -515,7 +515,7 @@ export default function LandingPage() {
                 <span className="text-amber-400 font-semibold">Enterprise Solution</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                CLOCKLN – <span className="text-amber-400">Intelligent Edition</span>
+                CLOCKLN – <span className="text-amber-400">Premium IA</span>
               </h2>
               <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
                 For companies that operate smarter.
