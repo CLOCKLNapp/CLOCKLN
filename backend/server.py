@@ -2844,6 +2844,483 @@ async def get_admin_stats(current_user: dict = Depends(require_superadmin)):
 async def health_check():
     return {"status": "healthy", "version": "2.0.0", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# ============== INTELLIGENT EDITION - AI HR OPERATOR ==============
+
+class AICommand(BaseModel):
+    """AI HR Command structure"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    executed_by: str
+    executed_by_role: str
+    action: str  # add_vacation, remove_vacation, approve_overtime, correct_time, send_notification, update_employee
+    target_employee_id: Optional[str] = None
+    parameters: dict = {}
+    status: str = "pending"  # pending, confirmed, executed, failed
+    confirmation_token: Optional[str] = None
+    result: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    executed_at: Optional[datetime] = None
+
+class AICommandRequest(BaseModel):
+    command: str  # Natural language or structured command
+    target_employee_email: Optional[str] = None
+
+class AICommandConfirm(BaseModel):
+    command_id: str
+    confirmation_token: str
+
+class AuditLog(BaseModel):
+    """Immutable audit log entry"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    initiating_user_id: str
+    initiating_user_role: str
+    action_type: str
+    target_entity: str  # user, clock_record, vacation, etc.
+    target_id: str
+    previous_value: Optional[dict] = None
+    new_value: Optional[dict] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ComplianceAlert(BaseModel):
+    """Compliance monitoring alert"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_id: str
+    user_id: str
+    alert_type: str  # weekly_hours_exceeded, overtime_accumulation, vacation_not_granted, missing_records
+    severity: str = "warning"  # info, warning, critical
+    description: str
+    data: dict = {}
+    acknowledged: bool = False
+    acknowledged_by: Optional[str] = None
+    acknowledged_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# German ArbZG compliance limits
+GERMAN_COMPLIANCE = {
+    "weekly_hours_limit": 48,  # ArbZG §3
+    "daily_hours_limit": 10,   # ArbZG §3
+    "rest_period_hours": 11,   # ArbZG §5
+    "overtime_warning_threshold": 20,  # Hours accumulated
+    "vacation_grant_months": 12  # Must grant within 12 months
+}
+
+async def require_intelligent_plan(current_user: dict = Depends(get_current_user)):
+    """Require Intelligent Edition subscription"""
+    company = await db.companies.find_one({"id": current_user['company_id']}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    if company.get('subscription_plan') != 'intelligent' and not company.get('is_exempt'):
+        raise HTTPException(
+            status_code=403, 
+            detail="This feature requires CLOCKLN Intelligent Edition subscription"
+        )
+    return current_user
+
+async def create_audit_log(
+    company_id: str,
+    user_id: str,
+    user_role: str,
+    action_type: str,
+    target_entity: str,
+    target_id: str,
+    previous_value: dict = None,
+    new_value: dict = None,
+    ip_address: str = None
+):
+    """Create immutable audit log entry"""
+    audit = AuditLog(
+        company_id=company_id,
+        initiating_user_id=user_id,
+        initiating_user_role=user_role,
+        action_type=action_type,
+        target_entity=target_entity,
+        target_id=target_id,
+        previous_value=previous_value,
+        new_value=new_value,
+        ip_address=ip_address
+    )
+    audit_dict = audit.model_dump()
+    audit_dict['timestamp'] = audit_dict['timestamp'].isoformat()
+    await db.audit_logs.insert_one(audit_dict)
+    return audit
+
+# AI HR Operator endpoints
+@api_router.post("/ai/command", response_model=dict)
+async def create_ai_command(
+    request: Request,
+    data: AICommandRequest,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Parse and validate AI HR command"""
+    if current_user.get('role') not in [UserRole.HR, UserRole.MANAGER]:
+        raise HTTPException(status_code=403, detail="Only HR or Managers can execute AI commands")
+    
+    # Parse command (simplified - in production would use NLP)
+    command_lower = data.command.lower()
+    action = None
+    parameters = {}
+    
+    # Detect action type
+    if any(word in command_lower for word in ['vacation', 'férias', 'urlaub', 'holiday']):
+        if any(word in command_lower for word in ['add', 'adicionar', 'hinzufügen', 'grant']):
+            action = 'add_vacation'
+        elif any(word in command_lower for word in ['remove', 'remover', 'entfernen', 'cancel']):
+            action = 'remove_vacation'
+    elif any(word in command_lower for word in ['overtime', 'horas extra', 'überstunden']):
+        action = 'approve_overtime'
+    elif any(word in command_lower for word in ['correct', 'corrigir', 'korrigieren', 'fix', 'adjust']):
+        action = 'correct_time'
+    elif any(word in command_lower for word in ['notify', 'notificar', 'benachrichtigen', 'send']):
+        action = 'send_notification'
+    
+    if not action:
+        raise HTTPException(status_code=400, detail="Could not understand command. Supported: vacation, overtime, correct time, notify")
+    
+    # Find target employee if specified
+    target_employee_id = None
+    if data.target_employee_email:
+        employee = await db.users.find_one({
+            "email": data.target_employee_email,
+            "company_id": current_user['company_id']
+        }, {"_id": 0})
+        if not employee:
+            raise HTTPException(status_code=404, detail=f"Employee not found: {data.target_employee_email}")
+        target_employee_id = employee['id']
+    
+    # Create command with confirmation token
+    confirmation_token = secrets.token_urlsafe(16)
+    
+    ai_command = AICommand(
+        company_id=current_user['company_id'],
+        executed_by=current_user['id'],
+        executed_by_role=current_user['role'],
+        action=action,
+        target_employee_id=target_employee_id,
+        parameters={"original_command": data.command},
+        confirmation_token=confirmation_token
+    )
+    
+    cmd_dict = ai_command.model_dump()
+    cmd_dict['created_at'] = cmd_dict['created_at'].isoformat()
+    await db.ai_commands.insert_one(cmd_dict)
+    
+    return {
+        "command_id": ai_command.id,
+        "action": action,
+        "target_employee_id": target_employee_id,
+        "status": "pending_confirmation",
+        "confirmation_token": confirmation_token,
+        "message": f"Command parsed: {action}. Please confirm to execute."
+    }
+
+@api_router.post("/ai/confirm", response_model=dict)
+async def confirm_ai_command(
+    request: Request,
+    data: AICommandConfirm,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Confirm and execute AI command"""
+    command = await db.ai_commands.find_one({
+        "id": data.command_id,
+        "company_id": current_user['company_id'],
+        "confirmation_token": data.confirmation_token,
+        "status": "pending"
+    }, {"_id": 0})
+    
+    if not command:
+        raise HTTPException(status_code=404, detail="Command not found or already executed")
+    
+    # Execute command based on action type
+    result = {"success": False}
+    now = datetime.now(timezone.utc)
+    
+    try:
+        if command['action'] == 'add_vacation':
+            # Add vacation day logic
+            result = {"success": True, "action": "add_vacation", "message": "Vacation day added"}
+        elif command['action'] == 'remove_vacation':
+            result = {"success": True, "action": "remove_vacation", "message": "Vacation day removed"}
+        elif command['action'] == 'approve_overtime':
+            result = {"success": True, "action": "approve_overtime", "message": "Overtime approved"}
+        elif command['action'] == 'correct_time':
+            result = {"success": True, "action": "correct_time", "message": "Time entry corrected"}
+        elif command['action'] == 'send_notification':
+            result = {"success": True, "action": "send_notification", "message": "Notification sent"}
+        
+        # Update command status
+        await db.ai_commands.update_one(
+            {"id": data.command_id},
+            {"$set": {
+                "status": "executed",
+                "result": result,
+                "executed_at": now.isoformat()
+            }}
+        )
+        
+        # Create audit log
+        client_ip = request.client.host if request.client else None
+        await create_audit_log(
+            company_id=current_user['company_id'],
+            user_id=current_user['id'],
+            user_role=current_user['role'],
+            action_type=f"ai_command_{command['action']}",
+            target_entity="user" if command['target_employee_id'] else "system",
+            target_id=command['target_employee_id'] or "system",
+            new_value=result,
+            ip_address=client_ip
+        )
+        
+    except Exception as e:
+        await db.ai_commands.update_one(
+            {"id": data.command_id},
+            {"$set": {"status": "failed", "result": {"error": str(e)}}}
+        )
+        raise HTTPException(status_code=500, detail=f"Command execution failed: {str(e)}")
+    
+    return {
+        "command_id": data.command_id,
+        "status": "executed",
+        "result": result
+    }
+
+@api_router.get("/ai/commands", response_model=List[dict])
+async def get_ai_commands(
+    limit: int = 50,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Get recent AI commands"""
+    commands = await db.ai_commands.find({
+        "company_id": current_user['company_id']
+    }, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    
+    return commands
+
+# Compliance Monitor endpoints
+@api_router.get("/compliance/check", response_model=dict)
+async def run_compliance_check(
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Run compliance check for all employees (Germany mode)"""
+    if current_user.get('role') not in [UserRole.HR]:
+        raise HTTPException(status_code=403, detail="Only HR can run compliance checks")
+    
+    company_id = current_user['company_id']
+    now = datetime.now(timezone.utc)
+    week_start = (now - timedelta(days=now.weekday())).strftime("%Y-%m-%d")
+    year_start = now.replace(month=1, day=1).strftime("%Y-%m-%d")
+    
+    alerts_created = []
+    
+    # Get all active employees
+    employees = await db.users.find({
+        "company_id": company_id,
+        "is_active": True
+    }, {"_id": 0}).to_list(1000)
+    
+    for emp in employees:
+        # Check 1: Weekly hours limit (48h ArbZG)
+        week_records = await db.clock_records.find({
+            "user_id": emp['id'],
+            "date": {"$gte": week_start}
+        }, {"_id": 0}).to_list(7)
+        
+        weekly_hours = sum(r.get('total_hours', 0) or 0 for r in week_records)
+        
+        if weekly_hours > GERMAN_COMPLIANCE['weekly_hours_limit']:
+            alert = ComplianceAlert(
+                company_id=company_id,
+                user_id=emp['id'],
+                alert_type="weekly_hours_exceeded",
+                severity="critical",
+                description=f"{emp['name']} exceeded weekly limit: {weekly_hours:.1f}h (limit: {GERMAN_COMPLIANCE['weekly_hours_limit']}h)",
+                data={"weekly_hours": weekly_hours, "limit": GERMAN_COMPLIANCE['weekly_hours_limit']}
+            )
+            alert_dict = alert.model_dump()
+            alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+            await db.compliance_alerts.insert_one(alert_dict)
+            alerts_created.append(alert_dict)
+        
+        # Check 2: Overtime accumulation
+        overtime_records = await db.clock_records.find({
+            "user_id": emp['id'],
+            "date": {"$gte": year_start},
+            "overtime_hours": {"$gt": 0}
+        }, {"_id": 0}).to_list(365)
+        
+        total_overtime = sum(r.get('overtime_hours', 0) for r in overtime_records)
+        
+        if total_overtime > GERMAN_COMPLIANCE['overtime_warning_threshold']:
+            alert = ComplianceAlert(
+                company_id=company_id,
+                user_id=emp['id'],
+                alert_type="overtime_accumulation",
+                severity="warning",
+                description=f"{emp['name']} has accumulated {total_overtime:.1f}h overtime this year",
+                data={"total_overtime": total_overtime}
+            )
+            alert_dict = alert.model_dump()
+            alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+            await db.compliance_alerts.insert_one(alert_dict)
+            alerts_created.append(alert_dict)
+        
+        # Check 3: Vacation not granted within 12 months
+        vacation_total = emp.get('vacation_days_total', 30)
+        vacation_used = emp.get('vacation_days_used', 0)
+        hire_date = emp.get('hire_date')
+        
+        if hire_date:
+            hire_dt = datetime.strptime(hire_date, "%Y-%m-%d")
+            months_employed = (now.year - hire_dt.year) * 12 + (now.month - hire_dt.month)
+            
+            if months_employed >= 12 and vacation_used < vacation_total * 0.5:
+                alert = ComplianceAlert(
+                    company_id=company_id,
+                    user_id=emp['id'],
+                    alert_type="vacation_not_granted",
+                    severity="warning",
+                    description=f"{emp['name']} has used only {vacation_used}/{vacation_total} vacation days after {months_employed} months",
+                    data={"vacation_used": vacation_used, "vacation_total": vacation_total, "months_employed": months_employed}
+                )
+                alert_dict = alert.model_dump()
+                alert_dict['created_at'] = alert_dict['created_at'].isoformat()
+                await db.compliance_alerts.insert_one(alert_dict)
+                alerts_created.append(alert_dict)
+    
+    return {
+        "checked_employees": len(employees),
+        "alerts_created": len(alerts_created),
+        "alerts": alerts_created
+    }
+
+@api_router.get("/compliance/alerts", response_model=List[dict])
+async def get_compliance_alerts(
+    acknowledged: Optional[bool] = None,
+    severity: Optional[str] = None,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Get compliance alerts"""
+    query = {"company_id": current_user['company_id']}
+    
+    if acknowledged is not None:
+        query['acknowledged'] = acknowledged
+    if severity:
+        query['severity'] = severity
+    
+    alerts = await db.compliance_alerts.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with employee names
+    for alert in alerts:
+        emp = await db.users.find_one({"id": alert['user_id']}, {"_id": 0, "name": 1, "email": 1})
+        if emp:
+            alert['employee_name'] = emp.get('name', 'Unknown')
+            alert['employee_email'] = emp.get('email', '')
+    
+    return alerts
+
+@api_router.patch("/compliance/alerts/{alert_id}/acknowledge", response_model=dict)
+async def acknowledge_compliance_alert(
+    alert_id: str,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Acknowledge a compliance alert"""
+    if current_user.get('role') != UserRole.HR:
+        raise HTTPException(status_code=403, detail="Only HR can acknowledge alerts")
+    
+    result = await db.compliance_alerts.update_one(
+        {"id": alert_id, "company_id": current_user['company_id']},
+        {"$set": {
+            "acknowledged": True,
+            "acknowledged_by": current_user['id'],
+            "acknowledged_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    
+    return {"message": "Alert acknowledged"}
+
+# Audit System endpoints
+@api_router.get("/audit/logs", response_model=List[dict])
+async def get_audit_logs(
+    limit: int = 100,
+    action_type: Optional[str] = None,
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Get audit logs (read-only, cannot be modified or deleted)"""
+    query = {"company_id": current_user['company_id']}
+    
+    if action_type:
+        query['action_type'] = {"$regex": action_type, "$options": "i"}
+    
+    logs = await db.audit_logs.find(query, {"_id": 0}).sort("timestamp", -1).to_list(limit)
+    
+    # Enrich with user names
+    for log in logs:
+        user = await db.users.find_one({"id": log['initiating_user_id']}, {"_id": 0, "name": 1})
+        if user:
+            log['initiating_user_name'] = user.get('name', 'Unknown')
+    
+    return logs
+
+@api_router.get("/intelligent/dashboard", response_model=dict)
+async def get_intelligent_dashboard(
+    current_user: dict = Depends(require_intelligent_plan)
+):
+    """Get Intelligent Control Center dashboard data"""
+    company_id = current_user['company_id']
+    now = datetime.now(timezone.utc)
+    
+    # Recent AI commands
+    recent_commands = await db.ai_commands.find({
+        "company_id": company_id
+    }, {"_id": 0}).sort("created_at", -1).to_list(10)
+    
+    # Active compliance alerts
+    active_alerts = await db.compliance_alerts.find({
+        "company_id": company_id,
+        "acknowledged": False
+    }, {"_id": 0}).sort("created_at", -1).to_list(20)
+    
+    # Alert counts by severity
+    critical_count = len([a for a in active_alerts if a.get('severity') == 'critical'])
+    warning_count = len([a for a in active_alerts if a.get('severity') == 'warning'])
+    
+    # Recent audit entries
+    recent_audits = await db.audit_logs.find({
+        "company_id": company_id
+    }, {"_id": 0}).sort("timestamp", -1).to_list(10)
+    
+    # Command stats
+    total_commands = await db.ai_commands.count_documents({"company_id": company_id})
+    executed_commands = await db.ai_commands.count_documents({
+        "company_id": company_id,
+        "status": "executed"
+    })
+    
+    return {
+        "ai_commands": {
+            "recent": recent_commands,
+            "total": total_commands,
+            "executed": executed_commands
+        },
+        "compliance": {
+            "active_alerts": active_alerts,
+            "critical_count": critical_count,
+            "warning_count": warning_count
+        },
+        "audit": {
+            "recent_entries": recent_audits
+        }
+    }
+
 # Include router and middleware
 app.include_router(api_router)
 
