@@ -227,6 +227,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/intelligent"
+        element={
+          <ProtectedRoute requireHR>
+            <IntelligentControlCenter />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/reports"
         element={
           <ProtectedRoute requireHR>
