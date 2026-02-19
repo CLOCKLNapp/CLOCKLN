@@ -5,7 +5,7 @@ import {
   Plus, Search, MoreVertical, Tv,
   ChevronRight, CheckCircle2, XCircle,
   Palmtree, Bell, Settings, Download, MapPin,
-  Crown, Table, Hourglass
+  Crown, Table, Hourglass, Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
