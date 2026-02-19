@@ -15,22 +15,6 @@ const currencies = {
 };
 
 const plans = {
-  trial: {
-    name: 'Trial',
-    icon: Zap,
-    maxEmployees: 5,
-    monthly: 0,
-    yearly: 0,
-    threeYear: 0,
-    fiveYear: 0,
-    isTrial: true,
-    features: [
-      'up_to_5_employees',
-      'qr_geolocation',
-      'basic_reports',
-      '30_days_free'
-    ]
-  },
   pro: {
     name: 'Pro',
     icon: Zap,
@@ -81,8 +65,8 @@ const plans = {
       'dedicated_support'
     ]
   },
-  intelligent: {
-    name: 'Intelligent Edition',
+  premiumia: {
+    name: 'Premium IA',
     icon: Shield,
     maxEmployees: 'unlimited',
     monthly: 299.90,
