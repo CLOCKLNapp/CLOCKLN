@@ -130,27 +130,51 @@ class TimeBankTransaction(BaseModel):
 class SubscriptionPlan:
     FREE = "free"
     PRO = "pro"
+    PLUS = "plus"
     BUSINESS = "business"
+    INTELLIGENT = "intelligent"
 
 # Plan details - defined on server only (security)
 SUBSCRIPTION_PLANS = {
     "free": {
-        "name": "Free",
+        "name": "Trial",
         "price": 0.0,
         "max_employees": 5,
-        "features": ["QR Code clock-in", "Basic reports", "5 employees max"]
+        "features": ["QR Code clock-in", "Basic reports", "5 employees max", "30 days free"]
     },
     "pro": {
         "name": "Pro",
-        "price": 29.0,
+        "price": 29.90,
         "max_employees": 50,
-        "features": ["All Free features", "Geolocation clock-in", "Remote map", "50 employees max", "Priority support"]
+        "features": ["All Trial features", "Geolocation clock-in", "Remote map", "50 employees max", "Email support"]
+    },
+    "plus": {
+        "name": "Plus",
+        "price": 59.90,
+        "max_employees": 150,
+        "features": ["All Pro features", "Advanced reports (PDF/Excel)", "Time bank management", "150 employees max", "Priority support"]
     },
     "business": {
         "name": "Business",
-        "price": 99.0,
+        "price": 99.90,
         "max_employees": 500,
-        "features": ["All Pro features", "Manager roles", "Advanced reports", "500 employees max", "Dedicated support", "Custom branding"]
+        "features": ["All Plus features", "Manager roles", "Custom branding", "API access", "500 employees max", "Dedicated support"]
+    },
+    "intelligent": {
+        "name": "Intelligent Edition",
+        "price": 299.90,
+        "max_employees": -1,  # Unlimited
+        "features": [
+            "All Business features",
+            "Unlimited employees",
+            "CLOCKLN AI - HR Operator",
+            "Compliance Monitor (Germany)",
+            "Immutable Audit System",
+            "Predictive Analytics"
+        ],
+        "ai_enabled": True,
+        "compliance_enabled": True,
+        "audit_enabled": True
     }
 }
 
