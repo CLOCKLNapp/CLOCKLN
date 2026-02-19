@@ -2903,14 +2903,121 @@ class ComplianceAlert(BaseModel):
     acknowledged_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# German ArbZG compliance limits
-GERMAN_COMPLIANCE = {
-    "weekly_hours_limit": 48,  # ArbZG §3
-    "daily_hours_limit": 10,   # ArbZG §3
-    "rest_period_hours": 11,   # ArbZG §5
-    "overtime_warning_threshold": 20,  # Hours accumulated
-    "vacation_grant_months": 12  # Must grant within 12 months
+# Multi-Country Compliance Rules
+COMPLIANCE_RULES = {
+    "DE": {  # Germany - ArbZG
+        "name": "Germany (ArbZG)",
+        "weekly_hours_limit": 48,
+        "daily_hours_limit": 10,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 20,
+        "vacation_days_min": 24,
+        "vacation_grant_months": 12
+    },
+    "BR": {  # Brazil - CLT
+        "name": "Brasil (CLT)",
+        "weekly_hours_limit": 44,
+        "daily_hours_limit": 8,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 40,  # Max 2h/day overtime
+        "vacation_days_min": 30,
+        "vacation_grant_months": 12
+    },
+    "PT": {  # Portugal
+        "name": "Portugal",
+        "weekly_hours_limit": 40,
+        "daily_hours_limit": 8,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 150,  # Max 150h/year
+        "vacation_days_min": 22,
+        "vacation_grant_months": 12
+    },
+    "ES": {  # Spain
+        "name": "España",
+        "weekly_hours_limit": 40,
+        "daily_hours_limit": 9,
+        "rest_period_hours": 12,
+        "overtime_warning_threshold": 80,  # Max 80h/year
+        "vacation_days_min": 22,
+        "vacation_grant_months": 12
+    },
+    "FR": {  # France
+        "name": "France",
+        "weekly_hours_limit": 35,
+        "daily_hours_limit": 10,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 220,  # Max 220h/year
+        "vacation_days_min": 25,
+        "vacation_grant_months": 12
+    },
+    "US": {  # USA - FLSA (no federal weekly limit)
+        "name": "USA (FLSA)",
+        "weekly_hours_limit": 0,  # No federal limit
+        "daily_hours_limit": 0,   # No federal limit
+        "rest_period_hours": 0,   # No federal requirement
+        "overtime_warning_threshold": 40,  # Overtime after 40h
+        "vacation_days_min": 0,   # No federal requirement
+        "vacation_grant_months": 0
+    },
+    "GB": {  # UK - Working Time Regulations
+        "name": "UK (WTR)",
+        "weekly_hours_limit": 48,
+        "daily_hours_limit": 13,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 48,
+        "vacation_days_min": 28,
+        "vacation_grant_months": 12
+    },
+    "IT": {  # Italy
+        "name": "Italia",
+        "weekly_hours_limit": 40,
+        "daily_hours_limit": 13,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 250,
+        "vacation_days_min": 20,
+        "vacation_grant_months": 18
+    },
+    "NL": {  # Netherlands
+        "name": "Nederland",
+        "weekly_hours_limit": 45,
+        "daily_hours_limit": 12,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 40,
+        "vacation_days_min": 20,
+        "vacation_grant_months": 12
+    },
+    "AT": {  # Austria
+        "name": "Österreich",
+        "weekly_hours_limit": 40,
+        "daily_hours_limit": 10,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 20,
+        "vacation_days_min": 25,
+        "vacation_grant_months": 12
+    },
+    "CH": {  # Switzerland
+        "name": "Schweiz",
+        "weekly_hours_limit": 45,
+        "daily_hours_limit": 14,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 170,
+        "vacation_days_min": 20,
+        "vacation_grant_months": 12
+    },
+    "DEFAULT": {  # Default rules
+        "name": "International Standard",
+        "weekly_hours_limit": 48,
+        "daily_hours_limit": 10,
+        "rest_period_hours": 11,
+        "overtime_warning_threshold": 20,
+        "vacation_days_min": 20,
+        "vacation_grant_months": 12
+    }
 }
+
+def get_compliance_rules(country_code: str) -> dict:
+    """Get compliance rules for a country"""
+    return COMPLIANCE_RULES.get(country_code.upper(), COMPLIANCE_RULES["DEFAULT"])
 
 async def require_intelligent_plan(current_user: dict = Depends(get_current_user)):
     """Require Intelligent Edition subscription"""
