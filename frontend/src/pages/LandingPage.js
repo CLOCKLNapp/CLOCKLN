@@ -428,13 +428,16 @@ export default function LandingPage() {
                   selectedPlan === key
                     ? plan.isTrial 
                       ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                      : 'bg-primary/20 border-primary text-white'
+                      : plan.isPremium
+                        ? 'bg-amber-500/20 border-amber-500 text-amber-400'
+                        : 'bg-primary/20 border-primary text-white'
                     : 'bg-zinc-800/50 border-zinc-700 text-zinc-400 hover:border-zinc-600'
-                } ${plan.isTrial ? 'order-first' : ''}`}
+                } ${plan.isTrial ? 'order-first' : ''} ${plan.isPremium ? 'order-last' : ''}`}
               >
                 <plan.icon className="w-4 h-4" />
                 {plan.name}
                 {plan.isTrial && <span className="text-xs bg-emerald-500 text-black px-2 py-0.5 rounded-full ml-1">30 dias</span>}
+                {plan.isPremium && <span className="text-xs bg-amber-500 text-black px-2 py-0.5 rounded-full ml-1">AI</span>}
               </button>
             ))}
           </div>
@@ -443,7 +446,10 @@ export default function LandingPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 text-zinc-400">
               <Users className="w-5 h-5" />
-              {t('up_to') || 'Até'} <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> {t('employees') || 'funcionários'}
+              {plans[selectedPlan].maxEmployees === 'unlimited' 
+                ? <span className="font-bold text-amber-400">Funcionários ilimitados</span>
+                : <>{t('up_to') || 'Até'} <span className="font-bold text-white">{plans[selectedPlan].maxEmployees}</span> {t('employees') || 'funcionários'}</>
+              }
             </div>
           </div>
 
