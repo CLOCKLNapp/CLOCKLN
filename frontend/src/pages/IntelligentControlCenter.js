@@ -398,10 +398,10 @@ export default function IntelligentControlCenter() {
               <div>
                 <CardTitle className="flex items-center gap-2 text-white">
                   <Shield className="w-5 h-5 text-amber-400" />
-                  Compliance Monitor (Germany Mode)
+                  Compliance Monitor
                 </CardTitle>
                 <CardDescription>
-                  ArbZG compliance monitoring - 48h weekly limit, overtime tracking, vacation grants
+                  Auto-detects company country and applies local labor laws (DE, BR, PT, ES, FR, US, GB, IT, NL, AT, CH)
                 </CardDescription>
               </div>
               <Button 
