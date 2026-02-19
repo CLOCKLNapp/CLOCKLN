@@ -297,8 +297,6 @@ export default function IntelligentControlCenter() {
                       </p>
                     )}
                   </div>
-                    Action: <span className="font-mono text-amber-400">{pendingCommand.action}</span>
-                  </p>
                   <div className="flex gap-2">
                     <Button 
                       onClick={confirmCommand}
