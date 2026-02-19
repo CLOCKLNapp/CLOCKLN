@@ -15,19 +15,21 @@
 | **Business** | €99,90 | 500 |
 | **Intelligent Edition** | €299,90 | Ilimitados |
 
-### NOVO: Intelligent Edition Features
-- **CLOCKLN AI - HR Operator**: Comandos de RH por linguagem natural
+### NOVO: Intelligent Edition com GPT Integration
+- **CLOCKLN AI - HR Operator** (powered by GPT-4o):
+  - Comandos em linguagem natural (qualquer idioma)
   - Add/remove vacation
   - Approve overtime
   - Correct time entry
   - Send notifications
+  - Extração automática de intenção, funcionário, datas
+  - Confidence score para cada comando
 - **Compliance Monitor (Germany Mode)**: 
   - Weekly 48h limit (ArbZG §3)
   - Overtime accumulation alerts
   - Vacation grant monitoring (12 months)
   - Missing records detection
 - **Immutable Audit System**: Log completo de todas ações AI
-- **Permission Structure**: HR full access, Managers limited, Employees blocked
 
 ### Descontos por Período
 - **Anual:** +1 mês grátis
@@ -40,28 +42,33 @@
 
 ---
 
-## Regras de Negócio do Trial
+## Credenciais de Teste
 
-1. **Trial único por empresa** - Cada empresa só pode usar 1 vez
-2. **Após 30 dias** - Acesso bloqueado, obrigatório escolher plano pago
-3. **Se cancelar** - Não pode fazer novo trial nunca mais
-4. **Cadastro** - Deve ser vinculado ao método de pagamento (Stripe)
+### Conta com Intelligent Edition (para testar)
+- **Email:** hr@intelligenttest.com
+- **Senha:** Test123456
+- **Plano:** Intelligent Edition (ativo)
+
+### Super Admin Original
+- **Email:** michaelcaceres71@gmail.com
+- **Senha:** 123456
 
 ---
 
 ## Arquivos Modificados/Criados
 
 - `/app/frontend/src/pages/LandingPage.js` - Novos planos e seção Intelligent
-- `/app/frontend/src/pages/IntelligentControlCenter.js` - **NOVO** Control Center
+- `/app/frontend/src/pages/IntelligentControlCenter.js` - Control Center com GPT
 - `/app/frontend/src/App.js` - Rota /intelligent
 - `/app/frontend/src/pages/HRDashboard.js` - Botão Intelligent
-- `/app/backend/server.py` - Endpoints AI, Compliance, Audit
+- `/app/backend/server.py` - Endpoints AI com GPT, Compliance, Audit
+- `/app/backend/.env` - EMERGENT_LLM_KEY adicionada
 
 ---
 
 ## Novos Endpoints API (Intelligent Edition)
 
-- `POST /api/ai/command` - Criar comando AI
+- `POST /api/ai/command` - Criar comando AI (GPT analisa)
 - `POST /api/ai/confirm` - Confirmar e executar comando
 - `GET /api/ai/commands` - Listar comandos recentes
 - `GET /api/compliance/check` - Rodar verificação compliance
@@ -74,16 +81,25 @@
 
 ## Links Importantes
 
+- **Preview (testar agora):** https://clockln-plans.preview.emergentagent.com
 - **Produção:** https://clockln-app.vercel.app
-- **Preview:** https://clockln-plans.preview.emergentagent.com
 - **GitHub:** https://github.com/CLOCKLNapp/CLOCKLN
-- **Backend:** https://clockln-production.up.railway.app
+- **Intelligent Control Center:** https://clockln-plans.preview.emergentagent.com/intelligent
 
 ---
 
-## Credenciais Admin
-- **Email:** michaelcaceres71@gmail.com
-- **Senha:** 123456
+## Exemplos de Comandos AI (Testados)
+
+```
+"Add 5 vacation days for employee starting next Monday"
+→ Action: add_vacation, Confidence: 80%
+
+"Genehmige 3 Überstunden für das Team" (German)
+→ Action: approve_overtime, Confidence: 90%
+
+"Corrigir o ponto de ontem para as 9:00" (Portuguese)
+→ Action: correct_time, Confidence: 80%
+```
 
 ---
 
@@ -91,16 +107,14 @@
 - [ ] Implementar lógica de bloqueio após 30 dias de trial
 - [ ] Impedir empresa de fazer novo trial após cancelar
 - [ ] Vincular cadastro ao método de pagamento Stripe
-- [ ] Configurar Stripe para pagamentos reais
-- [ ] Integrar NLP real para comandos AI (OpenAI GPT)
-- [ ] Adicionar voice input para comandos
+- [ ] Voice input para comandos AI
 - [ ] Mobile execution
-- [ ] Predictive analytics avançado
+- [ ] Predictive analytics dashboard
 
 ---
 
 ## Observações
-- Projeto está em fase de TESTE com Stripe
+- Projeto está em fase de TESTE
+- GPT-4o integrado via EMERGENT_LLM_KEY
 - Localização: Alemanha (preços em EUR)
-- Deploy feito via GitHub → Vercel (automático)
-- Intelligent Edition requer subscription_plan = 'intelligent' na empresa
+- Deploy via GitHub → Vercel (automático)
