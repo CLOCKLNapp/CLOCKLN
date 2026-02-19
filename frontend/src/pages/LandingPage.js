@@ -533,6 +533,67 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Intelligent Edition Section */}
+      <section id="intelligent" className="py-20 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-900 border border-amber-500/30 rounded-3xl p-8 sm:p-12">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-6">
+                <Shield className="w-5 h-5 text-amber-400" />
+                <span className="text-amber-400 font-semibold">Enterprise Solution</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                CLOCKLN – <span className="text-amber-400">Intelligent Edition</span>
+              </h2>
+              <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
+                For companies that operate smarter.
+              </p>
+            </div>
+
+            <p className="text-zinc-300 text-center max-w-3xl mx-auto mb-12">
+              Automate HR operations, reduce legal risk and eliminate manual administrative work with intelligent execution and compliance monitoring built for the European market.
+            </p>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {[
+                { icon: Zap, title: 'Operational Automation', desc: 'AI-powered HR command execution' },
+                { icon: Shield, title: 'Legal Compliance', desc: 'German ArbZG monitoring (48h/week)' },
+                { icon: FileText, title: 'Immutable Audit', desc: 'Complete action traceability' },
+                { icon: TrendingUp, title: 'Executive Visibility', desc: 'Real-time compliance dashboard' }
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 * i }}
+                  className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 text-center"
+                >
+                  <div className="p-3 rounded-xl bg-amber-500/10 w-fit mx-auto mb-4">
+                    <item.icon className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <h4 className="font-semibold mb-2">{item.title}</h4>
+                  <p className="text-sm text-zinc-400">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <Button
+                size="lg"
+                onClick={() => navigate('/login')}
+                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold text-lg px-8 py-6"
+                data-testid="intelligent-cta-btn"
+              >
+                Request Demo
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="text-sm text-zinc-500 mt-4">Custom pricing per company</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
