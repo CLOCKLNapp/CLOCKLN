@@ -237,6 +237,17 @@ export default function HRDashboard() {
               <Crown className="w-4 h-4 mr-2 text-amber-400" />
               {t('plan')}
             </Button>
+            {company?.subscription_plan === 'intelligent' && (
+              <Button
+                variant="outline"
+                onClick={() => navigate('/intelligent')}
+                data-testid="intelligent-btn"
+                className="border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <Shield className="w-4 h-4 mr-2 text-amber-400" />
+                Intelligent
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => navigate('/reports')}
