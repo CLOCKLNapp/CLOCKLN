@@ -237,7 +237,7 @@ export default function HRDashboard() {
               <Crown className="w-4 h-4 mr-2 text-amber-400" />
               {t('plan')}
             </Button>
-            {company?.subscription_plan === 'intelligent' && (
+            {(company?.subscription_plan === 'intelligent' || company?.subscription_plan === 'premiumia') && (
               <Button
                 variant="outline"
                 onClick={() => navigate('/intelligent')}
