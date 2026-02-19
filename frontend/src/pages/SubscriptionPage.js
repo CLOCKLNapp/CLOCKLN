@@ -183,7 +183,7 @@ export default function SubscriptionPage() {
                     <div>
                       <h3 className="text-xl font-bold">{currentSub.plan_name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {currentSub.price === 0 ? 'Gratuito' : `$${currentSub.price}/mês`}
+                        {currentSub.price === 0 ? 'Gratuito' : `€${currentSub.price}/mês`}
                       </p>
                     </div>
                   </div>
