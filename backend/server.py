@@ -134,7 +134,7 @@ class SubscriptionPlan:
     PRO = "pro"
     PLUS = "plus"
     BUSINESS = "business"
-    INTELLIGENT = "intelligent"
+    PREMIUMIA = "premiumia"
 
 # Plan details - defined on server only (security)
 SUBSCRIPTION_PLANS = {
@@ -162,8 +162,8 @@ SUBSCRIPTION_PLANS = {
         "max_employees": 500,
         "features": ["All Plus features", "Manager roles", "Custom branding", "API access", "500 employees max", "Dedicated support"]
     },
-    "intelligent": {
-        "name": "Intelligent Edition",
+    "premiumia": {
+        "name": "Premium IA",
         "price": 299.90,
         "max_employees": -1,  # Unlimited
         "features": [
