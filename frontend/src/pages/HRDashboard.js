@@ -245,7 +245,7 @@ export default function HRDashboard() {
                 className="border-amber-500/30 hover:bg-amber-500/10"
               >
                 <Shield className="w-4 h-4 mr-2 text-amber-400" />
-                Intelligent
+                AI Control
               </Button>
             )}
             <Button
