@@ -2953,6 +2953,83 @@ async def create_audit_log(
     await db.audit_logs.insert_one(audit_dict)
     return audit
 
+# AI HR Operator with GPT Integration
+async def parse_command_with_gpt(command: str, employees_context: str) -> dict:
+    """Use GPT to parse natural language HR commands"""
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            return {"error": "LLM key not configured"}
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"hr_command_{uuid.uuid4()}",
+            system_message="""You are an HR command parser for CLOCKLN, a corporate time tracking system.
+Your job is to extract structured data from natural language HR commands.
+
+SUPPORTED ACTIONS:
+- add_vacation: Add vacation days for an employee
+- remove_vacation: Remove/cancel vacation days
+- approve_overtime: Approve overtime hours
+- correct_time: Correct a time entry
+- send_notification: Send a notification to employee(s)
+- update_employee: Update employee information
+
+EXTRACT AND RETURN A JSON OBJECT with these fields:
+{
+  "action": "one of the supported actions above",
+  "target_employee_email": "email if mentioned or identifiable, null otherwise",
+  "parameters": {
+    "days": number (for vacation),
+    "hours": number (for overtime/time correction),
+    "date": "YYYY-MM-DD" (if specified),
+    "start_date": "YYYY-MM-DD" (for vacation period),
+    "end_date": "YYYY-MM-DD" (for vacation period),
+    "message": "notification text if applicable",
+    "reason": "reason for the action"
+  },
+  "confidence": 0.0-1.0,
+  "summary": "Brief description of what will be done"
+}
+
+If you cannot understand the command, return:
+{"action": null, "error": "Could not understand command", "suggestions": ["list of similar valid commands"]}
+
+Languages supported: English, German, Portuguese, Spanish, French.
+Always respond with valid JSON only, no explanations."""
+        ).with_model("openai", "gpt-4o")
+        
+        user_message = UserMessage(
+            text=f"""Parse this HR command:
+"{command}"
+
+Available employees context:
+{employees_context}
+
+Return JSON only."""
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Parse the JSON response
+        try:
+            # Clean up response if needed
+            response_text = response.strip()
+            if response_text.startswith("```"):
+                response_text = response_text.split("```")[1]
+                if response_text.startswith("json"):
+                    response_text = response_text[4:]
+            response_text = response_text.strip()
+            
+            parsed = json.loads(response_text)
+            return parsed
+        except json.JSONDecodeError:
+            return {"action": None, "error": "Failed to parse GPT response", "raw_response": response[:200]}
+            
+    except Exception as e:
+        logging.error(f"GPT parsing error: {str(e)}")
+        return {"action": None, "error": f"GPT error: {str(e)}"}
+
 # AI HR Operator endpoints
 @api_router.post("/ai/command", response_model=dict)
 async def create_ai_command(
@@ -2960,44 +3037,50 @@ async def create_ai_command(
     data: AICommandRequest,
     current_user: dict = Depends(require_intelligent_plan)
 ):
-    """Parse and validate AI HR command"""
+    """Parse and validate AI HR command using GPT"""
     if current_user.get('role') not in [UserRole.HR, UserRole.MANAGER]:
         raise HTTPException(status_code=403, detail="Only HR or Managers can execute AI commands")
     
-    # Parse command (simplified - in production would use NLP)
-    command_lower = data.command.lower()
-    action = None
-    parameters = {}
+    # Get employees list for context
+    employees = await db.users.find({
+        "company_id": current_user['company_id'],
+        "is_active": True
+    }, {"_id": 0, "name": 1, "email": 1, "role": 1}).to_list(100)
     
-    # Detect action type
-    if any(word in command_lower for word in ['vacation', 'férias', 'urlaub', 'holiday']):
-        if any(word in command_lower for word in ['add', 'adicionar', 'hinzufügen', 'grant']):
-            action = 'add_vacation'
-        elif any(word in command_lower for word in ['remove', 'remover', 'entfernen', 'cancel']):
-            action = 'remove_vacation'
-    elif any(word in command_lower for word in ['overtime', 'horas extra', 'überstunden']):
-        action = 'approve_overtime'
-    elif any(word in command_lower for word in ['correct', 'corrigir', 'korrigieren', 'fix', 'adjust']):
-        action = 'correct_time'
-    elif any(word in command_lower for word in ['notify', 'notificar', 'benachrichtigen', 'send']):
-        action = 'send_notification'
+    employees_context = "\n".join([f"- {e.get('name', 'Unknown')} ({e.get('email', '')}) - {e.get('role', 'employee')}" for e in employees])
+    
+    # Parse command with GPT
+    gpt_result = await parse_command_with_gpt(data.command, employees_context)
+    
+    action = gpt_result.get('action')
     
     if not action:
-        raise HTTPException(status_code=400, detail="Could not understand command. Supported: vacation, overtime, correct time, notify")
+        error_msg = gpt_result.get('error', 'Could not understand command')
+        suggestions = gpt_result.get('suggestions', ['Add vacation for [employee]', 'Approve overtime for [employee]', 'Correct time entry'])
+        raise HTTPException(
+            status_code=400, 
+            detail=f"{error_msg}. Try: {', '.join(suggestions)}"
+        )
     
-    # Find target employee if specified
+    # Find target employee if specified by GPT or by user
     target_employee_id = None
-    if data.target_employee_email:
+    target_email = data.target_employee_email or gpt_result.get('target_employee_email')
+    
+    if target_email:
         employee = await db.users.find_one({
-            "email": data.target_employee_email,
+            "email": target_email,
             "company_id": current_user['company_id']
         }, {"_id": 0})
-        if not employee:
-            raise HTTPException(status_code=404, detail=f"Employee not found: {data.target_employee_email}")
-        target_employee_id = employee['id']
+        if employee:
+            target_employee_id = employee['id']
     
     # Create command with confirmation token
     confirmation_token = secrets.token_urlsafe(16)
+    
+    parameters = gpt_result.get('parameters', {})
+    parameters['original_command'] = data.command
+    parameters['gpt_summary'] = gpt_result.get('summary', '')
+    parameters['gpt_confidence'] = gpt_result.get('confidence', 0.5)
     
     ai_command = AICommand(
         company_id=current_user['company_id'],
@@ -3005,7 +3088,7 @@ async def create_ai_command(
         executed_by_role=current_user['role'],
         action=action,
         target_employee_id=target_employee_id,
-        parameters={"original_command": data.command},
+        parameters=parameters,
         confirmation_token=confirmation_token
     )
     
@@ -3017,9 +3100,13 @@ async def create_ai_command(
         "command_id": ai_command.id,
         "action": action,
         "target_employee_id": target_employee_id,
+        "target_email": target_email,
         "status": "pending_confirmation",
         "confirmation_token": confirmation_token,
-        "message": f"Command parsed: {action}. Please confirm to execute."
+        "summary": gpt_result.get('summary', f"Execute {action}"),
+        "confidence": gpt_result.get('confidence', 0.5),
+        "parameters": parameters,
+        "message": f"AI understood: {gpt_result.get('summary', action)}. Please confirm to execute."
     }
 
 @api_router.post("/ai/confirm", response_model=dict)
