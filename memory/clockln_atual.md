@@ -1,11 +1,11 @@
 # CLOCKLN - Resumo da Sessão Atual
-**Data:** 18/02/2026
+**Data:** 18-19/02/2026
 
 ---
 
 ## Mudanças Realizadas
 
-### Novos Planos de Preços (em EURO)
+### Planos de Preços (em EURO)
 
 | Plano | Preço Mensal | Funcionários |
 |-------|--------------|--------------|
@@ -13,6 +13,21 @@
 | **Pro** | €29,90 | 50 |
 | **Plus** | €59,90 | 150 |
 | **Business** | €99,90 | 500 |
+| **Intelligent Edition** | €299,90 | Ilimitados |
+
+### NOVO: Intelligent Edition Features
+- **CLOCKLN AI - HR Operator**: Comandos de RH por linguagem natural
+  - Add/remove vacation
+  - Approve overtime
+  - Correct time entry
+  - Send notifications
+- **Compliance Monitor (Germany Mode)**: 
+  - Weekly 48h limit (ArbZG §3)
+  - Overtime accumulation alerts
+  - Vacation grant monitoring (12 months)
+  - Missing records detection
+- **Immutable Audit System**: Log completo de todas ações AI
+- **Permission Structure**: HR full access, Managers limited, Employees blocked
 
 ### Descontos por Período
 - **Anual:** +1 mês grátis
@@ -34,9 +49,26 @@
 
 ---
 
-## Arquivos Modificados
+## Arquivos Modificados/Criados
 
-- `/app/frontend/src/pages/LandingPage.js` - Novos planos e preços
+- `/app/frontend/src/pages/LandingPage.js` - Novos planos e seção Intelligent
+- `/app/frontend/src/pages/IntelligentControlCenter.js` - **NOVO** Control Center
+- `/app/frontend/src/App.js` - Rota /intelligent
+- `/app/frontend/src/pages/HRDashboard.js` - Botão Intelligent
+- `/app/backend/server.py` - Endpoints AI, Compliance, Audit
+
+---
+
+## Novos Endpoints API (Intelligent Edition)
+
+- `POST /api/ai/command` - Criar comando AI
+- `POST /api/ai/confirm` - Confirmar e executar comando
+- `GET /api/ai/commands` - Listar comandos recentes
+- `GET /api/compliance/check` - Rodar verificação compliance
+- `GET /api/compliance/alerts` - Listar alertas
+- `PATCH /api/compliance/alerts/{id}/acknowledge` - Reconhecer alerta
+- `GET /api/audit/logs` - Ver logs de auditoria
+- `GET /api/intelligent/dashboard` - Dashboard do Control Center
 
 ---
 
@@ -60,7 +92,10 @@
 - [ ] Impedir empresa de fazer novo trial após cancelar
 - [ ] Vincular cadastro ao método de pagamento Stripe
 - [ ] Configurar Stripe para pagamentos reais
-- [ ] Configurar webhooks do Stripe
+- [ ] Integrar NLP real para comandos AI (OpenAI GPT)
+- [ ] Adicionar voice input para comandos
+- [ ] Mobile execution
+- [ ] Predictive analytics avançado
 
 ---
 
@@ -68,3 +103,4 @@
 - Projeto está em fase de TESTE com Stripe
 - Localização: Alemanha (preços em EUR)
 - Deploy feito via GitHub → Vercel (automático)
+- Intelligent Edition requer subscription_plan = 'intelligent' na empresa
