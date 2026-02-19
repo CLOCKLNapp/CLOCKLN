@@ -2918,7 +2918,7 @@ async def require_intelligent_plan(current_user: dict = Depends(get_current_user
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
     
-    if company.get('subscription_plan') != 'intelligent' and not company.get('is_exempt'):
+    if company.get('subscription_plan') not in ['intelligent', 'premiumia'] and not company.get('is_exempt'):
         raise HTTPException(
             status_code=403, 
             detail="This feature requires CLOCKLN Intelligent Edition subscription"
