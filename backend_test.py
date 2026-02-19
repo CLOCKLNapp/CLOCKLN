@@ -257,6 +257,51 @@ class CLOCKLNAPITester:
         
         return success, response
 
+    # ========== INTELLIGENT EDITION TESTS ==========
+
+    def test_intelligent_dashboard(self):
+        """Test intelligent dashboard endpoint (requires intelligent plan)"""
+        return self.run_test("Intelligent Dashboard", "GET", "/api/intelligent/dashboard", 200)
+
+    def test_intelligent_dashboard_access_denied(self):
+        """Test intelligent dashboard access denied for non-intelligent plan users"""
+        return self.run_test("Intelligent Dashboard Access Denied", "GET", "/api/intelligent/dashboard", 403)
+
+    def test_compliance_check(self):
+        """Test compliance check endpoint (requires intelligent plan)"""
+        return self.run_test("Compliance Check", "GET", "/api/compliance/check", 200)
+
+    def test_compliance_check_access_denied(self):
+        """Test compliance check access denied for non-intelligent plan users"""
+        return self.run_test("Compliance Check Access Denied", "GET", "/api/compliance/check", 403)
+
+    def test_ai_command(self):
+        """Test AI command endpoint"""
+        return self.run_test(
+            "AI Command", 
+            "POST", 
+            "/api/ai/command",
+            200,
+            data={
+                "command": "Add 2 vacation days for employee",
+                "target_employee_email": "joao@techcorp.com"
+            }
+        )
+
+    def test_ai_command_access_denied(self):
+        """Test AI command access denied for non-intelligent plan users"""
+        return self.run_test(
+            "AI Command Access Denied", 
+            "POST", 
+            "/api/ai/command",
+            403,
+            data={"command": "test command"}
+        )
+
+    def test_subscription_plans(self):
+        """Test getting subscription plans (should include intelligent edition)"""
+        return self.run_test("Get Subscription Plans", "GET", "/api/plans", 200)
+
     # ========== GEOLOCATION FEATURE TESTS ==========
 
     def test_geolocation_clock_onsite_worker(self, lat=-23.5505, lng=-46.6333):
