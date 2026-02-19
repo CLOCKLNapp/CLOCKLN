@@ -210,34 +210,93 @@ export default function IntelligentControlCenter() {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <Input
-                  placeholder="Enter command (e.g., 'Add vacation day for employee')"
+                  placeholder="Enter command in any language (e.g., 'Add 3 vacation days for John next week')"
                   value={commandInput}
                   onChange={(e) => setCommandInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && executeCommand()}
                   className="bg-zinc-800 border-zinc-700 text-white"
                   data-testid="command-input"
+                  disabled={isProcessing}
                 />
                 <Input
-                  placeholder="Target employee email (optional)"
+                  placeholder="Target employee email (optional - AI can detect from command)"
                   value={targetEmail}
                   onChange={(e) => setTargetEmail(e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-white"
                   data-testid="target-email-input"
+                  disabled={isProcessing}
                 />
                 <Button 
                   onClick={executeCommand}
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-black"
+                  disabled={isProcessing || !commandInput.trim()}
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-black disabled:opacity-50"
                   data-testid="execute-command-btn"
                 >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Analyze Command
+                  {isProcessing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      AI Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-2" />
+                      Analyze with GPT
+                    </>
+                  )}
                 </Button>
+              </div>
+
+              {/* Command Examples */}
+              <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700">
+                <p className="text-xs text-zinc-500 mb-2">Example commands (any language):</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Add 5 vacation days for employee@company.com",
+                    "Approve 3 hours overtime for the sales team",
+                    "Correct yesterday's clock-in time to 9:00",
+                    "Genehmige Überstunden für Max" // German
+                  ].map((example, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCommandInput(example)}
+                      className="text-xs px-2 py-1 rounded bg-zinc-700 text-zinc-300 hover:bg-zinc-600 transition-colors"
+                    >
+                      {example.length > 35 ? example.substring(0, 35) + '...' : example}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Pending Command Confirmation */}
               {pendingCommand && (
                 <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                  <h4 className="font-semibold text-amber-400 mb-2">Confirm Execution</h4>
-                  <p className="text-sm text-zinc-300 mb-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-amber-400">Confirm Execution</h4>
+                    {pendingCommand.confidence && (
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        pendingCommand.confidence > 0.8 ? 'bg-emerald-500/20 text-emerald-400' :
+                        pendingCommand.confidence > 0.5 ? 'bg-amber-500/20 text-amber-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {Math.round(pendingCommand.confidence * 100)}% confidence
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    <p className="text-sm text-zinc-300">
+                      <span className="text-zinc-500">Action:</span> <span className="font-mono text-amber-400">{pendingCommand.action}</span>
+                    </p>
+                    {pendingCommand.summary && (
+                      <p className="text-sm text-zinc-300">
+                        <span className="text-zinc-500">Summary:</span> {pendingCommand.summary}
+                      </p>
+                    )}
+                    {pendingCommand.target_email && (
+                      <p className="text-sm text-zinc-300">
+                        <span className="text-zinc-500">Target:</span> {pendingCommand.target_email}
+                      </p>
+                    )}
+                  </div>
                     Action: <span className="font-mono text-amber-400">{pendingCommand.action}</span>
                   </p>
                   <div className="flex gap-2">
