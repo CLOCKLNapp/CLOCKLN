@@ -89,7 +89,7 @@ class CLOCKLNAPITester:
         """Test health endpoint"""
         return self.run_test("Health Check", "GET", "/api/health", 200)
 
-    def test_login(self, email="admin@techcorp.com", password="admin123"):
+    def test_login(self, email="hr@acme.com", password="password123"):
         """Test login and store token"""
         success, response = self.run_test(
             "User Login",
