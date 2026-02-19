@@ -80,6 +80,24 @@ const plans = {
       'api_access',
       'dedicated_support'
     ]
+  },
+  intelligent: {
+    name: 'Intelligent Edition',
+    icon: Shield,
+    maxEmployees: 'unlimited',
+    monthly: 299.90,
+    yearly: 3298.90,     // 11 meses (1 mês grátis)
+    threeYear: 10496.50, // 35 meses (5 meses grátis)
+    fiveYear: 14995.00,  // 48 meses (1 ano/12 meses grátis)
+    isPremium: true,
+    features: [
+      'unlimited_employees',
+      'all_business_features',
+      'ai_hr_operator',
+      'compliance_monitor',
+      'immutable_audit',
+      'predictive_analytics'
+    ]
   }
 };
 
