@@ -457,7 +457,33 @@ def main():
     print("\n📊 Testing CSV Export...")
     tester.test_export_csv()
     
-    # Test 13: GEOLOCATION FEATURES
+    # Test 13: SUBSCRIPTION PLANS (includes Intelligent Edition)
+    print("\n💰 Testing Subscription Plans...")
+    plans_success, plans_response = tester.test_subscription_plans()
+    if plans_success and 'plans' in plans_response:
+        intelligent_plan = None
+        for plan in plans_response['plans']:
+            if plan['id'] == 'intelligent':
+                intelligent_plan = plan
+                break
+        
+        if intelligent_plan:
+            print(f"   ✅ Intelligent Edition found: {intelligent_plan['name']} - €{intelligent_plan['price']}")
+            print(f"   📊 Max employees: {intelligent_plan['max_employees']} (-1 means unlimited)")
+            print(f"   🔧 Features: {len(intelligent_plan.get('features', []))} features")
+        else:
+            print("   ❌ Intelligent Edition plan not found in response")
+    
+    # Test 14: INTELLIGENT EDITION FEATURES (expect 403 for free plan users)
+    print("\n🤖 Testing Intelligent Edition Features (Access Control)...")
+    print("   Testing access denied responses for non-intelligent plan users...")
+    
+    # These should return 403 since we're likely on a free/basic plan
+    tester.test_intelligent_dashboard_access_denied()
+    tester.test_compliance_check_access_denied()
+    tester.test_ai_command_access_denied()
+    
+    # Test 15: GEOLOCATION FEATURES
     print("\n🗺️ Testing Geolocation Features...")
     print("   Testing with different user types and scenarios...")
     
