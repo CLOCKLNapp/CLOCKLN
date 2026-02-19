@@ -26,6 +26,7 @@ import ReportsPage from './pages/ReportsPage';
 import OvertimeApprovalsPage from './pages/OvertimeApprovalsPage';
 import TimeBankPage from './pages/TimeBankPage';
 import SuperAdminPage from './pages/SuperAdminPage';
+import IntelligentControlCenter from './pages/IntelligentControlCenter';
 import './App.css';
 
 // Protected Route Component
